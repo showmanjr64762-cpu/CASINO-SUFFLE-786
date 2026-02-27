@@ -1,62 +1,234 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Dashboard</title>
+  <title>Game Admin Dashboard</title>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <style>
     body {
+      margin: 0;
       font-family: Arial;
-      background: #111;
+      background: #0f172a;
       color: white;
+    }
+
+    header {
+      background: #1e293b;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
       padding: 20px;
     }
 
-    h1 {
-      color: gold;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
     }
 
     .card {
-      background: #222;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 28px;
+      color: gold;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background: #1e293b;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #334155;
+      text-align: left;
+    }
+
+    th {
+      background: #0f172a;
+    }
+
+    canvas {
+      background: #1e293b;
       padding: 15px;
-      margin: 10px 0;
-      border-radius: 8px;
+      border-radius: 10px;
+      margin-top: 20px;
     }
   </style>
 </head>
+
 <body>
 
-<h1>🎮 Live Admin Dashboard</h1>
+<header>
+  🎮 Professional Admin Dashboard
+</header>
 
-<div id="events"></div>
+<div class="container">
+
+  <div class="stats">
+    <div class="card">
+      <p>Online Players</p>
+      <h2 id="onlineCount">0</h2>
+    </div>
+
+    <div class="card">
+      <p>Total Players</p>
+      <h2 id="totalPlayers">0</h2>
+    </div>
+
+    <div class="card">
+      <p>Total Spins</p>
+      <h2 id="totalSpins">0</h2>
+    </div>
+
+    <div class="card">
+      <p>Total Coins Won</p>
+      <h2 id="totalCoins">0</h2>
+    </div>
+  </div>
+
+  <canvas id="spinChart"></canvas>
+
+  <h2>Players</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Spins</th>
+        <th>Coins</th>
+      </tr>
+    </thead>
+    <tbody id="playersTable"></tbody>
+  </table>
+
+  <h2>Spin History</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Result</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody id="historyTable"></tbody>
+  </table>
+
+</div>
 
 <script>
   const socket = io();
-  const eventsDiv = document.getElementById("events");
 
-  function addEvent(text) {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerText = text;
-    eventsDiv.prepend(div);
-  }
+  let players = {};
+  let spinHistory = [];
+  let totalSpins = 0;
+  let totalCoins = 0;
+  let onlineCount = 0;
 
-  socket.on("connect", () => {
-    addEvent("🟢 Admin Connected to Server");
+  const ctx = document.getElementById('spinChart').getContext('2d');
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [{
+        label: 'Total Spins',
+        data: [],
+        borderColor: 'gold',
+        borderWidth: 2
+      }]
+    }
   });
 
-  socket.on("adminUpdate", (data) => {
-    if (data.action === "join") {
-      addEvent(`👤 Player Joined: ${data.player}`);
+  function updateDashboard() {
+
+    document.getElementById("onlineCount").innerText = onlineCount;
+    document.getElementById("totalPlayers").innerText = Object.keys(players).length;
+    document.getElementById("totalSpins").innerText = totalSpins;
+    document.getElementById("totalCoins").innerText = totalCoins;
+
+    const playersTable = document.getElementById("playersTable");
+    playersTable.innerHTML = "";
+
+    for (let name in players) {
+      playersTable.innerHTML += `
+        <tr>
+          <td>${name}</td>
+          <td>${players[name].online ? "🟢 Online" : "🔴 Offline"}</td>
+          <td>${players[name].spins}</td>
+          <td>${players[name].coins}</td>
+        </tr>
+      `;
     }
 
-    if (data.action === "spin") {
-      addEvent(`🎰 ${data.player} spun and got: ${data.result}`);
+    const historyTable = document.getElementById("historyTable");
+    historyTable.innerHTML = "";
+
+    spinHistory.slice().reverse().forEach(entry => {
+      historyTable.innerHTML += `
+        <tr>
+          <td>${entry.player}</td>
+          <td>${entry.result}</td>
+          <td>${entry.time}</td>
+        </tr>
+      `;
+    });
+  }
+
+  socket.on("adminUpdate", (data) => {
+
+    if (data.action === "join") {
+      if (!players[data.player]) {
+        players[data.player] = { spins: 0, coins: 0, online: true };
+      }
+      players[data.player].online = true;
+      onlineCount++;
     }
 
     if (data.action === "leave") {
-      addEvent(`❌ Player Left`);
+      if (players[data.player]) {
+        players[data.player].online = false;
+        onlineCount--;
+      }
     }
+
+    if (data.action === "spin") {
+      if (!players[data.player]) {
+        players[data.player] = { spins: 0, coins: 0, online: true };
+      }
+
+      players[data.player].spins++;
+      players[data.player].coins += data.result;
+
+      totalSpins++;
+      totalCoins += data.result;
+
+      spinHistory.push({
+        player: data.player,
+        result: data.result,
+        time: new Date().toLocaleTimeString()
+      });
+
+      chart.data.labels.push("");
+      chart.data.datasets[0].data.push(totalSpins);
+      chart.update();
+    }
+
+    updateDashboard();
   });
+
 </script>
 
 </body>
