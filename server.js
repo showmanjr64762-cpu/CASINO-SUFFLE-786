@@ -6,7 +6,7 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const path = require("path");
 const admin = require("firebase-admin");
-const socket = io();
+
 // ======================
 // Create App & Server
 // ======================
