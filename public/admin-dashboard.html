@@ -2,29 +2,27 @@
 <html>
 <head>
   <title>Game Admin Dashboard</title>
-  <script src="/socket.io/socket.io.js"></script>
-
-
-  <script>
+ <script src="/socket.io/socket.io.js"></script>
+<script>
   const socket = io();
 
+  socket.on("connect", () => {
+    console.log("Dashboard connected:", socket.id);
+  });
+
   socket.on("adminUpdate", (data) => {
-    console.log("Admin update:", data);
+    console.log("Received update:", data);
 
-    // You update UI here depending on action
-    if (data.action === "join") {
-      // increase players count
-    }
+    const log = document.getElementById("live-log");
 
-    if (data.action === "spin") {
-      // add spin record
-    }
-
-    if (data.action === "leave") {
-      // decrease player count
+    if (log) {
+      const item = document.createElement("div");
+      item.innerText = JSON.stringify(data);
+      log.prepend(item);
     }
   });
 </script>
+<div id="live-log"></div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 
