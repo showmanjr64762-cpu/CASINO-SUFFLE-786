@@ -5,7 +5,7 @@ const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
 const path = require("path");
-const admin = require("firebase-admin");
+
 
 // ======================
 // Create App & Server
@@ -26,19 +26,6 @@ app.use(express.static(path.join(__dirname, "public")));
 // ======================
 // Firebase Admin Setup
 // ======================
-
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.FB_PROJECT_ID,
-    clientEmail: process.env.FB_CLIENT_EMAIL,
-    privateKey: process.env.FB_PRIVATE_KEY
-      ? process.env.FB_PRIVATE_KEY.replace(/\\n/g, "\n")
-      : undefined
-  }),
-  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com"
-});
-
-const db = admin.database();
 
 // ======================
 // Helper Functions
@@ -118,6 +105,8 @@ app.use("/game", gameRoutes);
 const io = new Server(server, {
   cors: { origin: "*" }
 });
+
+const gameSocket = require("./sockets/gameSocket");
 
 io.on("connection", (socket) => {
   console.log("Player connected:", socket.id);
