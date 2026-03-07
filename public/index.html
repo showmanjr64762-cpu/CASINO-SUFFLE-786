@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Royal Match - Casino Card Game</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Royal Match - Premium Casino</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     * {
       margin: 0;
@@ -16,523 +16,1970 @@
     html, body {
       height: 100%;
       overflow: hidden;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      min-height: 100vh;
-      background: #0a0a0a;
-      display: flex;
-      flex-direction: column;
+      background: radial-gradient(ellipse at top, #064e3b 0%, #022c22 50%, #000000 100%);
+      color: #fff;
       position: relative;
-      overflow-x: hidden;
-      touch-action: manipulation;
+      transition: all 0.5s ease;
     }
 
-    /* ==================== APP LAUNCHER SCREEN ==================== */
-    .app-launcher {
+    /* Theme Classes */
+    body.theme-emerald {
+      background: radial-gradient(ellipse at top, #064e3b 0%, #022c22 50%, #000000 100%);
+      --primary: #10b981;
+      --secondary: #ffd700;
+      --accent: #d4af37;
+    }
+
+    body.theme-royal-purple {
+      background: radial-gradient(ellipse at top, #581c87 0%, #3b0764 50%, #000000 100%);
+      --primary: #a855f7;
+      --secondary: #fbbf24;
+      --accent: #f59e0b;
+    }
+
+    body.theme-midnight-blue {
+      background: radial-gradient(ellipse at top, #1e3a8a 0%, #172554 50%, #000000 100%);
+      --primary: #3b82f6;
+      --secondary: #e5e7eb;
+      --accent: #9ca3af;
+    }
+
+    body.theme-crimson-velvet {
+      background: radial-gradient(ellipse at top, #991b1b 0%, #7f1d1d 50%, #000000 100%);
+      --primary: #ef4444;
+      --secondary: #ffd700;
+      --accent: #dc2626;
+    }
+
+    /* Pattern Overlay */
+    .pattern-overlay {
       position: fixed;
       inset: 0;
-      z-index: 2000;
-      background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .app-launcher.hidden {
-      opacity: 0;
-      visibility: hidden;
+      opacity: 0.03;
+      background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 35px, #ffd700 35px, #ffd700 70px),
+        repeating-linear-gradient(-45deg, transparent, transparent 35px, #ffd700 35px, #ffd700 70px);
       pointer-events: none;
+      z-index: 1;
     }
 
-    .launcher-logo {
-      width: 140px;
-      height: 140px;
-      background: linear-gradient(145deg, #d4af37, #8b6914);
-      border-radius: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 3.5rem;
-      font-weight: 900;
-      color: #000;
-      box-shadow: 
-        0 0 80px rgba(212, 175, 55, 0.6),
-        0 25px 50px rgba(0, 0, 0, 0.6),
-        inset 0 3px 0 rgba(255, 255, 255, 0.4);
-      cursor: pointer;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      animation: logo-breathe 3s ease-in-out infinite;
-    }
-
-    .launcher-logo:active {
-      transform: scale(0.95);
-      box-shadow: 
-        0 0 40px rgba(212, 175, 55, 0.4),
-        0 15px 30px rgba(0, 0, 0, 0.5),
-        inset 0 3px 0 rgba(255, 255, 255, 0.4);
-    }
-
-    .launcher-logo::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255, 255, 255, 0.15),
-        transparent
-      );
-      animation: logo-shine 2.5s infinite;
-    }
-
-    @keyframes logo-breathe {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.03); }
-    }
-
-    @keyframes logo-shine {
-      0% { transform: translateX(-100%) rotate(45deg); }
-      100% { transform: translateX(100%) rotate(45deg); }
-    }
-
-    .launcher-title {
-      margin-top: 1.5rem;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, #d4af37 0%, #fff 50%, #d4af37 100%);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: title-shimmer 3s linear infinite;
-      letter-spacing: 0.15em;
-    }
-
-    .launcher-subtitle {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: #666;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-    }
-
-    .launcher-tap {
-      position: absolute;
-      bottom: 100px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      animation: tap-bounce 2s ease-in-out infinite;
-    }
-
-    .tap-icon {
-      width: 50px;
-      height: 50px;
-      border: 2px solid rgba(212, 175, 55, 0.5);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .tap-icon svg {
-      width: 24px;
-      height: 24px;
-      fill: #d4af37;
-    }
-
-    .tap-text {
-      color: #888;
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-    }
-
-    @keyframes tap-bounce {
-      0%, 100% { transform: translateY(0); opacity: 0.7; }
-      50% { transform: translateY(-10px); opacity: 1; }
-    }
-
-    /* Launcher particles */
-    .launcher-particles {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    .launcher-particle {
-      position: absolute;
-      width: 3px;
-      height: 3px;
-      background: #d4af37;
-      border-radius: 50%;
-      opacity: 0;
-      animation: launcher-particle-float 5s infinite;
-    }
-
-    @keyframes launcher-particle-float {
-      0% { opacity: 0; transform: translateY(100vh) scale(0); }
-      10% { opacity: 0.8; }
-      90% { opacity: 0.8; }
-      100% { opacity: 0; transform: translateY(-100vh) scale(1); }
-    }
-
-    /* ==================== BLACK TRANSITION SCREEN ==================== */
-    .black-transition {
+    /* Particle Effects */
+    .particles {
       position: fixed;
       inset: 0;
-      z-index: 1500;
-      background: #000;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease;
-    }
-
-    .black-transition.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    /* ==================== LOADING SCREEN ==================== */
-    .loading-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
-
-    .loading-screen.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .loading-screen.hidden {
-      opacity: 0;
-      visibility: hidden;
       pointer-events: none;
-    }
-
-    /* Particle Background */
-    .particles-container {
-      position: absolute;
-      inset: 0;
+      z-index: 2;
       overflow: hidden;
-      pointer-events: none;
     }
 
     .particle {
       position: absolute;
       width: 4px;
       height: 4px;
-      background: #d4af37;
+      background: #ffd700;
       border-radius: 50%;
-      opacity: 0;
-      animation: particle-float 4s infinite;
+      animation: float 10s infinite linear;
+      opacity: 0.6;
     }
 
-    @keyframes particle-float {
-      0% {
-        opacity: 0;
-        transform: translateY(100vh) scale(0);
-      }
-      10% {
-        opacity: 1;
-      }
-      90% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-100vh) scale(1);
-      }
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.6; }
+      100% { transform: translateY(-10vh) translateX(50px); opacity: 0; }
     }
 
-    /* Glowing Orbs */
-    .glow-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(60px);
-      animation: orb-pulse 3s ease-in-out infinite;
-    }
-
-    .orb-1 {
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, rgba(212, 175, 55, 0.4), transparent);
-      top: -100px;
-      left: -100px;
-      animation-delay: 0s;
-    }
-
-    .orb-2 {
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(139, 0, 0, 0.3), transparent);
-      bottom: -150px;
-      right: -150px;
-      animation-delay: 1s;
-    }
-
-    .orb-3 {
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(0, 170, 85, 0.3), transparent);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      animation-delay: 2s;
-    }
-
-    @keyframes orb-pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.2); opacity: 0.8; }
-    }
-
-    /* Logo Container */
-    .logo-container {
-      position: relative;
-      z-index: 10;
+    /* Splash Screen */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(4, 99, 7, 0.4), transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.3), transparent 50%),
+        linear-gradient(135deg, #022c22 0%, #000000 100%);
+      z-index: 4000;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       align-items: center;
-      margin-bottom: 3rem;
+      padding: 2rem;
+      transition: opacity 0.7s ease;
     }
 
-    .loading-logo {
-      width: 100px;
-      height: 100px;
-      background: linear-gradient(145deg, #d4af37, #8b6914);
-      border-radius: 24px;
+    .splash-screen.fade-out {
+      opacity: 0;
+    }
+
+    .splash-content {
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .splash-logo {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(145deg, #ffd700, #d4af37);
+      border-radius: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Playfair Display', serif;
-      font-size: 2.8rem;
-      font-weight: 900;
-      color: #000;
-      box-shadow: 
-        0 0 60px rgba(212, 175, 55, 0.5),
-        0 20px 40px rgba(0, 0, 0, 0.5),
-        inset 0 2px 0 rgba(255, 255, 255, 0.3);
-      animation: logo-float 3s ease-in-out infinite;
+      margin: 0 auto 2rem;
+      box-shadow: 0 20px 60px rgba(212, 175, 55, 0.4);
       position: relative;
       overflow: hidden;
     }
 
-    .loading-logo::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-      );
-      animation: logo-shine 3s infinite;
+    .splash-logo::before {
+      content: '♛';
+      font-size: 4rem;
+      color: #064e3b;
+      font-family: 'Playfair Display', serif;
     }
 
-    @keyframes logo-float {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(2deg); }
-    }
-
-    /* Title */
-    .game-title {
-      margin-top: 1.5rem;
-      text-align: center;
-    }
-
-    .title-main {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 2.2rem;
+    .splash-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
       font-weight: 900;
-      background: linear-gradient(135deg, #d4af37 0%, #fff 50%, #d4af37 100%);
-      background-size: 200% auto;
+      background: linear-gradient(135deg, #ffd700 0%, #fff 50%, #ffd700 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
-      animation: title-shimmer 3s linear infinite;
-      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 30px rgba(212, 175, 55, 0.5);
     }
 
-    @keyframes title-shimmer {
-      0% { background-position: 0% center; }
-      100% { background-position: 200% center; }
+    .splash-subtitle {
+      font-size: 1.2rem;
+      color: #10b981;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      letter-spacing: 0.2em;
     }
 
-    .title-sub {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.75rem;
-      color: #888;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      margin-top: 0.5rem;
+    .splash-progress {
+      width: 100%;
+      max-width: 280px;
+      margin: 0 auto;
     }
 
-    /* Loading Bar */
-    .loading-bar-container {
-      position: relative;
-      z-index: 10;
-      width: 260px;
+    .progress-bar-container {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #ffd700, #10b981);
+      background-size: 200% 100%;
+      animation: progressMove 2s ease-in-out infinite, loading 10s ease-out forwards;
+      border-radius: 999px;
+    }
+
+    @keyframes progressMove {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    @keyframes loading {
+      0% { width: 0%; }
+      100% { width: 100%; }
     }
 
     .loading-text {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.65rem;
-      color: #d4af37;
-      text-align: center;
-      margin-bottom: 1rem;
-      letter-spacing: 0.15em;
-      animation: text-pulse 1.5s ease-in-out infinite;
+      font-size: 0.75rem;
+      color: #ffd700;
+      letter-spacing: 0.2em;
+      margin-top: 1rem;
+      opacity: 0.8;
     }
 
-    @keyframes text-pulse {
-      0%, 100% { opacity: 0.7; }
-      50% { opacity: 1; }
+    /* Auth Modal */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 4500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(10px);
     }
 
-    .loading-bar-wrapper {
+    .auth-overlay.active {
+      display: flex;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .auth-container {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      border: 2px solid #d4af37;
+      border-radius: 24px;
       width: 100%;
-      height: 5px;
+      max-width: 450px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+    }
+
+    .auth-header {
+      padding: 1.5rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .auth-logo {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(145deg, #ffd700, #d4af37);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 2rem;
+    }
+
+    .auth-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: #ffd700;
+      margin-bottom: 0.25rem;
+    }
+
+    .auth-subtitle {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 1rem;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+
+    .auth-tab.active {
+      color: #ffd700;
+      border-bottom-color: #ffd700;
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .auth-content {
+      padding: 1.5rem;
+    }
+
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      padding: 0.875rem 1rem;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: #ffd700;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .form-input::placeholder {
+      color: #666;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #ffd700;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .checkbox-group label {
+      color: #aaa;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      cursor: pointer;
+    }
+
+    .checkbox-group a {
+      color: #ffd700;
+      text-decoration: none;
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 1rem;
+    }
+
+    .auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(212, 175, 55, 0.4);
+    }
+
+    .auth-btn:active {
+      transform: scale(0.98);
+    }
+
+    .auth-btn.secondary {
+      background: transparent;
+      border: 2px solid rgba(212, 175, 55, 0.5);
+      color: #ffd700;
+    }
+
+    .auth-divider {
+      text-align: center;
+      margin: 1.5rem 0;
+      position: relative;
+    }
+
+    .auth-divider::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: rgba(212, 175, 55, 0.3);
+    }
+
+    .auth-divider span {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      padding: 0 1rem;
+      color: #888;
+      font-size: 0.85rem;
+      position: relative;
+    }
+
+    .guest-btn {
+      width: 100%;
+      padding: 0.875rem;
       background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .guest-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .close-auth {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .close-auth:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* OTP Section */
+    .otp-section {
+      display: none;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    .otp-section.active {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+
+    .otp-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .otp-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+    }
+
+    .otp-text {
+      color: #aaa;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .otp-inputs {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .otp-input {
+      width: 50px;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.5rem;
+      text-align: center;
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .otp-input:focus {
+      border-color: #ffd700;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .resend-otp {
+      color: #10b981;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .resend-otp:hover {
+      text-decoration: underline;
+    }
+
+    /* Profile Modal */
+    .profile-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 3500;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(5px);
+    }
+
+    .profile-modal-overlay.active {
+      display: flex;
+    }
+
+    .profile-container {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      border: 2px solid #d4af37;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .profile-header {
+      padding: 2rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      position: relative;
+    }
+
+    .profile-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 1.5rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+
+    .profile-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    .profile-avatar-large {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border-radius: 50%;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      border: 4px solid #10b981;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .profile-avatar-large:hover {
+      transform: scale(1.05);
+    }
+
+    .profile-avatar-large img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .change-avatar-btn {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0.5rem;
+      font-size: 0.75rem;
+      color: #ffd700;
+      border: none;
+      cursor: pointer;
+    }
+
+    .profile-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #ffd700;
+      margin-bottom: 0.25rem;
+    }
+
+    .profile-id {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .profile-content {
+      padding: 1.5rem;
+    }
+
+    .avatar-selection {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .avatar-option {
+      width: 60px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid transparent;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .avatar-option:hover, .avatar-option.selected {
+      border-color: #ffd700;
+      background: rgba(212, 175, 55, 0.2);
+      transform: scale(1.1);
+    }
+
+    .profile-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .profile-stat {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffd700;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+
+    .save-profile-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(239, 68, 68, 0.2);
+      border: 2px solid rgba(239, 68, 68, 0.5);
+      border-radius: 12px;
+      color: #ef4444;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    /* Game Entry Loading Screen */
+    .game-entry-loader {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 2500;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .game-entry-loader.active {
+      display: flex;
+    }
+
+    .game-loader-content {
+      text-align: center;
+    }
+
+    .game-loader-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      animation: pulse 1.5s infinite;
+    }
+
+    .game-loader-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+    }
+
+    .game-loader-subtext {
+      color: #10b981;
+      font-size: 0.9rem;
+    }
+
+    .loader-bar {
+      width: 200px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+
+    .loader-bar-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #10b981, #ffd700);
+      animation: loaderProgress 10s ease-out;
+    }
+
+    @keyframes loaderProgress {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    /* Main App Container */
+    .app-container {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    .app-container.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Header Bar */
+    .lobby-header {
+      background: linear-gradient(180deg, rgba(6, 78, 59, 0.95) 0%, rgba(2, 44, 34, 0.98) 100%);
+      border-bottom: 2px solid #d4af37;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 50;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .profile-avatar {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      border: 3px solid #10b981;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s;
+      overflow: hidden;
+    }
+
+    .profile-avatar:hover {
+      transform: scale(1.1);
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .username {
+      font-weight: 700;
+      color: #ffd700;
+      font-size: 0.95rem;
+    }
+
+    .user-status {
+      font-size: 0.75rem;
+      color: #10b981;
+    }
+
+    .balance-container {
+      background: linear-gradient(145deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8));
+      border: 1px solid #d4af37;
+      border-radius: 20px;
+      padding: 0.4rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+
+    .coin-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(145deg, #ffd700, #d4af37);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      animation: coinPulse 2s infinite;
+    }
+
+    @keyframes coinPulse {
+      0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+    }
+
+    .balance-amount {
+      font-family: 'Orbitron', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .header-btn {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 1.2rem;
+      position: relative;
+      color: white;
+    }
+
+    .header-btn:hover {
+      background: rgba(212, 175, 55, 0.2);
+      transform: translateY(-2px);
+      border-color: #ffd700;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      background: #ef4444;
+      border-radius: 50%;
+      font-size: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #022c22;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    /* Announcement Banner */
+    .announcement-bar {
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+      border-top: 1px solid rgba(212, 175, 55, 0.3);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 0.5rem;
       overflow: hidden;
       position: relative;
     }
 
-    .loading-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #d4af37, #fff, #d4af37);
-      background-size: 200% 100%;
-      border-radius: 3px;
-      width: 0%;
-      transition: width 0.3s ease;
-      animation: bar-shimmer 1.5s linear infinite;
+    .announcement-track {
+      display: flex;
+      animation: scroll 20s linear infinite;
+      white-space: nowrap;
+      gap: 3rem;
     }
 
-    @keyframes bar-shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    @keyframes scroll {
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
     }
 
-    .loading-percentage {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #d4af37;
-      text-align: center;
-      margin-top: 1rem;
+    .announcement-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ffd700;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
     }
 
-    /* Tips */
-    .loading-tips {
-      position: absolute;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      text-align: center;
+    /* Full Screen Sections */
+    .fullscreen-section {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #022c22 0%, #000000 100%);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .fullscreen-section.active {
+      display: flex;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fullscreen-header {
+      background: linear-gradient(180deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      border-bottom: 2px solid #d4af37;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
       z-index: 10;
     }
 
-    .tip-label {
-      font-size: 0.6rem;
-      color: #555;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
+    .back-btn {
+      background: rgba(212, 175, 55, 0.2);
+      border: 1px solid #d4af37;
+      border-radius: 10px;
+      padding: 0.5rem 1rem;
+      color: #ffd700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+    }
+
+    .back-btn:hover {
+      background: rgba(212, 175, 55, 0.4);
+    }
+
+    .fullscreen-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #ffd700;
+      flex: 1;
+      text-align: center;
+      margin-right: 3rem;
+    }
+
+    .fullscreen-content {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Offers Menu Grid */
+    .offers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .offer-card {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.8), rgba(2, 44, 34, 0.9));
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .offer-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .offer-card:hover {
+      transform: translateY(-5px);
+      border-color: #ffd700;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    }
+
+    .offer-card:hover::before {
+      opacity: 1;
+    }
+
+    .offer-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .offer-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: #ffd700;
       margin-bottom: 0.5rem;
     }
 
-    .tip-text {
-      font-size: 0.8rem;
+    .offer-desc {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .offer-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ef4444;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Events Screen */
+    .event-card {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.6), rgba(2, 44, 34, 0.8));
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .event-card.featured {
+      border-color: #ffd700;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.2);
+    }
+
+    .event-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .event-icon-large {
+      font-size: 2.5rem;
+    }
+
+    .event-title-section h3 {
+      font-family: 'Playfair Display', serif;
+      color: #ffd700;
+      font-size: 1.2rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .event-timer {
+      color: #10b981;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .event-description {
+      color: #ccc;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .event-reward {
+      display: inline-block;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      color: #000;
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
+      font-weight: 700;
+    }
+
+    /* Customer Support Screen */
+    .support-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .support-info {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .support-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .support-item:last-child {
+      border-bottom: none;
+    }
+
+    .support-icon-box {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .support-item-info h4 {
+      color: #ffd700;
+      margin-bottom: 0.25rem;
+    }
+
+    .support-item-info p {
       color: #888;
-      max-width: 260px;
+      font-size: 0.9rem;
+    }
+
+    .support-form {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: #ffd700;
+    }
+
+    .form-textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: 700;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: scale(1.02);
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Popup */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 5000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .popup-overlay.active {
+      display: flex;
+    }
+
+    .popup-content {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      border: 2px solid #d4af37;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 400px;
+      text-align: center;
+      animation: popupIn 0.3s ease;
+    }
+
+    @keyframes popupIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .popup-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .popup-title {
+      font-family: 'Playfair Display', serif;
+      color: #ffd700;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .popup-text {
+      color: #ccc;
+      margin-bottom: 1.5rem;
       line-height: 1.5;
-      animation: tip-fade 4s ease-in-out infinite;
     }
 
-    @keyframes tip-fade {
-      0%, 100% { opacity: 0.5; }
-      50% { opacity: 1; }
+    .popup-close {
+      padding: 0.75rem 2rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    /* ==================== GAME SCREEN ==================== */
+    /* Lobby Content */
+    .lobby-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (max-width: 968px) {
+      .lobby-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Game Grid */
+    .games-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #ffd700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.5rem;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .game-tile {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.8), rgba(2, 44, 34, 0.9));
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .game-tile::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .game-tile:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: #ffd700;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3), 0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .game-tile:hover::before {
+      opacity: 1;
+    }
+
+    .game-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(145deg, #10b981, #059669);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      border: 3px solid #d4af37;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+      position: relative;
+    }
+
+    .game-tile.hot .game-icon::after {
+      content: '🔥';
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      font-size: 1.2rem;
+      animation: burn 1s infinite alternate;
+    }
+
+    @keyframes burn {
+      0% { transform: scale(1); }
+      100% { transform: scale(1.2); }
+    }
+
+    .game-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+      text-align: center;
+    }
+
+    .game-stats {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.85rem;
+      color: #10b981;
+    }
+
+    .online-count {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .online-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .entry-fee {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.3rem 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: #ffd700;
+      font-weight: 600;
+    }
+
+    .play-btn {
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      color: #000;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 25px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.5rem;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    }
+
+    /* Leaderboard Sidebar */
+    .leaderboard-panel {
+      background: linear-gradient(180deg, rgba(6, 78, 59, 0.6), rgba(2, 44, 34, 0.8));
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 20px;
+      padding: 1rem;
+      height: fit-content;
+      position: sticky;
+      top: 1rem;
+    }
+
+    .leaderboard-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .leaderboard-title {
+      font-family: 'Playfair Display', serif;
+      color: #ffd700;
+      font-size: 1.1rem;
+    }
+
+    .leaderboard-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      border: 1px solid rgba(212, 175, 55, 0.1);
+      transition: all 0.2s;
+    }
+
+    .leaderboard-item:hover {
+      background: rgba(212, 175, 55, 0.1);
+      transform: translateX(5px);
+    }
+
+    .rank-number {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .rank-number.gold {
+      background: linear-gradient(145deg, #ffd700, #d4af37);
+      color: #000;
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      animation: crownGlow 2s infinite;
+    }
+
+    .rank-number.silver {
+      background: linear-gradient(145deg, #c0c0c0, #808080);
+      color: #000;
+    }
+
+    .rank-number.bronze {
+      background: linear-gradient(145deg, #cd7f32, #8b4513);
+      color: #fff;
+    }
+
+    @keyframes crownGlow {
+      0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+      50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+    }
+
+    .leader-avatar {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(145deg, #10b981, #059669);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      border: 2px solid #d4af37;
+    }
+
+    .leader-info {
+      flex: 1;
+    }
+
+    .leader-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #fff;
+    }
+
+    .leader-win {
+      font-size: 0.75rem;
+      color: #ffd700;
+      font-weight: 700;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      background: linear-gradient(180deg, rgba(2, 44, 34, 0.98), rgba(0, 0, 0, 0.98));
+      border-top: 2px solid #d4af37;
+      padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      position: relative;
+      z-index: 50;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: rgba(255, 255, 255, 0.6);
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+
+    .nav-item.active {
+      color: #ffd700;
+    }
+
+    .nav-item:hover {
+      color: #ffd700;
+      transform: translateY(-2px);
+    }
+
+    .nav-icon {
+      font-size: 1.5rem;
+      position: relative;
+    }
+
+    .nav-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-item.active .nav-icon {
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      border: 2px solid #d4af37;
+      border-radius: 20px;
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: #ffd700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: #ffd700;
+    }
+
+    /* Settings Modal */
+    .settings-option {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .settings-icon {
+      font-size: 1.5rem;
+    }
+
+    .toggle-switch {
+      width: 50px;
+      height: 26px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 13px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+
+    .toggle-switch.active {
+      background: #10b981;
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      top: 1px;
+      left: 2px;
+      transition: all 0.3s;
+    }
+
+    .toggle-switch.active::after {
+      left: 26px;
+    }
+
+    .theme-selector {
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .theme-selector.active {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .theme-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .theme-btn:hover, .theme-btn.active {
+      border-color: #ffd700;
+      background: rgba(212, 175, 55, 0.2);
+    }
+
+    .theme-preview {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+
+    .change-theme-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 10px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    /* Missions Modal */
+    .mission-item {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mission-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: #ffd700;
+    }
+
+    .mission-title {
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mission-desc {
+      color: #ccc;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .mission-reward {
+      display: inline-block;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      color: #000;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .mission-btn {
+      width: 100%;
+      padding: 0.75rem;
+      background: #10b981;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+
+    .mission-btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+    }
+
+    /* Withdraw Modal */
+    .withdraw-option {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .withdraw-option:hover {
+      border-color: #ffd700;
+      background: rgba(212, 175, 55, 0.1);
+    }
+
+    .withdraw-amount {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.2rem;
+      color: #ffd700;
+      font-weight: 700;
+    }
+
+    .withdraw-method {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+
+    /* ===== GAME VIEW - IMPROVED VISIBILITY ===== */
+    .game-view {
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(0, 40, 20, 0.95) 0%, rgba(0, 20, 10, 0.98) 100%),
+        url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d4af37' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      overflow-y: auto;
+    }
+
+    .game-view.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .back-to-lobby {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 300;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      padding: 0.75rem 1.25rem;
+      border-radius: 25px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .back-to-lobby:hover {
+      transform: scale(1.05);
+    }
+
+    /* Original Game Styles - WITH ENHANCED CARD VISIBILITY */
     .game-screen {
       position: relative;
       z-index: 1;
       width: 100%;
       max-width: 600px;
       margin: 0 auto;
-      padding: 0 0.5rem;
-      padding-top: max(0.5rem, env(safe-area-inset-top));
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
-      overflow-y: auto;
-      max-height: 100vh;
+      padding: 4rem 1rem 2rem;
     }
 
-    .game-screen.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Ambient Background */
-    .ambient-bg {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .ambient-glow {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.3;
-    }
-
-    .glow-1 {
-      top: -20%;
-      left: -10%;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, #d4af37, transparent);
-    }
-
-    .glow-2 {
-      bottom: -20%;
-      right: -10%;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, #8b0000, transparent);
-    }
-
-    /* Unique Game Title */
     .game-header {
       text-align: center;
       padding: 0.5rem 0;
@@ -585,7 +2032,11 @@
       text-transform: uppercase;
     }
 
-    /* Balance Bar */
+    @keyframes title-shimmer {
+      0% { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
     .balance-bar {
       background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
       border: 1px solid #333;
@@ -644,7 +2095,6 @@
       fill: #fff;
     }
 
-    /* Stats Panel */
     .stats-panel {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -698,7 +2148,6 @@
       color: #d4af37;
     }
 
-    /* Bet Selection Panel */
     .bet-panel {
       background: linear-gradient(145deg, #141414, #0a0a0a);
       border: 1px solid #2a2a2a;
@@ -793,7 +2242,6 @@
       transform: scale(0.95);
     }
 
-    /* Action Buttons */
     .action-buttons {
       display: flex;
       gap: 0.5rem;
@@ -849,7 +2297,6 @@
       color: #fff;
     }
 
-    /* Message Display */
     .message-display {
       text-align: center;
       padding: 0.5rem;
@@ -874,7 +2321,6 @@
       font-weight: 700;
     }
 
-    /* Progress Section */
     .progress-section {
       background: linear-gradient(145deg, #141414, #0a0a0a);
       border: 1px solid #2a2a2a;
@@ -917,7 +2363,6 @@
       transition: width 0.5s ease;
     }
 
-    /* Multiplier Display - Scrollable */
     .multiplier-display {
       display: flex;
       flex-wrap: wrap;
@@ -957,7 +2402,6 @@
       background: rgba(255, 107, 107, 0.1);
     }
 
-    /* Card Grid - 4x7 layout */
     .card-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -966,7 +2410,6 @@
       margin-bottom: 0.5rem;
     }
 
-    /* Shuffle Animation */
     .card-grid.shuffling .card {
       animation: shuffle-card 0.12s ease-in-out;
     }
@@ -979,9 +2422,8 @@
       100% { transform: translateX(0) translateY(0) rotate(0deg); }
     }
 
-    /* Card */
     .card {
-      aspect-ratio: 2.5/3.5;
+      aspect-ratio: 2.5 / 3.5;
       position: relative;
       cursor: pointer;
       transform-style: preserve-3d;
@@ -1023,10 +2465,9 @@
       overflow: hidden;
     }
 
-    /* Card Back */
     .card-back {
       background: linear-gradient(145deg, #1a3a5c, #0d1f33);
-      border: 1.5px solid #2a5a8c;
+      border: 2px solid #2a5a8c;
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(42, 90, 140, 0.3);
     }
 
@@ -1046,7 +2487,7 @@
 
     .card-back-logo {
       font-family: 'Playfair Display', serif;
-      font-size: 0.75rem;
+      font-size: 1rem;
       font-weight: 800;
       color: #d4af37;
       text-shadow: 0 1px 5px rgba(212, 175, 55, 0.5);
@@ -1065,60 +2506,73 @@
     .card-back-corner.bl { bottom: 4px; left: 4px; border-right: none; border-top: none; }
     .card-back-corner.br { bottom: 4px; right: 4px; border-left: none; border-top: none; }
 
-    /* Card Front */
     .card-front {
       background: linear-gradient(145deg, #ffffff, #f0f0f0);
-      border: 1.5px solid #ddd;
+      border: 2px solid #ddd;
       transform: rotateY(180deg);
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
       flex-direction: column;
-      padding: 2px;
+      padding: 4px;
     }
 
     .card-front.red { border-color: #cc0000; }
     .card-front.black { border-color: #1a1a1a; }
-    .card-front.bomb { 
+    .card-front.bomb {
       background: linear-gradient(145deg, #2a0a0a, #1a0505);
       border-color: #8b0000;
     }
 
+    /* ===== ENHANCED CARD TEXT VISIBILITY ===== */
     .card-corner {
       position: absolute;
       display: flex;
       flex-direction: column;
       align-items: center;
       line-height: 1;
+      font-weight: 900;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
 
-    .card-corner-tl {
-      top: 2px;
-      left: 3px;
+    .card-corner-tl { 
+      top: 4px; 
+      left: 6px; 
     }
 
-    .card-corner-br {
-      bottom: 2px;
-      right: 3px;
-      transform: rotate(180deg);
+    .card-corner-br { 
+      bottom: 4px; 
+      right: 6px; 
+      transform: rotate(180deg); 
     }
 
     .card-rank {
       font-family: 'Playfair Display', serif;
-      font-size: 0.6rem;
-      font-weight: 800;
+      font-size: 1.1rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 2px;
     }
 
-    .card-suit-small {
-      font-size: 0.5rem;
+    .card-suit-small { 
+      font-size: 0.9rem;
+      line-height: 1;
     }
 
-    .card-front.red .card-rank { color: #cc0000; }
-    .card-front.black .card-rank { color: #1a1a1a; }
-
-    .card-center {
-      font-size: 1.2rem;
+    .card-front.red .card-rank { 
+      color: #cc0000;
+      text-shadow: 0 0 2px rgba(204, 0, 0, 0.3);
     }
 
-    /* Bomb Card */
+    .card-front.black .card-rank { 
+      color: #0a0a0a;
+      text-shadow: 0 0 2px rgba(0,0,0,0.2);
+    }
+
+    .card-center { 
+      font-size: 2.2rem;
+      line-height: 1;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
     .bomb-content {
       display: flex;
       flex-direction: column;
@@ -1126,38 +2580,51 @@
       color: #ff4444;
     }
 
-    .bomb-icon {
-      font-size: 1.2rem;
+    .bomb-icon { 
+      font-size: 2.5rem;
+      filter: drop-shadow(0 0 10px rgba(255, 68, 68, 0.6));
+      animation: bomb-pulse 1.5s infinite;
+    }
+
+    @keyframes bomb-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
     }
 
     .bomb-text {
-      font-size: 0.35rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      margin-top: 1px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      margin-top: 4px;
+      text-transform: uppercase;
     }
 
-    /* Matched Card Glow */
     .card.matched .card-front {
-      box-shadow: 0 0 15px rgba(0, 255, 136, 0.6), 0 3px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.8), 0 3px 10px rgba(0, 0, 0, 0.3);
     }
 
-    /* Win Animation Overlay */
-    .win-overlay {
+    .win-overlay, .lose-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.92);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 200;
+      z-index: 400;
       opacity: 0;
       visibility: hidden;
       transition: all 0.3s;
     }
 
-    .win-overlay.active {
+    .win-overlay {
+      background: rgba(0, 0, 0, 0.92);
+    }
+
+    .lose-overlay {
+      background: rgba(20, 0, 0, 0.95);
+    }
+
+    .win-overlay.active, .lose-overlay.active {
       opacity: 1;
       visibility: visible;
     }
@@ -1190,26 +2657,6 @@
       font-size: 1.3rem;
       font-weight: 700;
       margin-top: 0.5rem;
-    }
-
-    /* Lose Animation */
-    .lose-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(20, 0, 0, 0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-
-    .lose-overlay.active {
-      opacity: 1;
-      visibility: visible;
     }
 
     .lose-icon {
@@ -1257,224 +2704,1107 @@
       transform: scale(0.95);
     }
 
-    /* Sound Toggle */
-    .sound-toggle {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5rem;
-    }
+    .hidden { display: none !important; }
 
-    .sound-toggle svg {
-      width: 18px;
-      height: 18px;
-      fill: #888;
-    }
+    @media (max-width: 768px) {
+      .lobby-content {
+        grid-template-columns: 1fr;
+        padding: 0.75rem;
+      }
+      
+      .leaderboard-panel {
+        order: -1;
+        position: static;
+      }
+      
+      .games-grid {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+      }
 
-    .sound-toggle.muted svg {
-      fill: #444;
-    }
+      .offers-grid {
+        grid-template-columns: 1fr;
+      }
 
-    /* Hidden */
-    .hidden {
-      display: none !important;
-    }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
 
-    /* Responsive */
-    @media (min-width: 400px) {
-      .card-grid { gap: 0.4rem; }
-      .card-rank { font-size: 0.65rem; }
-      .card-suit-small { font-size: 0.55rem; }
-      .card-center { font-size: 1.4rem; }
-      .bomb-icon { font-size: 1.4rem; }
-    }
+      .card-rank {
+        font-size: 0.9rem;
+      }
 
-    @media (min-width: 500px) {
-      .card-grid { gap: 0.5rem; }
-      .card-rank { font-size: 0.7rem; }
-      .card-suit-small { font-size: 0.6rem; }
-      .card-center { font-size: 1.6rem; }
-      .bomb-icon { font-size: 1.6rem; }
-      .game-screen { max-width: 550px; }
+      .card-suit-small {
+        font-size: 0.75rem;
+      }
+
+      .card-center {
+        font-size: 1.8rem;
+      }
     }
   </style>
 </head>
-<body>
-  <!-- ==================== APP LAUNCHER SCREEN ==================== -->
-  <div class="app-launcher" id="appLauncher">
-    <div class="launcher-particles" id="launcherParticles"></div>
-    
-    <div class="launcher-logo" id="launcherLogo">RM</div>
-    <div class="launcher-title">ROYAL MATCH</div>
-    <div class="launcher-subtitle">Ultimate Card Experience</div>
-    
-    <div class="launcher-tap">
-      <div class="tap-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.21 0-.59-.34-1.15-.91-1.41z"/>
-        </svg>
+<body class="theme-emerald">
+  <!-- Pattern Overlay -->
+  <div class="pattern-overlay"></div>
+  
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Initial Splash Screen -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-content">
+      <div class="splash-logo"></div>
+      <div class="splash-title">ROYAL MATCH</div>
+      <div class="splash-subtitle">PREMIUM CASINO EXPERIENCE</div>
+      <div class="splash-progress">
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill"></div>
+        </div>
+        <div class="loading-text">LOADING ROYAL EXPERIENCE...</div>
       </div>
-      <span class="tap-text">Tap to Play</span>
     </div>
   </div>
 
-  <!-- ==================== BLACK TRANSITION ==================== -->
-  <div class="black-transition" id="blackTransition"></div>
-
-  <!-- ==================== LOADING SCREEN ==================== -->
-  <div class="loading-screen" id="loadingScreen">
-    <!-- Glowing Orbs -->
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
-    <div class="glow-orb orb-3"></div>
-
-    <!-- Particles -->
-    <div class="particles-container" id="particlesContainer"></div>
-
-    <!-- Logo -->
-    <div class="logo-container">
-      <div class="loading-logo">RM</div>
-      <div class="game-title">
-        <div class="title-main">ROYAL MATCH</div>
-        <div class="title-sub">Loading Game...</div>
+  <!-- Auth Modal (Login/Register) -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-container">
+      <button class="close-auth" onclick="skipAuth()">×</button>
+      
+      <div class="auth-header">
+        <div class="auth-logo">♛</div>
+        <div class="auth-title">Welcome to Royal Match</div>
+        <div class="auth-subtitle">Login or Register to continue</div>
       </div>
-    </div>
 
-    <!-- Loading Bar -->
-    <div class="loading-bar-container">
-      <div class="loading-text">INITIALIZING...</div>
-      <div class="loading-bar-wrapper">
-        <div class="loading-bar" id="loadingBar"></div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
       </div>
-      <div class="loading-percentage" id="loadingPercentage">0%</div>
-    </div>
 
-    <!-- Tips -->
-    <div class="loading-tips">
-      <div class="tip-label">PRO TIP</div>
-      <div class="tip-text" id="tipText">Match 12 pairs to win! Avoid the 4 hidden bombs!</div>
+      <div class="auth-content">
+        <!-- Login Form -->
+        <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Mobile Number / Email</label>
+            <input type="text" class="form-input" id="loginPhone" placeholder="+92 XXX XXXXXXX" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" required>
+          </div>
+
+          <button type="submit" class="auth-btn">Login</button>
+          
+          <div class="auth-divider">
+            <span>OR</span>
+          </div>
+
+          <button type="button" class="guest-btn" onclick="guestLogin()">
+            <span>👤</span>
+            <span>Continue as Guest</span>
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input type="text" class="form-input" id="regUsername" placeholder="Choose username" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number *</label>
+              <input type="tel" class="form-input" id="regPhone" placeholder="+92 XXX XXXXXXX" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email (Optional)</label>
+            <input type="email" class="form-input" id="regEmail" placeholder="your@email.com">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input type="password" class="form-input" id="regPassword" placeholder="Min 6 characters" required minlength="6">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password</label>
+              <input type="password" class="form-input" id="regConfirmPassword" placeholder="Confirm password" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Province</label>
+              <select class="form-select" id="regProvince">
+                <option value="">Select Province</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Sindh">Sindh</option>
+                <option value="KPK">Khyber Pakhtunkhwa</option>
+                <option value="Balochistan">Balochistan</option>
+                <option value="Islamabad">Islamabad</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Preferred Language</label>
+              <select class="form-select" id="regLanguage">
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Referral Code (Optional)</label>
+            <input type="text" class="form-input" id="regReferral" placeholder="Enter referral code">
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="regTerms" required>
+            <label for="regTerms">I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a></label>
+          </div>
+
+          <button type="submit" class="auth-btn">Register</button>
+        </form>
+
+        <!-- OTP Verification -->
+        <div class="otp-section" id="otpSection">
+          <div class="otp-icon">📱</div>
+          <div class="otp-title">Verify Your Number</div>
+          <div class="otp-text">Enter the 6-digit code sent to <span id="otpPhone"></span></div>
+          
+          <div class="otp-inputs">
+            <input type="text" class="otp-input" maxlength="1" onkeyup="moveOtp(this, 1)" oninput="validateOtpInput(this)">
+            <input type="text" class="otp-input" maxlength="1" onkeyup="moveOtp(this, 2)" oninput="validateOtpInput(this)">
+            <input type="text" class="otp-input" maxlength="1" onkeyup="moveOtp(this, 3)" oninput="validateOtpInput(this)">
+            <input type="text" class="otp-input" maxlength="1" onkeyup="moveOtp(this, 4)" oninput="validateOtpInput(this)">
+            <input type="text" class="otp-input" maxlength="1" onkeyup="moveOtp(this, 5)" oninput="validateOtpInput(this)">
+            <input type="text" class="otp-input" maxlength="1" onkeyup="verifyOtp()" oninput="validateOtpInput(this)">
+          </div>
+          
+          <p style="color: #888; font-size: 0.85rem;">
+            Didn't receive code? <span class="resend-otp" onclick="resendOtp()">Resend</span>
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ==================== GAME SCREEN ==================== -->
-  <div class="ambient-bg">
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
+  <!-- Profile Modal -->
+  <div class="profile-modal-overlay" id="profileModal">
+    <div class="profile-container">
+      <div class="profile-header">
+        <button class="profile-close" onclick="closeProfile()">×</button>
+        <div class="profile-avatar-large" id="profileAvatarLarge" onclick="toggleAvatarSelection()">
+          <span id="currentAvatarDisplay">👤</span>
+          <button class="change-avatar-btn">Change</button>
+        </div>
+        <div class="profile-name" id="profileNameDisplay">Guest User</div>
+        <div class="profile-id" id="profileIdDisplay">ID: GUEST001</div>
+      </div>
+
+      <div class="profile-content">
+        <!-- Avatar Selection -->
+        <div class="avatar-selection" id="avatarSelection" style="display: none;">
+          <div class="avatar-option" onclick="selectAvatar('👤')">👤</div>
+          <div class="avatar-option" onclick="selectAvatar('👑')">👑</div>
+          <div class="avatar-option" onclick="selectAvatar('🎩')">🎩</div>
+          <div class="avatar-option" onclick="selectAvatar('🦁')">🦁</div>
+          <div class="avatar-option" onclick="selectAvatar('🦅')">🦅</div>
+          <div class="avatar-option" onclick="selectAvatar('🐆')">🐆</div>
+          <div class="avatar-option" onclick="selectAvatar('🎰')">🎰</div>
+          <div class="avatar-option" onclick="selectAvatar('💎')">💎</div>
+        </div>
+
+        <!-- Profile Stats -->
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="stat-number" id="profileGames">0</div>
+            <div class="stat-label">Games</div>
+          </div>
+          <div class="profile-stat">
+            <div class="stat-number" id="profileWins">0</div>
+            <div class="stat-label">Wins</div>
+          </div>
+          <div class="profile-stat">
+            <div class="stat-number" id="profileWinRate">0%</div>
+            <div class="stat-label">Win Rate</div>
+          </div>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <form onsubmit="saveProfile(event)">
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" id="editUsername" placeholder="Username">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Province</label>
+              <select class="form-select" id="editProvince">
+                <option value="Punjab">Punjab</option>
+                <option value="Sindh">Sindh</option>
+                <option value="KPK">Khyber Pakhtunkhwa</option>
+                <option value="Balochistan">Balochistan</option>
+                <option value="Islamabad">Islamabad</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Language</label>
+              <select class="form-select" id="editLanguage">
+                <option value="English">English</option>
+                <option value="Urdu">Urdu</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="save-profile-btn">Save Changes</button>
+        </form>
+
+        <button class="logout-btn" onclick="logout()" id="logoutBtn">Logout</button>
+      </div>
+    </div>
   </div>
 
-  <div class="game-screen" id="gameScreen">
-    <!-- Game Header -->
-    <div class="game-header">
-      <div class="game-logo-title">
-        <div class="logo-badge">RM</div>
-        <div class="title-text">
-          <span class="main">ROYAL MATCH</span>
-          <span class="sub">Match 12 Pairs to Win</span>
+  <!-- Game Entry Loader -->
+  <div class="game-entry-loader" id="gameEntryLoader">
+    <div class="game-loader-content">
+      <div class="game-loader-icon">👑</div>
+      <div class="game-loader-text">ROYAL MATCH</div>
+      <div class="game-loader-subtext">Loading Game Table...</div>
+      <div class="loader-bar">
+        <div class="loader-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Popup -->
+  <div class="popup-overlay" id="successPopup">
+    <div class="popup-content">
+      <div class="popup-icon">✅</div>
+      <div class="popup-title">Message Sent!</div>
+      <div class="popup-text">Your message has been sent. We will contact you soon.</div>
+      <button class="popup-close" onclick="closePopup()">OK</button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">⚙️ Settings</span>
+        <button class="modal-close" onclick="closeModal('settingsModal')">×</button>
+      </div>
+      
+      <div class="settings-option">
+        <div class="settings-label">
+          <span class="settings-icon">🔊</span>
+          <span>Sound Effects</span>
+        </div>
+        <div class="toggle-switch active" id="soundToggle" onclick="toggleSound()"></div>
+      </div>
+
+      <div class="settings-option">
+        <div class="settings-label">
+          <span class="settings-icon">🔔</span>
+          <span>Notifications</span>
+        </div>
+        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+      </div>
+
+      <button class="change-theme-btn" onclick="showThemeSelector()">
+        🎨 Change Theme
+      </button>
+
+      <div class="theme-selector" id="themeSelector">
+        <div class="theme-btn active" onclick="changeTheme('emerald')">
+          <div class="theme-preview" style="background: linear-gradient(145deg, #064e3b, #ffd700);"></div>
+          <span>Emerald Gold (Default)</span>
+        </div>
+        <div class="theme-btn" onclick="changeTheme('royal-purple')">
+          <div class="theme-preview" style="background: linear-gradient(145deg, #581c87, #fbbf24);"></div>
+          <span>Royal Purple</span>
+        </div>
+        <div class="theme-btn" onclick="changeTheme('midnight-blue')">
+          <div class="theme-preview" style="background: linear-gradient(145deg, #1e3a8a, #e5e7eb);"></div>
+          <span>Midnight Blue</span>
+        </div>
+        <div class="theme-btn" onclick="changeTheme('crimson-velvet')">
+          <div class="theme-preview" style="background: linear-gradient(145deg, #991b1b, #ffd700);"></div>
+          <span>Crimson Velvet</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Withdraw Modal -->
+  <div class="modal-overlay" id="withdrawModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="modal-title">💸 Withdraw</span>
+        <button class="modal-close" onclick="closeModal('withdrawModal')">×</button>
+      </div>
+      
+      <div class="withdraw-option" onclick="alert('Minimum withdrawal: 1000 coins')">
+        <div class="withdraw-amount">1000 Coins</div>
+        <div class="withdraw-method">Bank Transfer (3-5 days)</div>
+      </div>
+
+      <div class="withdraw-option" onclick="alert('Minimum withdrawal: 5000 coins')">
+        <div class="withdraw-amount">5000 Coins</div>
+        <div class="withdraw-method">Instant Crypto</div>
+      </div>
+
+      <div class="withdraw-option" onclick="alert('Minimum withdrawal: 10000 coins')">
+        <div class="withdraw-amount">10000 Coins</div>
+        <div class="withdraw-method">VIP Express (24h)</div>
+      </div>
+
+      <div style="text-align: center; margin-top: 1rem; color: #888; font-size: 0.8rem;">
+        Current Balance: <span style="color: #ffd700; font-weight: 700;" id="withdrawBalance">1,000</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offers Section -->
+  <div class="fullscreen-section" id="offersSection">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closeOffers()">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <span class="fullscreen-title">🎁 Offers</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="offers-grid">
+        <div class="offer-card" onclick="openMissions()">
+          <div class="offer-badge">NEW</div>
+          <div class="offer-icon">🎯</div>
+          <div class="offer-title">Missions</div>
+          <div class="offer-desc">Complete tasks and earn rewards</div>
+        </div>
+
+        <div class="offer-card" onclick="openVIP()">
+          <div class="offer-icon">👑</div>
+          <div class="offer-title">VIP Club</div>
+          <div class="offer-desc">Exclusive benefits for VIP members</div>
+        </div>
+
+        <div class="offer-card" onclick="openEvents()">
+          <div class="offer-badge">HOT</div>
+          <div class="offer-icon">🎉</div>
+          <div class="offer-title">Events</div>
+          <div class="offer-desc">Special events and tournaments</div>
+        </div>
+
+        <div class="offer-card" onclick="openSupport()">
+          <div class="offer-icon">🎧</div>
+          <div class="offer-title">Support</div>
+          <div class="offer-desc">24/7 customer support</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Missions Section -->
+  <div class="fullscreen-section" id="missionsSection">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closeMissions()">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <span class="fullscreen-title">🎯 Missions</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="mission-item">
+        <div class="mission-title">
+          <span>💎</span>
+          <span>First Deposit Bonus</span>
+        </div>
+        <div class="mission-desc">
+          Make your first deposit to unlock exclusive rewards and start your journey!
+        </div>
+        <div class="mission-reward" id="mission1Reward">Bonus: 500 Coins</div>
+        <button class="mission-btn" onclick="showDepositMessage()">Deposit Now</button>
+      </div>
+
+      <div class="mission-item" style="opacity: 0.5;">
+        <div class="mission-title">
+          <span>🎰</span>
+          <span>Daily Spinner</span>
+        </div>
+        <div class="mission-desc">
+          Complete your first deposit to unlock daily rewards.
+        </div>
+        <div class="mission-reward">Locked</div>
+        <button class="mission-btn" disabled>Locked</button>
+      </div>
+
+      <div class="mission-item" style="opacity: 0.5;">
+        <div class="mission-title">
+          <span>👑</span>
+          <span>VIP Access</span>
+        </div>
+        <div class="mission-desc">
+          Reach level 10 to unlock VIP rooms with higher stakes.
+        </div>
+        <div class="mission-reward">Locked</div>
+        <button class="mission-btn" disabled>Locked</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events Section -->
+  <div class="fullscreen-section" id="eventsSection">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closeEvents()">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <span class="fullscreen-title">🎉 Events</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="event-card featured">
+        <div class="event-header">
+          <div class="event-icon-large">🎡</div>
+          <div class="event-title-section">
+            <h3>Daily Lucky Spin</h3>
+            <div class="event-timer">⏰ Resets in 12:45:30</div>
+          </div>
+        </div>
+        <div class="event-description">
+          Spin the wheel every day for free coins! Win up to 10,000 coins daily. 
+          Don't miss your chance to win big with our daily lucky spin event.
+        </div>
+        <div class="event-reward">Free Entry</div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <div class="event-icon-large">🏆</div>
+          <div class="event-title-section">
+            <h3>Royal Championship</h3>
+            <div class="event-timer">⏰ Starts in 2 days</div>
+          </div>
+        </div>
+        <div class="event-description">
+          Compete with players worldwide in our weekly championship. 
+          Top 100 players win exclusive prizes and special badges.
+        </div>
+        <div class="event-reward">Prize Pool: 1M Coins</div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <div class="event-icon-large">📚</div>
+          <div class="event-title-section">
+            <h3>About Royal Match</h3>
+          </div>
+        </div>
+        <div class="event-description">
+          Royal Match is a thrilling card matching game where strategy meets luck. 
+          Match 12 pairs to win big, but beware of the bombs! 
+          Start with a bet, flip cards to find matches, and cash out anytime. 
+          The more pairs you match, the higher your multiplier grows!
+        </div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <div class="event-icon-large">🎁</div>
+          <div class="event-title-section">
+            <h3>Weekend Bonus</h3>
+            <div class="event-timer">⏰ Every Weekend</div>
+          </div>
+        </div>
+        <div class="event-description">
+          Get 2x experience points and special bonuses every weekend. 
+          Play more, win more during our special weekend events!
+        </div>
+        <div class="event-reward">2x XP + Bonuses</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Support Section -->
+  <div class="fullscreen-section" id="supportSection">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closeSupport()">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <span class="fullscreen-title">🎧 Support</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="support-container">
+        <div class="support-info">
+          <div class="support-item">
+            <div class="support-icon-box">📧</div>
+            <div class="support-item-info">
+              <h4>Email Support</h4>
+              <p>support@royalmatch.com</p>
+            </div>
+          </div>
+          <div class="support-item">
+            <div class="support-icon-box">💬</div>
+            <div class="support-item-info">
+              <h4>Live Chat</h4>
+              <p>Available 24/7</p>
+            </div>
+          </div>
+          <div class="support-item">
+            <div class="support-icon-box">📱</div>
+            <div class="support-item-info">
+              <h4>Phone</h4>
+              <p>+1-800-ROYAL-777</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="support-form">
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <input type="text" class="form-input" placeholder="Enter your name" id="supportName">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <input type="text" class="form-input" placeholder="How can we help?" id="supportSubject">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Describe your issue or question..." id="supportMessage"></textarea>
+          </div>
+          <button class="submit-btn" onclick="sendSupportMessage()">Send Message</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div class="app-container" id="appContainer">
+    <!-- Header -->
+    <header class="lobby-header">
+      <div class="header-left">
+        <div class="profile-avatar" id="headerAvatar" onclick="openProfile()">
+          <span id="headerAvatarIcon">👤</span>
+        </div>
+        <div class="user-info">
+          <div class="username" id="headerUsername">Guest</div>
+          <div class="user-status" id="userStatus">Tap to login</div>
+        </div>
+        <div class="balance-container">
+          <div class="coin-icon">🪙</div>
+          <span class="balance-amount" id="lobbyBalance">1,000</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="header-btn" title="Daily Rewards" onclick="alert('Daily Reward: Come back tomorrow!')">🎁</button>
+        <button class="header-btn" title="Messages" onclick="alert('No new messages')">
+          ✉️
+          <span class="notification-badge">3</span>
+        </button>
+        <button class="header-btn" title="Settings" onclick="openModal('settingsModal')">⚙️</button>
+      </div>
+    </header>
+
+    <!-- Announcement Banner -->
+    <div class="announcement-bar">
+      <div class="announcement-track">
+        <div class="announcement-item">
+          <span>🔥</span>
+          <span>Welcome Bonus: Get 5000 coins on your first deposit!</span>
+        </div>
+        <div class="announcement-item">
+          <span>🎁</span>
+          <span>Daily Bonus: Free 500 Coins available now!</span>
+        </div>
+        <div class="announcement-item">
+          <span>💎</span>
+          <span>VIP Room Unlocked for High Rollers!</span>
+        </div>
+        <div class="announcement-item">
+          <span>🏆</span>
+          <span>Royal Championship Starting Soon!</span>
+        </div>
+        <div class="announcement-item">
+          <span>🔥</span>
+          <span>Welcome Bonus: Get 5000 coins on your first deposit!</span>
         </div>
       </div>
     </div>
 
-    <!-- Balance Bar -->
-    <div class="balance-bar">
-      <div class="balance-left">
-        <div class="balance-icon">💰</div>
-        <span class="balance-amount" id="balanceDisplay">1,000</span>
+    <!-- Lobby Content -->
+    <div class="lobby-content">
+      <div class="games-section">
+        <h2 class="section-title">
+          <span>🎮</span>
+          <span>Featured Game</span>
+        </h2>
+        
+        <div class="games-grid">
+          <div class="game-tile hot" onclick="enterGame()">
+            <div class="game-icon">👑</div>
+            <div class="game-name">Royal Match</div>
+            <div class="game-stats">
+              <div class="online-count">
+                <span class="online-dot"></span>
+                <span>2,847 online</span>
+              </div>
+              <div class="entry-fee">Min: 10</div>
+            </div>
+            <button class="play-btn">Play Now</button>
+          </div>
+        </div>
       </div>
-      <button class="add-coins-btn" id="addCoinsBtn">
-        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+
+      <!-- Leaderboard -->
+      <aside class="leaderboard-panel">
+        <div class="leaderboard-header">
+          <span>🏆</span>
+          <span class="leaderboard-title">Today's Champions</span>
+        </div>
+        
+        <div class="leaderboard-list" id="leaderboardList"></div>
+      </aside>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" onclick="setActiveNav(this)">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">Home</span>
       </button>
-    </div>
-
-    <!-- Stats Panel -->
-    <div class="stats-panel">
-      <div class="stat-box">
-        <div class="stat-label">Current Win</div>
-        <div class="stat-value win" id="currentWin">0</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Multiplier</div>
-        <div class="stat-value multiplier" id="multiplier">1.00x</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Pairs</div>
-        <div class="stat-value pairs" id="pairsDisplay">0/12</div>
-      </div>
-    </div>
-
-    <!-- Bet Panel -->
-    <div class="bet-panel" id="betPanel">
-      <div class="bet-panel-title">Select Your Bet</div>
-      <div class="bet-options" id="betOptions">
-        <button class="bet-option" data-bet="10">10</button>
-        <button class="bet-option" data-bet="25">25</button>
-        <button class="bet-option" data-bet="50">50</button>
-        <button class="bet-option" data-bet="100">100</button>
-        <button class="bet-option" data-bet="250">250</button>
-        <button class="bet-option" data-bet="500">500</button>
-      </div>
-      <div class="custom-bet-row">
-        <input type="number" class="custom-bet-input" id="customBet" placeholder="Custom bet" min="10" max="10000">
-        <button class="custom-bet-btn" id="customBetBtn">SET</button>
-      </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons" id="actionButtons">
-      <button class="action-btn start-btn" id="startBtn">START GAME</button>
-      <button class="action-btn cashout-btn hidden" id="cashoutBtn">CASH OUT</button>
-      <button class="action-btn continue-btn hidden" id="continueBtn">CONTINUE</button>
-    </div>
-
-    <!-- Message Display -->
-    <div class="message-display" id="messageDisplay">
-      <p class="message-text" id="messageText">Select your bet and tap START GAME</p>
-    </div>
-
-    <!-- Progress Section -->
-    <div class="progress-section hidden" id="progressSection">
-      <div class="progress-header">
-        <span class="progress-label">Progress</span>
-        <span class="progress-value" id="pairsMatched">0 / 12</span>
-      </div>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-      </div>
-      <div class="multiplier-display" id="multiplierDisplay">
-        <!-- Multipliers will be generated by JS -->
-      </div>
-    </div>
-
-    <!-- Card Grid -->
-    <div class="card-grid" id="cardGrid">
-      <!-- Cards will be generated by JavaScript -->
-    </div>
-
-    <!-- Sound Toggle -->
-    <button class="sound-toggle" id="soundToggle" style="position: fixed; bottom: 15px; right: 15px; z-index: 50;">
-      <svg viewBox="0 0 24 24" id="soundIcon">
-        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-      </svg>
-    </button>
+      <button class="nav-item" onclick="openOffers(); setActiveNav(this)">
+        <span class="nav-icon">🎁</span>
+        <span class="nav-label">Offers</span>
+      </button>
+      <button class="nav-item" onclick="openModal('withdrawModal'); setActiveNav(this)">
+        <span class="nav-icon">💸</span>
+        <span class="nav-label">Withdraw</span>
+      </button>
+      <button class="nav-item" onclick="alert('Shop coming soon!'); setActiveNav(this)">
+        <span class="nav-icon">🛒</span>
+        <span class="nav-label">Shop</span>
+      </button>
+      <button class="nav-item" onclick="alert('Events coming soon!'); setActiveNav(this)">
+        <span class="nav-icon">🎉</span>
+        <span class="nav-label">Events</span>
+      </button>
+    </nav>
   </div>
 
-  <!-- Win Overlay -->
+  <!-- Game View -->
+  <div class="game-view" id="gameView">
+    <button class="back-to-lobby" onclick="exitGame()">
+      <span>←</span>
+      <span>Lobby</span>
+    </button>
+
+    <div class="game-screen" id="gameScreen">
+      <div class="game-header">
+        <div class="game-logo-title">
+          <div class="logo-badge">RM</div>
+          <div class="title-text">
+            <span class="main">ROYAL MATCH</span>
+            <span class="sub">Match 12 Pairs to Win</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="balance-bar">
+        <div class="balance-left">
+          <div class="balance-icon">💰</div>
+          <span class="balance-amount" id="balanceDisplay">1,000</span>
+        </div>
+        <button class="add-coins-btn" id="addCoinsBtn" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="#fff">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="stats-panel">
+        <div class="stat-box">
+          <div class="stat-label">Current Win</div>
+          <div class="stat-value win" id="currentWin">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Multiplier</div>
+          <div class="stat-value multiplier" id="multiplier">1.00x</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Pairs</div>
+          <div class="stat-value pairs" id="pairsDisplay">0/12</div>
+        </div>
+      </div>
+
+      <div class="bet-panel" id="betPanel">
+        <div class="bet-panel-title">Select Your Bet</div>
+        <div class="bet-options" id="betOptions">
+          <button class="bet-option" data-bet="10" type="button">10</button>
+          <button class="bet-option" data-bet="25" type="button">25</button>
+          <button class="bet-option" data-bet="50" type="button">50</button>
+          <button class="bet-option" data-bet="100" type="button">100</button>
+          <button class="bet-option" data-bet="250" type="button">250</button>
+          <button class="bet-option" data-bet="500" type="button">500</button>
+        </div>
+        <div class="custom-bet-row">
+          <input type="number" class="custom-bet-input" id="customBet" placeholder="Custom bet" min="10" max="10000" />
+          <button class="custom-bet-btn" id="customBetBtn" type="button">SET</button>
+        </div>
+      </div>
+
+      <div class="action-buttons" id="actionButtons">
+        <button class="action-btn start-btn" id="startBtn" type="button">START GAME</button>
+        <button class="action-btn cashout-btn hidden" id="cashoutBtn" type="button">CASH OUT</button>
+        <button class="action-btn continue-btn hidden" id="continueBtn" type="button">CONTINUE</button>
+      </div>
+
+      <div class="message-display" id="messageDisplay">
+        <p class="message-text" id="messageText">Select your bet and tap START GAME</p>
+      </div>
+
+      <div class="progress-section hidden" id="progressSection">
+        <div class="progress-header">
+          <span class="progress-label">Progress</span>
+          <span class="progress-value" id="pairsMatched">0 / 12</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="multiplier-display" id="multiplierDisplay"></div>
+      </div>
+
+      <div class="card-grid" id="cardGrid"></div>
+    </div>
+  </div>
+
+  <!-- Win/Lose Overlays -->
   <div class="win-overlay" id="winOverlay">
     <div class="win-label">YOU WON</div>
     <div class="win-amount" id="winAmountDisplay">0</div>
     <div class="win-multiplier" id="winMultiplierDisplay">0x</div>
-    <button class="play-again-btn" id="playAgainWin">PLAY AGAIN</button>
+    <button class="play-again-btn" id="playAgainWin" type="button">PLAY AGAIN</button>
   </div>
 
-  <!-- Lose Overlay -->
   <div class="lose-overlay" id="loseOverlay">
     <div class="lose-icon">💣</div>
     <div class="lose-text">BOOM!</div>
     <div class="lose-subtext" id="loseSubtext">You lost everything</div>
-    <button class="play-again-btn" id="playAgainLose">TRY AGAIN</button>
+    <button class="play-again-btn" id="playAgainLose" type="button">TRY AGAIN</button>
   </div>
 
   <script>
-    // ==================== AUDIO SYSTEM ====================
+    // User Authentication System
+    let currentUser = null;
+    let tempUserData = null;
+
+    // Avatar options
+    const avatarOptions = ['👤', '👑', '🎩', '🦁', '🦅', '🐆', '🎰', '💎'];
+
+    // Check for existing session
+    function checkExistingSession() {
+      const savedUser = localStorage.getItem('royalMatchUser');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        updateHeaderForUser();
+      }
+    }
+
+    // Switch Auth Tabs
+    function switchAuthTab(tab) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+      
+      if (tab === 'login') {
+        document.querySelectorAll('.auth-tab')[0].classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+      } else {
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+      }
+      audio.playClick();
+    }
+
+    // Handle Registration
+    function handleRegister(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('regUsername').value;
+      const phone = document.getElementById('regPhone').value;
+      const email = document.getElementById('regEmail').value;
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+      const province = document.getElementById('regProvince').value;
+      const language = document.getElementById('regLanguage').value;
+      const referral = document.getElementById('regReferral').value;
+
+      if (password !== confirmPassword) {
+        alert('Passwords do not match!');
+        return;
+      }
+
+      // Store temp data for OTP
+      tempUserData = {
+        username,
+        phone,
+        email,
+        password,
+        province,
+        language,
+        referral,
+        avatar: '👤',
+        isGuest: false,
+        id: 'RM' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+        stats: { games: 0, wins: 0, winRate: 0 }
+      };
+
+      // Show OTP Section
+      document.getElementById('otpPhone').textContent = phone;
+      document.getElementById('loginForm').classList.remove('active');
+      document.getElementById('registerForm').classList.remove('active');
+      document.getElementById('otpSection').classList.add('active');
+      
+      // Simulate sending OTP
+      setTimeout(() => {
+        alert('Demo: OTP is 123456');
+      }, 500);
+    }
+
+    // OTP Input Handling
+    function moveOtp(input, index) {
+      if (input.value.length === 1) {
+        const inputs = document.querySelectorAll('.otp-input');
+        if (index < inputs.length) {
+          inputs[index].focus();
+        }
+      }
+    }
+
+    function validateOtpInput(input) {
+      input.value = input.value.replace(/[^0-9]/g, '');
+    }
+
+    function verifyOtp() {
+      const inputs = document.querySelectorAll('.otp-input');
+      let otp = '';
+      inputs.forEach(input => otp += input.value);
+      
+      if (otp === '123456') { // Demo OTP
+        completeRegistration();
+      } else if (otp.length === 6) {
+        alert('Invalid OTP. Demo OTP is 123456');
+      }
+    }
+
+    function resendOtp() {
+      alert('Demo: New OTP is 123456');
+    }
+
+    function completeRegistration() {
+      currentUser = tempUserData;
+      saveUserData();
+      closeAuth();
+      updateHeaderForUser();
+      showPopup('Registration Successful!', 'Welcome to Royal Match, ' + currentUser.username + '!');
+    }
+
+    // Handle Login
+    function handleLogin(e) {
+      e.preventDefault();
+      const phone = document.getElementById('loginPhone').value;
+      const password = document.getElementById('loginPassword').value;
+
+      // Demo login - accept any for demo, or check stored users
+      const savedUsers = JSON.parse(localStorage.getItem('royalMatchUsers') || '[]');
+      const user = savedUsers.find(u => u.phone === phone && u.password === password);
+
+      if (user || (phone && password)) { // Allow demo login
+        currentUser = user || {
+          username: 'Player_' + Math.floor(Math.random() * 9999),
+          phone: phone,
+          avatar: '👤',
+          isGuest: false,
+          id: 'RM' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+          stats: { games: 0, wins: 0, winRate: 0 }
+        };
+        
+        if (!user) saveUserData();
+        closeAuth();
+        updateHeaderForUser();
+        showPopup('Login Successful!', 'Welcome back, ' + currentUser.username + '!');
+      } else {
+        alert('Invalid credentials!');
+      }
+    }
+
+    // Guest Login
+    function guestLogin() {
+      currentUser = {
+        username: 'Guest_' + Math.floor(Math.random() * 9999),
+        phone: null,
+        avatar: '👤',
+        isGuest: true,
+        id: 'GUEST' + Math.floor(Math.random() * 999),
+        stats: { games: 0, wins: 0, winRate: 0 }
+      };
+      
+      closeAuth();
+      updateHeaderForUser();
+    }
+
+    // Skip Auth (Demo Mode)
+    function skipAuth() {
+      if (!currentUser) {
+        guestLogin();
+      } else {
+        closeAuth();
+      }
+    }
+
+    function closeAuth() {
+      document.getElementById('authOverlay').classList.remove('active');
+      audio.playClick();
+    }
+
+    function saveUserData() {
+      localStorage.setItem('royalMatchUser', JSON.stringify(currentUser));
+      
+      // Also save to users list
+      const users = JSON.parse(localStorage.getItem('royalMatchUsers') || '[]');
+      const existingIndex = users.findIndex(u => u.phone === currentUser.phone);
+      if (existingIndex >= 0) {
+        users[existingIndex] = currentUser;
+      } else {
+        users.push(currentUser);
+      }
+      localStorage.setItem('royalMatchUsers', JSON.stringify(users));
+    }
+
+    function updateHeaderForUser() {
+      if (currentUser) {
+        document.getElementById('headerUsername').textContent = currentUser.username;
+        document.getElementById('headerAvatarIcon').textContent = currentUser.avatar;
+        document.getElementById('userStatus').textContent = currentUser.isGuest ? 'Guest Mode' : 'Verified Player';
+        
+        if (currentUser.isGuest) {
+          document.getElementById('logoutBtn').textContent = 'Login to Save Progress';
+        } else {
+          document.getElementById('logoutBtn').textContent = 'Logout';
+        }
+      }
+    }
+
+    // Profile Functions
+    function openProfile() {
+      if (!currentUser) {
+        document.getElementById('authOverlay').classList.add('active');
+        return;
+      }
+      
+      document.getElementById('profileModal').classList.add('active');
+      document.getElementById('profileNameDisplay').textContent = currentUser.username;
+      document.getElementById('profileIdDisplay').textContent = 'ID: ' + currentUser.id;
+      document.getElementById('currentAvatarDisplay').textContent = currentUser.avatar;
+      document.getElementById('editUsername').value = currentUser.username;
+      document.getElementById('editProvince').value = currentUser.province || 'Punjab';
+      document.getElementById('editLanguage').value = currentUser.language || 'English';
+      
+      // Update stats
+      document.getElementById('profileGames').textContent = currentUser.stats?.games || 0;
+      document.getElementById('profileWins').textContent = currentUser.stats?.wins || 0;
+      const winRate = currentUser.stats?.games > 0 
+        ? Math.round((currentUser.stats.wins / currentUser.stats.games) * 100) 
+        : 0;
+      document.getElementById('profileWinRate').textContent = winRate + '%';
+      
+      audio.playClick();
+    }
+
+    function closeProfile() {
+      document.getElementById('profileModal').classList.remove('active');
+      document.getElementById('avatarSelection').style.display = 'none';
+    }
+
+    function toggleAvatarSelection() {
+      const selection = document.getElementById('avatarSelection');
+      selection.style.display = selection.style.display === 'none' ? 'grid' : 'none';
+    }
+
+    function selectAvatar(avatar) {
+      currentUser.avatar = avatar;
+      document.getElementById('currentAvatarDisplay').textContent = avatar;
+      document.getElementById('headerAvatarIcon').textContent = avatar;
+      saveUserData();
+      audio.playClick();
+    }
+
+    function saveProfile(e) {
+      e.preventDefault();
+      currentUser.username = document.getElementById('editUsername').value;
+      currentUser.province = document.getElementById('editProvince').value;
+      currentUser.language = document.getElementById('editLanguage').value;
+      saveUserData();
+      updateHeaderForUser();
+      closeProfile();
+      showPopup('Profile Updated!', 'Your changes have been saved.');
+    }
+
+    function logout() {
+      if (currentUser?.isGuest) {
+        document.getElementById('authOverlay').classList.add('active');
+        closeProfile();
+        return;
+      }
+      
+      currentUser = null;
+      localStorage.removeItem('royalMatchUser');
+      closeProfile();
+      document.getElementById('headerUsername').textContent = 'Guest';
+      document.getElementById('headerAvatarIcon').textContent = '👤';
+      document.getElementById('userStatus').textContent = 'Tap to login';
+      document.getElementById('authOverlay').classList.add('active');
+    }
+
+    // Show Popup
+    function showPopup(title, text) {
+      document.querySelector('.popup-title').textContent = title;
+      document.querySelector('.popup-text').textContent = text;
+      document.getElementById('successPopup').classList.add('active');
+    }
+
+    function closePopup() {
+      document.getElementById('successPopup').classList.remove('active');
+    }
+
+    // Leaderboard Data
+    const championNames = [
+      "Alex_Johnson", "Sarah_Williams", "Mike_Chen", "Emma_Davis",
+      "John_Smith", "Lisa_Anderson", "David_Brown", "Amy_Wilson",
+      "Chris_Taylor", "Jessica_Martin", "Ryan_Garcia", "Laura_Lee",
+      "Daniel_Kim", "Sophie_Clark", "Kevin_Wang", "Rachel_Adams"
+    ];
+
+    let leaderboardInterval;
+
+    // Initialize Particles
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 10 + 's';
+        particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+        container.appendChild(particle);
+      }
+    }
+
+    // Audio System
     class AudioSystem {
       constructor() {
         this.muted = false;
@@ -1499,19 +3829,14 @@
       playTone(frequency, duration, type = 'sine', volume = 0.3) {
         if (this.muted || !this.audioContext) return;
         this.resumeContext();
-
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
-
         oscillator.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
-
         oscillator.frequency.value = frequency;
         oscillator.type = type;
-
         gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
-
         oscillator.start(this.audioContext.currentTime);
         oscillator.stop(this.audioContext.currentTime + duration);
       }
@@ -1560,20 +3885,6 @@
         }
       }
 
-      playLoading() {
-        const notes = [262, 330, 392, 523];
-        notes.forEach((note, i) => {
-          setTimeout(() => this.playTone(note, 0.15, 'sine', 0.15), i * 150);
-        });
-      }
-
-      playLaunch() {
-        const notes = [392, 523, 659, 784, 1047];
-        notes.forEach((note, i) => {
-          setTimeout(() => this.playTone(note, 0.2, 'sine', 0.25), i * 100);
-        });
-      }
-
       toggle() {
         this.muted = !this.muted;
         return this.muted;
@@ -1582,122 +3893,227 @@
 
     const audio = new AudioSystem();
 
-    // ==================== APP LAUNCHER ====================
-    const appLauncher = document.getElementById('appLauncher');
-    const launcherLogo = document.getElementById('launcherLogo');
-    const launcherParticles = document.getElementById('launcherParticles');
-    const blackTransition = document.getElementById('blackTransition');
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loadingBar = document.getElementById('loadingBar');
-    const loadingPercentage = document.getElementById('loadingPercentage');
-    const particlesContainer = document.getElementById('particlesContainer');
-    const tipText = document.getElementById('tipText');
-    const gameScreen = document.getElementById('gameScreen');
+    // Modal Functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+      audio.playClick();
+    }
 
-    const tips = [
-      "Match 12 pairs to win big! Avoid the 4 hidden bombs!",
-      "The more pairs you match, the higher your multiplier!",
-      "Cash out anytime to secure your winnings!",
-      "4 bombs are hidden - be careful!",
-      "Complete all 12 pairs for the ultimate 50x prize!",
-      "Higher bets mean bigger potential wins!",
-      "Watch the multiplier bar to track your progress!"
-    ];
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+      audio.playClick();
+    }
 
-    // Create launcher particles
-    function createLauncherParticles() {
-      for (let i = 0; i < 40; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'launcher-particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 5 + 's';
-        particle.style.animationDuration = (4 + Math.random() * 3) + 's';
-        launcherParticles.appendChild(particle);
+    function toggleSound() {
+      const toggle = document.getElementById('soundToggle');
+      toggle.classList.toggle('active');
+      const isMuted = audio.toggle();
+      console.log('Sound:', isMuted ? 'OFF' : 'ON');
+    }
+
+    function showThemeSelector() {
+      document.getElementById('themeSelector').classList.toggle('active');
+      audio.playClick();
+    }
+
+    function changeTheme(themeName) {
+      document.body.className = 'theme-' + themeName;
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.closest('.theme-btn').classList.add('active');
+      audio.playClick();
+    }
+
+    function setActiveNav(element) {
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      element.classList.add('active');
+    }
+
+    function showDepositMessage() {
+      alert('Deposit system coming soon! Contact support for early access.');
+      audio.playClick();
+    }
+
+    // Offers Section Functions
+    function openOffers() {
+      document.getElementById('offersSection').classList.add('active');
+      audio.playClick();
+    }
+
+    function closeOffers() {
+      document.getElementById('offersSection').classList.remove('active');
+      audio.playClick();
+    }
+
+    function openMissions() {
+      document.getElementById('missionsSection').classList.add('active');
+      closeOffers();
+      audio.playClick();
+    }
+
+    function closeMissions() {
+      document.getElementById('missionsSection').classList.remove('active');
+      openOffers();
+    }
+
+    function openEvents() {
+      document.getElementById('eventsSection').classList.add('active');
+      closeOffers();
+      audio.playClick();
+    }
+
+    function closeEvents() {
+      document.getElementById('eventsSection').classList.remove('active');
+      openOffers();
+    }
+
+    function openVIP() {
+      alert('VIP Club coming soon! Play more to unlock VIP status.');
+      audio.playClick();
+    }
+
+    function openSupport() {
+      document.getElementById('supportSection').classList.add('active');
+      closeOffers();
+      audio.playClick();
+    }
+
+    function closeSupport() {
+      document.getElementById('supportSection').classList.remove('active');
+      openOffers();
+    }
+
+    function sendSupportMessage() {
+      const name = document.getElementById('supportName').value;
+      const subject = document.getElementById('supportSubject').value;
+      const message = document.getElementById('supportMessage').value;
+
+      if (!name || !subject || !message) {
+        alert('Please fill in all fields');
+        return;
       }
+
+      showPopup('Message Sent!', 'Your message has been sent. We will contact you soon.');
+      document.getElementById('supportName').value = '';
+      document.getElementById('supportSubject').value = '';
+      document.getElementById('supportMessage').value = '';
     }
 
-    // Create loading particles
-    function createLoadingParticles() {
-      for (let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDelay = Math.random() * 4 + 's';
-        particle.style.animationDuration = (3 + Math.random() * 2) + 's';
-        particlesContainer.appendChild(particle);
+    // Leaderboard Functions
+    function getRandomWinAmount() {
+      return Math.floor(Math.random() * (99999 - 9990 + 1)) + 9990;
+    }
+
+    function formatWinAmount(amount) {
+      if (amount >= 1000) {
+        return Math.floor(amount / 1000) + 'k';
       }
+      return amount.toString();
     }
 
-    // Handle logo click - show black screen then loading
-    async function handleLogoClick() {
-      audio.playLaunch();
-      
-      // Add click animation
-      launcherLogo.style.transform = 'scale(0.9)';
-      
-      // Hide launcher
-      setTimeout(() => {
-        appLauncher.classList.add('hidden');
-        
-        // Show black transition
-        blackTransition.classList.add('active');
-        
-        // After 1.2 seconds, show loading screen
-        setTimeout(() => {
-          blackTransition.classList.remove('active');
-          loadingScreen.classList.add('visible');
-          animateLoading();
-        }, 1200);
-      }, 200);
+    function getRandomChampions() {
+      const shuffled = [...championNames].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, 7).map((name, index) => ({
+        name: name,
+        win: formatWinAmount(getRandomWinAmount()),
+        rank: index + 1
+      }));
     }
 
-    // Animate loading
-    async function animateLoading() {
-      createLoadingParticles();
+    function renderLeaderboard() {
+      const list = document.getElementById('leaderboardList');
+      const champions = getRandomChampions();
       
-      const loadingSteps = [
-        { progress: 15, text: "INITIALIZING GAME ENGINE..." },
-        { progress: 30, text: "LOADING CARD ASSETS..." },
-        { progress: 45, text: "GENERATING 28 CARDS..." },
-        { progress: 60, text: "CALIBRATING MULTIPLIERS..." },
-        { progress: 75, text: "SETTING UP GAME BOARD..." },
-        { progress: 90, text: "FINALIZING INTERFACE..." },
-        { progress: 100, text: "READY TO PLAY!" }
-      ];
-
-      let tipIndex = 0;
-      const tipInterval = setInterval(() => {
-        tipText.textContent = tips[tipIndex % tips.length];
-        tipIndex++;
-      }, 3000);
-
-      for (const step of loadingSteps) {
-        await new Promise(resolve => setTimeout(resolve, 350 + Math.random() * 250));
-        loadingBar.style.width = step.progress + '%';
-        loadingPercentage.textContent = step.progress + '%';
-        document.querySelector('.loading-text').textContent = step.text;
+      list.innerHTML = champions.map((champion, index) => {
+        let rankClass = '';
+        let avatar = '🎯';
         
-        if (step.progress <= 100 && step.progress > 0) {
-          audio.playLoading();
+        if (index === 0) {
+          rankClass = 'gold';
+          avatar = '👑';
+        } else if (index === 1) {
+          rankClass = 'silver';
+          avatar = '🥈';
+        } else if (index === 2) {
+          rankClass = 'bronze';
+          avatar = '🥉';
         }
-      }
 
-      clearInterval(tipInterval);
-
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      loadingScreen.classList.remove('visible');
-      loadingScreen.classList.add('hidden');
-      gameScreen.classList.add('visible');
+        return `
+          <div class="leaderboard-item">
+            <div class="rank-number ${rankClass}">${champion.rank}</div>
+            <div class="leader-avatar">${avatar}</div>
+            <div class="leader-info">
+              <div class="leader-name">${champion.name}</div>
+              <div class="leader-win">${champion.win} won</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
-    // ==================== GAME CONFIGURATION ====================
+    function startLeaderboardRotation() {
+      renderLeaderboard();
+      leaderboardInterval = setInterval(() => {
+        renderLeaderboard();
+      }, 5000);
+    }
+
+    // Random Mission Reward Generator
+    function setRandomMissionRewards() {
+      const reward1 = Math.floor(Math.random() * (5000 - 50 + 1)) + 50;
+      document.getElementById('mission1Reward').textContent = `Bonus: ${reward1} Coins`;
+    }
+
+    // Navigation
+    function enterGame() {
+      const loader = document.getElementById('gameEntryLoader');
+      loader.classList.add('active');
+      audio.playClick();
+      
+      setTimeout(() => {
+        loader.classList.remove('active');
+        document.getElementById('gameView').classList.add('active');
+      }, 10000);
+    }
+
+    function exitGame() {
+      document.getElementById('gameView').classList.remove('active');
+      audio.playClick();
+    }
+
+    // Splash Screen - 10 seconds then show Auth
+    function initApp() {
+      createParticles();
+      startLeaderboardRotation();
+      setRandomMissionRewards();
+      checkExistingSession();
+      
+      setTimeout(() => {
+        document.getElementById('splashScreen').classList.add('fade-out');
+        
+        setTimeout(() => {
+          document.getElementById('splashScreen').style.display = 'none';
+          
+          // Show auth if not logged in
+          if (!currentUser) {
+            document.getElementById('authOverlay').classList.add('active');
+          } else {
+            document.getElementById('appContainer').classList.add('visible');
+          }
+        }, 700);
+      }, 10000);
+    }
+
+    // Original Game Logic
     const CONFIG = {
-      TOTAL_CARDS: 28,          // 12 pairs (24 cards) + 4 bombs = 28 cards
-      PAIRS_COUNT: 12,          // 12 matching pairs
-      BOMB_COUNT: 4,             // 4 bomb cards
-      GRID_COLUMNS: 7,           // 4 rows x 7 columns = 28 cards
-      // Progressive multipliers for each pair matched (1st match = 1.5x)
+      TOTAL_CARDS: 28,
+      PAIRS_COUNT: 12,
+      BOMB_COUNT: 4,
+      GRID_COLUMNS: 7,
       MULTIPLIERS: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0, 22.0, 35.0, 50.0],
       INITIAL_BALANCE: 1000,
       MIN_BET: 10,
@@ -1706,7 +4122,6 @@
       SHUFFLE_ROUNDS: 10
     };
 
-    // Card values - 12 different cards for 12 pairs
     const CARD_VALUES = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3'];
     const CARD_SUITS = [
       { symbol: '♥', color: 'red' },
@@ -1715,7 +4130,6 @@
       { symbol: '♣', color: 'black' }
     ];
 
-    // ==================== GAME STATE ====================
     const gameState = {
       balance: CONFIG.INITIAL_BALANCE,
       currentBet: 0,
@@ -1730,9 +4144,10 @@
       matchedCards: new Set()
     };
 
-    // ==================== DOM ELEMENTS ====================
     const elements = {
       balanceDisplay: document.getElementById('balanceDisplay'),
+      lobbyBalance: document.getElementById('lobbyBalance'),
+      withdrawBalance: document.getElementById('withdrawBalance'),
       currentWin: document.getElementById('currentWin'),
       multiplier: document.getElementById('multiplier'),
       pairsDisplay: document.getElementById('pairsDisplay'),
@@ -1743,7 +4158,6 @@
       startBtn: document.getElementById('startBtn'),
       cashoutBtn: document.getElementById('cashoutBtn'),
       continueBtn: document.getElementById('continueBtn'),
-      messageDisplay: document.getElementById('messageDisplay'),
       messageText: document.getElementById('messageText'),
       progressSection: document.getElementById('progressSection'),
       pairsMatched: document.getElementById('pairsMatched'),
@@ -1757,12 +4171,9 @@
       loseOverlay: document.getElementById('loseOverlay'),
       loseSubtext: document.getElementById('loseSubtext'),
       playAgainLose: document.getElementById('playAgainLose'),
-      soundToggle: document.getElementById('soundToggle'),
-      soundIcon: document.getElementById('soundIcon'),
       addCoinsBtn: document.getElementById('addCoinsBtn')
     };
 
-    // ==================== UTILITY FUNCTIONS ====================
     function shuffleArray(array) {
       const shuffled = [...array];
       for (let pass = 0; pass < 3; pass++) {
@@ -1785,32 +4196,25 @@
       if (type === 'lose') elements.messageText.classList.add('lose');
     }
 
-    // Generate multiplier display
     function generateMultiplierDisplay() {
       const container = elements.multiplierDisplay;
       container.innerHTML = '';
-      
       CONFIG.MULTIPLIERS.forEach((mult, index) => {
         const item = document.createElement('span');
         item.className = 'multiplier-item';
         item.dataset.step = index + 1;
-        
         if (index === CONFIG.MULTIPLIERS.length - 1) {
           item.classList.add('final');
           item.textContent = `ALL:${mult}x`;
         } else {
           item.textContent = `${index + 1}:${mult}x`;
         }
-        
         container.appendChild(item);
       });
     }
 
-    // ==================== CARD GENERATION ====================
     function generateCards() {
       const cards = [];
-      
-      // Create 12 pairs (24 cards total)
       for (let i = 0; i < CONFIG.PAIRS_COUNT; i++) {
         const value = CARD_VALUES[i];
         const suit = CARD_SUITS[i % CARD_SUITS.length];
@@ -1818,8 +4222,6 @@
         cards.push({ ...card, id: `card-${i}-a` });
         cards.push({ ...card, id: `card-${i}-b` });
       }
-      
-      // Add 4 bombs
       for (let i = 0; i < CONFIG.BOMB_COUNT; i++) {
         cards.push({
           id: `bomb-${i}`,
@@ -1828,17 +4230,12 @@
           isBomb: true
         });
       }
-      
-      // Shuffle cards multiple times for extra randomness
       let shuffledCards = shuffleArray(cards);
-      
-      // Additional random swaps
       for (let i = 0; i < 50; i++) {
         const idx1 = Math.floor(Math.random() * shuffledCards.length);
         const idx2 = Math.floor(Math.random() * shuffledCards.length);
         [shuffledCards[idx1], shuffledCards[idx2]] = [shuffledCards[idx2], shuffledCards[idx1]];
       }
-      
       return shuffledCards;
     }
 
@@ -1849,7 +4246,7 @@
       cardEl.dataset.id = card.id;
       cardEl.dataset.value = card.value;
       cardEl.dataset.isBomb = card.isBomb;
-      
+
       if (card.isBomb) {
         cardEl.innerHTML = `
           <div class="card-face card-back">
@@ -1891,35 +4288,27 @@
           </div>
         `;
       }
-      
+
       cardEl.addEventListener('click', () => handleCardClick(cardEl));
-      cardEl.addEventListener('touchstart', () => {}, { passive: true });
       return cardEl;
     }
 
-    // ==================== SHUFFLE ANIMATION ====================
     async function animateShuffle() {
       const cards = elements.cardGrid.querySelectorAll('.card');
-      
       for (let round = 0; round < CONFIG.SHUFFLE_ROUNDS; round++) {
         elements.cardGrid.classList.add('shuffling');
         audio.playShuffle();
-        
-        await new Promise(resolve => setTimeout(resolve, 120));
-        
-        cards.forEach(card => {
+        await new Promise((resolve) => setTimeout(resolve, 120));
+        cards.forEach((card) => {
           card.style.order = Math.floor(Math.random() * cards.length);
         });
       }
-      
       elements.cardGrid.classList.remove('shuffling');
-      
       cards.forEach((card, index) => {
         card.style.order = index;
       });
     }
 
-    // ==================== GAME LOGIC ====================
     function selectBet(amount) {
       if (gameState.isPlaying) return;
       if (amount < CONFIG.MIN_BET || amount > CONFIG.MAX_BET) {
@@ -1930,7 +4319,6 @@
         setMessage('Insufficient balance!');
         return;
       }
-      
       gameState.currentBet = amount;
       audio.playClick();
       updateBetSelection();
@@ -1939,8 +4327,8 @@
 
     function updateBetSelection() {
       const betButtons = elements.betOptions.querySelectorAll('.bet-option');
-      betButtons.forEach(btn => {
-        const betValue = parseInt(btn.dataset.bet);
+      betButtons.forEach((btn) => {
+        const betValue = parseInt(btn.dataset.bet, 10);
         btn.classList.toggle('selected', betValue === gameState.currentBet);
         btn.disabled = gameState.isPlaying;
       });
@@ -1952,6 +4340,13 @@
         return;
       }
       
+      // Update user stats
+      if (currentUser) {
+        currentUser.stats = currentUser.stats || { games: 0, wins: 0, winRate: 0 };
+        currentUser.stats.games++;
+        saveUserData();
+      }
+      
       gameState.balance -= gameState.currentBet;
       gameState.currentWin = 0;
       gameState.multiplier = 1;
@@ -1961,24 +4356,21 @@
       gameState.firstCard = null;
       gameState.secondCard = null;
       gameState.matchedCards.clear();
-      
-      // Generate and render cards
+
       gameState.cards = generateCards();
       renderCards();
-      
-      // Update UI
+
       updateUI();
       elements.betPanel.classList.add('hidden');
       elements.startBtn.classList.add('hidden');
       elements.progressSection.classList.remove('hidden');
       generateMultiplierDisplay();
       updateProgress();
-      
+
       setMessage('Shuffling cards...');
-      
-      // Animate shuffle
+
       await animateShuffle();
-      
+
       gameState.canFlip = true;
       setMessage('Find matching pairs! Avoid the bombs!');
       audio.playClick();
@@ -1996,23 +4388,23 @@
       if (!gameState.canFlip) return;
       if (cardEl.classList.contains('flipped')) return;
       if (cardEl.classList.contains('matched')) return;
-      
+
       const isBomb = cardEl.dataset.isBomb === 'true';
-      
+
       cardEl.classList.add('flipped');
       audio.playCardFlip();
-      
+
       if (isBomb) {
         setTimeout(() => handleBomb(), 400);
         return;
       }
-      
+
       if (!gameState.firstCard) {
         gameState.firstCard = cardEl;
       } else {
         gameState.secondCard = cardEl;
         gameState.canFlip = false;
-        
+
         setTimeout(() => checkMatch(), 500);
       }
     }
@@ -2022,37 +4414,38 @@
       const secondValue = gameState.secondCard.dataset.value;
       const firstId = gameState.firstCard.dataset.id;
       const secondId = gameState.secondCard.dataset.id;
-      
+
       if (firstValue === secondValue && firstId !== secondId) {
-        // Match found!
         gameState.firstCard.classList.add('matched');
         gameState.secondCard.classList.add('matched');
         gameState.matchedCards.add(firstId);
         gameState.matchedCards.add(secondId);
-        
+
         gameState.pairsMatched++;
         const multiplierIndex = Math.min(gameState.pairsMatched - 1, CONFIG.MULTIPLIERS.length - 1);
         gameState.multiplier = CONFIG.MULTIPLIERS[multiplierIndex];
         gameState.currentWin = Math.floor(gameState.currentBet * gameState.multiplier);
-        
+
         audio.playMatch();
         updateUI();
         updateProgress();
-        
+
         if (gameState.pairsMatched >= CONFIG.PAIRS_COUNT) {
-          // All pairs matched - MAX WIN!
           gameState.currentWin = Math.floor(gameState.currentBet * CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1]);
+          if (currentUser) {
+            currentUser.stats.wins++;
+            saveUserData();
+          }
           setTimeout(() => handleMaxWin(), 400);
         } else {
           setMessage(`Match! Win: ${formatNumber(gameState.currentWin)} (${gameState.multiplier}x)`, 'win');
           showCashoutOption();
         }
-        
+
         gameState.firstCard = null;
         gameState.secondCard = null;
         gameState.canFlip = true;
       } else {
-        // No match
         setTimeout(() => {
           gameState.firstCard.classList.remove('flipped');
           gameState.secondCard.classList.remove('flipped');
@@ -2072,14 +4465,19 @@
 
     function cashout() {
       if (gameState.currentWin <= 0) return;
-      
       gameState.balance += gameState.currentWin;
-      audio.playCashout();
       
+      if (currentUser) {
+        currentUser.stats.wins++;
+        saveUserData();
+      }
+      
+      audio.playCashout();
+
       elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
       elements.winMultiplierDisplay.textContent = `${gameState.multiplier}x`;
       elements.winOverlay.classList.add('active');
-      
+
       endRound();
     }
 
@@ -2093,28 +4491,27 @@
 
     function handleBomb() {
       audio.playBomb();
-      
       elements.loseSubtext.textContent = `You lost ${formatNumber(gameState.currentBet)}`;
       elements.loseOverlay.classList.add('active');
-      
+
       const flippedCards = document.querySelectorAll('.card.flipped');
-      flippedCards.forEach(card => {
+      flippedCards.forEach((card) => {
         if (card.dataset.isBomb === 'true') {
           card.classList.add('bomb-revealed');
         }
       });
-      
+
       endRound();
     }
 
     function handleMaxWin() {
       gameState.balance += gameState.currentWin;
       audio.playWin();
-      
+
       elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
       elements.winMultiplierDisplay.textContent = `${CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1]}x - MAX WIN!`;
       elements.winOverlay.classList.add('active');
-      
+
       endRound();
     }
 
@@ -2133,12 +4530,12 @@
       elements.startBtn.classList.remove('hidden');
       elements.progressSection.classList.add('hidden');
       elements.cardGrid.innerHTML = '';
-      
+
       gameState.currentBet = 0;
       gameState.currentWin = 0;
       gameState.multiplier = 1;
       gameState.pairsMatched = 0;
-      
+
       updateUI();
       updateBetSelection();
       setMessage('Select your bet and tap START');
@@ -2147,6 +4544,8 @@
 
     function updateUI() {
       elements.balanceDisplay.textContent = formatNumber(gameState.balance);
+      elements.lobbyBalance.textContent = formatNumber(gameState.balance);
+      elements.withdrawBalance.textContent = formatNumber(gameState.balance);
       elements.currentWin.textContent = formatNumber(gameState.currentWin);
       elements.multiplier.textContent = `${gameState.multiplier.toFixed(2)}x`;
       elements.pairsDisplay.textContent = `${gameState.pairsMatched}/${CONFIG.PAIRS_COUNT}`;
@@ -2156,7 +4555,7 @@
       elements.pairsMatched.textContent = `${gameState.pairsMatched} / ${CONFIG.PAIRS_COUNT}`;
       const progressPercent = (gameState.pairsMatched / CONFIG.PAIRS_COUNT) * 100;
       elements.progressFill.style.width = `${progressPercent}%`;
-      
+
       const multiplierItems = elements.multiplierDisplay.querySelectorAll('.multiplier-item');
       multiplierItems.forEach((item, index) => {
         item.classList.remove('active', 'passed');
@@ -2168,46 +4567,30 @@
       });
     }
 
-    // ==================== EVENT LISTENERS ====================
     function setupEventListeners() {
-      // Launcher logo click
-      launcherLogo.addEventListener('click', handleLogoClick);
-      launcherLogo.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        handleLogoClick();
+      elements.betOptions.querySelectorAll('.bet-option').forEach((btn) => {
+        btn.addEventListener('click', () => selectBet(parseInt(btn.dataset.bet, 10)));
       });
-      
-      elements.betOptions.querySelectorAll('.bet-option').forEach(btn => {
-        btn.addEventListener('click', () => selectBet(parseInt(btn.dataset.bet)));
-      });
-      
+
       elements.customBetBtn.addEventListener('click', () => {
-        const value = parseInt(elements.customBet.value);
-        if (!isNaN(value)) selectBet(value);
+        const value = parseInt(elements.customBet.value, 10);
+        if (!Number.isNaN(value)) selectBet(value);
       });
-      
+
       elements.customBet.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-          const value = parseInt(elements.customBet.value);
-          if (!isNaN(value)) selectBet(value);
+          const value = parseInt(elements.customBet.value, 10);
+          if (!Number.isNaN(value)) selectBet(value);
         }
       });
-      
+
       elements.startBtn.addEventListener('click', startGame);
       elements.cashoutBtn.addEventListener('click', cashout);
       elements.continueBtn.addEventListener('click', continuePlaying);
-      
+
       elements.playAgainWin.addEventListener('click', resetGame);
       elements.playAgainLose.addEventListener('click', resetGame);
-      
-      elements.soundToggle.addEventListener('click', () => {
-        const muted = audio.toggle();
-        elements.soundToggle.classList.toggle('muted', muted);
-        elements.soundIcon.innerHTML = muted 
-          ? '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>'
-          : '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
-      });
-      
+
       elements.addCoinsBtn.addEventListener('click', () => {
         gameState.balance += 500;
         updateUI();
@@ -2216,15 +4599,13 @@
       });
     }
 
-    // ==================== INITIALIZE ====================
-    function init() {
-      createLauncherParticles();
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initApp();
       setupEventListeners();
       updateUI();
       generateMultiplierDisplay();
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
+    });
   </script>
 </body>
 </html>
