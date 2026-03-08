@@ -1,149 +1,57 @@
-require("dotenv").config();
-
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
-const path = require("path");
-
-
-// ======================
-// Create App & Server
-// ======================
-
+const express = require('express');
+const cors = require('cors');
 const app = express();
-const server = http.createServer(app);
-
-const adminRoutes = require("./routes/adminRoutes");
-
-app.use("/admin-api", adminRoutes);
-
-// ======================
-// Middlewares
-// ======================
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
 
-// ======================
-// Firebase Admin Setup
-// ======================
+let players = [
+    {id: 1, username: 'Nolmar Pakistani', balance: 5000, totalWagered: 2000, isPlaying: false, banned: false},
+    {id: 2, username: 'Player Two', balance: 3000, totalWagered: 1500, isPlaying: false, banned: false}
+];
 
-// ======================
-// Helper Functions
-// ======================
+let transactions = [];
+let winners = [];
 
-async function addPlayer(player) {
-  const ref = db.ref("players");
-  const newRef = ref.push();
-  await newRef.set(player);
-  return newRef.key;
-}
-
-async function getPlayers() {
-  const snapshot = await db.ref("players").once("value");
-  return snapshot.val() || {};
-}
-
-// ======================
-// Routes
-// ======================
-
-// Home
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+app.get('/api/players', (req, res) => res.json(players));
+app.get('/api/player/:id', (req, res) => {
+    const player = players.find(p => p.id === parseInt(req.params.id));
+    res.json(player || {});
 });
 
-// Admin Login Page
-app.get("/admin", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "admin-login.html"));
+app.put('/api/player/:id/balance', (req, res) => {
+    const player = players.find(p => p.id === parseInt(req.params.id));
+    if (player) {
+        player.balance = req.body.balance;
+        res.json({success: true});
+    }
 });
 
-// Admin Dashboard (after login)
-app.get("/admin-dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "admin-dashboard.html"));
+app.post('/api/player/:id/withdraw', (req, res) => {
+    const player = players.find(p => p.id === parseInt(req.params.id));
+    if (player && player.balance >= req.body.amount) {
+        player.balance -= req.body.amount;
+        transactions.push({playerName: player.username, type: 'Withdrawal', amount: req.body.amount, date: new Date()});
+        res.json({success: true});
+    } else {
+        res.status(400).json({error: 'Insufficient balance'});
+    }
 });
 
-// Admin Login API
-app.post("/admin-login", (req, res) => {
-  const { password } = req.body;
+app.get('/api/transactions', (req, res) => res.json(transactions));
+app.get('/api/recent-winners', (req, res) => res.json(winners.slice(-5)));
 
-  if (password === process.env.ADMIN_PASSWORD) {
-    return res.json({ success: true });
-  }
-
-  res.status(401).json({ success: false });
+app.post('/api/add-winner', (req, res) => {
+    winners.push({username: req.body.username, winnings: req.body.winnings});
+    res.json({success: true});
 });
 
-// Get Players
-app.get("/admin/players", async (req, res) => {
-  try {
-    const players = await getPlayers();
-    res.json(players);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch players" });
-  }
+app.put('/api/player/:id', (req, res) => {
+    const player = players.find(p => p.id === parseInt(req.params.id));
+    if (player) {
+        Object.assign(player, req.body);
+        res.json({success: true});
+    }
 });
 
-// Add Test Player
-app.get("/add-test-player", async (req, res) => {
-  try {
-    const player = { name: "Test Player", coins: 1000 };
-    await addPlayer(player);
-    res.send("Test player added");
-  } catch (error) {
-    res.status(500).send("Error adding test player");
-  }
-});
-
-// Game Routes
-const gameRoutes = require("./routes/gameRoutes");
-app.use("/game", gameRoutes);
-
-// ======================
-// Socket.IO
-// ======================
-
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
-
-const gameSocket = require("./sockets/gameSocket");
-
-io.on("connection", (socket) => {
-  console.log("Player connected:", socket.id);
-
-  socket.on("joinGame", (data) => {
-    io.emit("adminUpdate", {
-      action: "join",
-      player: data.name
-    });
-  });
-
-  socket.on("spin", (data) => {
-    io.emit("adminUpdate", {
-      action: "spin",
-      player: data.name,
-      result: data.result
-    });
-  });
-
-  socket.on("disconnect", () => {
-    io.emit("adminUpdate", {
-      action: "leave",
-      playerId: socket.id
-    });
-  });
-});
-
-// ======================
-// Start Server
-// ======================
-
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(3000, () => console.log('Server running on port 3000'));
