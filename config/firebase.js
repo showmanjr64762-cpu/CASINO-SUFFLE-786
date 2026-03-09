@@ -1,20 +1,13 @@
 const admin = require("firebase-admin");
 
-if (!admin.apps.length) {
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
-  if (!process.env.FIREBASE_KEY) {
-    console.error("FIREBASE_KEY not found in environment variables");
-  }
+// Fix newline issue in private key
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
 
-  const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com"
+});
 
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: serviceAccount.databaseURL
-  });
-
-}
-
-const db = admin.database();
-
-module.exports = db;
+module.exports = admin;
