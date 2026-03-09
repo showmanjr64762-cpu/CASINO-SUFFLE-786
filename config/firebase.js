@@ -1,18 +1,20 @@
 const admin = require("firebase-admin");
 
-let serviceAccount;
+if (!admin.apps.length) {
 
-if (process.env.FIREBASE_KEY) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+  if (!process.env.FIREBASE_KEY) {
+    console.error("FIREBASE_KEY not found in environment variables");
+  }
+
+  const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: serviceAccount.databaseURL
   });
 
-} else {
-  console.log("FIREBASE_KEY not found in environment variables");
 }
 
-const db = admin.firestore();
+const db = admin.database();
 
 module.exports = db;
