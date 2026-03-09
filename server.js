@@ -62,8 +62,8 @@ app.get("/admin", (req, res) => {
 });
 
 // Admin Dashboard (after login)
-app.get("/admin-dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "admin-dashboard.html"));
+app.get("/admin-DasHBoaRd", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin-DasHBoaRd.html"));
 });
 
 // Admin Login API
