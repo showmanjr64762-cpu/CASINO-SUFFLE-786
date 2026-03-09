@@ -26,7 +26,6 @@
       transition: all 0.5s ease;
     }
 
-    /* Theme Classes */
     body.theme-emerald {
       background: radial-gradient(ellipse at top, #064e3b 0%, #022c22 50%, #000000 100%);
       --primary: #10b981;
@@ -55,7 +54,6 @@
       --accent: #dc2626;
     }
 
-    /* Pattern Overlay */
     .pattern-overlay {
       position: fixed;
       inset: 0;
@@ -67,7 +65,6 @@
       z-index: 1;
     }
 
-    /* Particle Effects */
     .particles {
       position: fixed;
       inset: 0;
@@ -93,7 +90,6 @@
       100% { transform: translateY(-10vh) translateX(50px); opacity: 0; }
     }
 
-    /* Splash Screen */
     .splash-screen {
       position: fixed;
       inset: 0;
@@ -112,6 +108,7 @@
 
     .splash-screen.fade-out {
       opacity: 0;
+      pointer-events: none;
     }
 
     .splash-content {
@@ -200,7 +197,6 @@
       opacity: 0.8;
     }
 
-    /* Auth Modal */
     .auth-overlay {
       position: fixed;
       inset: 0;
@@ -468,7 +464,6 @@
       color: #fff;
     }
 
-    /* OTP Section */
     .otp-section {
       display: none;
       text-align: center;
@@ -533,7 +528,6 @@
       text-decoration: underline;
     }
 
-    /* Profile Modal */
     .profile-modal-overlay {
       position: fixed;
       inset: 0;
@@ -724,7 +718,6 @@
       margin-top: 1rem;
     }
 
-    /* Game Entry Loading Screen */
     .game-entry-loader {
       position: fixed;
       inset: 0;
@@ -776,7 +769,7 @@
       height: 100%;
       width: 100%;
       background: linear-gradient(90deg, #10b981, #ffd700);
-      animation: loaderProgress 10s ease-out;
+      animation: loaderProgress 3s ease-out;
     }
 
     @keyframes loaderProgress {
@@ -784,7 +777,6 @@
       100% { width: 100%; }
     }
 
-    /* Main App Container */
     .app-container {
       position: fixed;
       inset: 0;
@@ -801,7 +793,6 @@
       pointer-events: auto;
     }
 
-    /* Header Bar */
     .lobby-header {
       background: linear-gradient(180deg, rgba(6, 78, 59, 0.95) 0%, rgba(2, 44, 34, 0.98) 100%);
       border-bottom: 2px solid #d4af37;
@@ -946,7 +937,6 @@
       50% { transform: scale(1.2); }
     }
 
-    /* Announcement Banner */
     .announcement-bar {
       background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
       border-top: 1px solid rgba(212, 175, 55, 0.3);
@@ -978,7 +968,6 @@
       text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
     }
 
-    /* Full Screen Sections */
     .fullscreen-section {
       position: fixed;
       inset: 0;
@@ -1045,7 +1034,82 @@
       width: 100%;
     }
 
-    /* Offers Menu Grid */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .shop-card {
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.8), rgba(2, 44, 34, 0.9));
+      border: 2px solid rgba(212, 175, 55, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shop-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .shop-card:hover {
+      transform: translateY(-5px);
+      border-color: #ffd700;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+    }
+
+    .shop-card:hover::before {
+      opacity: 1;
+    }
+
+    .shop-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .shop-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+      font-weight: 900;
+    }
+
+    .shop-coins {
+      color: #10b981;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .shop-btn {
+      width: 100%;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .shop-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    }
+
     .offers-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -1113,7 +1177,6 @@
       font-weight: 700;
     }
 
-    /* Events Screen */
     .event-card {
       background: linear-gradient(145deg, rgba(6, 78, 59, 0.6), rgba(2, 44, 34, 0.8));
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -1168,7 +1231,6 @@
       font-weight: 700;
     }
 
-    /* Customer Support Screen */
     .support-container {
       max-width: 600px;
       margin: 0 auto;
@@ -1222,18 +1284,7 @@
       padding: 1.5rem;
     }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .form-label {
-      display: block;
-      color: #ffd700;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-
-    .form-input, .form-textarea {
+    .form-textarea {
       width: 100%;
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -1244,15 +1295,12 @@
       font-size: 1rem;
       outline: none;
       transition: border-color 0.3s;
-    }
-
-    .form-input:focus, .form-textarea:focus {
-      border-color: #ffd700;
-    }
-
-    .form-textarea {
       min-height: 120px;
       resize: vertical;
+    }
+
+    .form-textarea:focus {
+      border-color: #ffd700;
     }
 
     .submit-btn {
@@ -1266,6 +1314,7 @@
       font-size: 1.1rem;
       cursor: pointer;
       transition: transform 0.2s;
+      margin-top: 1rem;
     }
 
     .submit-btn:hover {
@@ -1276,16 +1325,16 @@
       transform: scale(0.98);
     }
 
-    /* Popup */
     .popup-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 5000;
       display: none;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       padding: 1rem;
+      padding-top: 2rem;
     }
 
     .popup-overlay.active {
@@ -1293,49 +1342,59 @@
     }
 
     .popup-content {
-      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.98), rgba(2, 44, 34, 0.99));
       border: 2px solid #d4af37;
-      border-radius: 20px;
-      padding: 2rem;
-      max-width: 400px;
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 320px;
+      width: 100%;
       text-align: center;
-      animation: popupIn 0.3s ease;
+      animation: popupSlideDown 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     }
 
-    @keyframes popupIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    @keyframes popupSlideDown {
+      from { 
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      to { 
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     .popup-icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
     }
 
     .popup-title {
       font-family: 'Playfair Display', serif;
       color: #ffd700;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       margin-bottom: 0.5rem;
+      font-weight: 700;
     }
 
     .popup-text {
       color: #ccc;
-      margin-bottom: 1.5rem;
-      line-height: 1.5;
+      margin-bottom: 1rem;
+      line-height: 1.4;
+      font-size: 0.9rem;
     }
 
     .popup-close {
-      padding: 0.75rem 2rem;
+      padding: 0.6rem 1.5rem;
       background: linear-gradient(145deg, #d4af37, #ffd700);
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       color: #000;
       font-weight: 700;
       cursor: pointer;
+      font-size: 0.9rem;
     }
 
-    /* Lobby Content */
     .lobby-content {
       flex: 1;
       overflow-y: auto;
@@ -1354,7 +1413,6 @@
       }
     }
 
-    /* Game Grid */
     .games-section {
       display: flex;
       flex-direction: column;
@@ -1465,19 +1523,6 @@
       gap: 0.25rem;
     }
 
-    .online-dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
     .entry-fee {
       background: rgba(0, 0, 0, 0.4);
       padding: 0.3rem 0.8rem;
@@ -1508,7 +1553,88 @@
       box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
     }
 
-    /* Leaderboard Sidebar */
+    .player-notification {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background: linear-gradient(145deg, rgba(6, 78, 59, 0.95), rgba(2, 44, 34, 0.98));
+      border: 2px solid #d4af37;
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 300px;
+      z-index: 3000;
+      animation: slideInRight 0.5s ease, slideOutRight 0.5s ease 4.5s forwards;
+      box-shadow: 0 10px 40px rgba(212, 175, 55, 0.3);
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .player-notification-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .player-avatar-notification {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      border: 2px solid #10b981;
+    }
+
+    .player-info-notification {
+      flex: 1;
+    }
+
+    .player-name-notification {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: #ffd700;
+      font-weight: 700;
+    }
+
+    .player-location {
+      font-size: 0.75rem;
+      color: #10b981;
+    }
+
+    .player-action {
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+    }
+
+    .player-action-highlight {
+      color: #ffd700;
+      font-weight: 700;
+    }
+
     .leaderboard-panel {
       background: linear-gradient(180deg, rgba(6, 78, 59, 0.6), rgba(2, 44, 34, 0.8));
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -1618,7 +1744,6 @@
       font-weight: 700;
     }
 
-    /* Bottom Navigation */
     .bottom-nav {
       background: linear-gradient(180deg, rgba(2, 44, 34, 0.98), rgba(0, 0, 0, 0.98));
       border-top: 2px solid #d4af37;
@@ -1669,7 +1794,6 @@
       text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
 
-    /* Modals */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -1727,7 +1851,6 @@
       color: #ffd700;
     }
 
-    /* Settings Modal */
     .settings-option {
       background: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -1836,7 +1959,6 @@
       margin-top: 1rem;
     }
 
-    /* Missions Modal */
     .mission-item {
       background: rgba(0, 0, 0, 0.4);
       border: 2px solid rgba(212, 175, 55, 0.3);
@@ -1899,7 +2021,6 @@
       cursor: not-allowed;
     }
 
-    /* Withdraw Modal */
     .withdraw-option {
       background: rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(212, 175, 55, 0.3);
@@ -1928,7 +2049,6 @@
       margin-top: 0.25rem;
     }
 
-    /* ===== GAME VIEW - IMPROVED VISIBILITY ===== */
     .game-view {
       position: fixed;
       inset: 0;
@@ -1970,7 +2090,6 @@
       transform: scale(1.05);
     }
 
-    /* Original Game Styles - WITH ENHANCED CARD VISIBILITY */
     .game-screen {
       position: relative;
       z-index: 1;
@@ -2522,7 +2641,6 @@
       border-color: #8b0000;
     }
 
-    /* ===== ENHANCED CARD TEXT VISIBILITY ===== */
     .card-corner {
       position: absolute;
       display: flex;
@@ -2726,6 +2844,10 @@
         grid-template-columns: 1fr;
       }
 
+      .shop-grid {
+        grid-template-columns: 1fr;
+      }
+
       .form-row {
         grid-template-columns: 1fr;
       }
@@ -2745,13 +2867,9 @@
   </style>
 </head>
 <body class="theme-emerald">
-  <!-- Pattern Overlay -->
   <div class="pattern-overlay"></div>
-  
-  <!-- Particles -->
   <div class="particles" id="particles"></div>
 
-  <!-- Initial Splash Screen -->
   <div class="splash-screen" id="splashScreen">
     <div class="splash-content">
       <div class="splash-logo"></div>
@@ -2766,7 +2884,6 @@
     </div>
   </div>
 
-  <!-- Auth Modal (Login/Register) -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-container">
       <button class="close-auth" onclick="skipAuth()">×</button>
@@ -2783,7 +2900,6 @@
       </div>
 
       <div class="auth-content">
-        <!-- Login Form -->
         <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
           <div class="form-group">
             <label class="form-label">Mobile Number / Email</label>
@@ -2807,7 +2923,6 @@
           </button>
         </form>
 
-        <!-- Register Form -->
         <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
           <div class="form-row">
             <div class="form-group">
@@ -2870,7 +2985,6 @@
           <button type="submit" class="auth-btn">Register</button>
         </form>
 
-        <!-- OTP Verification -->
         <div class="otp-section" id="otpSection">
           <div class="otp-icon">📱</div>
           <div class="otp-title">Verify Your Number</div>
@@ -2893,7 +3007,6 @@
     </div>
   </div>
 
-  <!-- Profile Modal -->
   <div class="profile-modal-overlay" id="profileModal">
     <div class="profile-container">
       <div class="profile-header">
@@ -2907,7 +3020,6 @@
       </div>
 
       <div class="profile-content">
-        <!-- Avatar Selection -->
         <div class="avatar-selection" id="avatarSelection" style="display: none;">
           <div class="avatar-option" onclick="selectAvatar('👤')">👤</div>
           <div class="avatar-option" onclick="selectAvatar('👑')">👑</div>
@@ -2919,7 +3031,6 @@
           <div class="avatar-option" onclick="selectAvatar('💎')">💎</div>
         </div>
 
-        <!-- Profile Stats -->
         <div class="profile-stats">
           <div class="profile-stat">
             <div class="stat-number" id="profileGames">0</div>
@@ -2935,7 +3046,6 @@
           </div>
         </div>
 
-        <!-- Edit Profile Form -->
         <form onsubmit="saveProfile(event)">
           <div class="form-group">
             <label class="form-label">Username</label>
@@ -2970,7 +3080,6 @@
     </div>
   </div>
 
-  <!-- Game Entry Loader -->
   <div class="game-entry-loader" id="gameEntryLoader">
     <div class="game-loader-content">
       <div class="game-loader-icon">👑</div>
@@ -2982,7 +3091,6 @@
     </div>
   </div>
 
-  <!-- Success Popup -->
   <div class="popup-overlay" id="successPopup">
     <div class="popup-content">
       <div class="popup-icon">✅</div>
@@ -2992,7 +3100,6 @@
     </div>
   </div>
 
-  <!-- Settings Modal -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -3041,36 +3148,6 @@
     </div>
   </div>
 
-  <!-- Withdraw Modal -->
-  <div class="modal-overlay" id="withdrawModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <span class="modal-title">💸 Withdraw</span>
-        <button class="modal-close" onclick="closeModal('withdrawModal')">×</button>
-      </div>
-      
-      <div class="withdraw-option" onclick="alert('Minimum withdrawal: 1000 coins')">
-        <div class="withdraw-amount">1000 Coins</div>
-        <div class="withdraw-method">Bank Transfer (3-5 days)</div>
-      </div>
-
-      <div class="withdraw-option" onclick="alert('Minimum withdrawal: 5000 coins')">
-        <div class="withdraw-amount">5000 Coins</div>
-        <div class="withdraw-method">Instant Crypto</div>
-      </div>
-
-      <div class="withdraw-option" onclick="alert('Minimum withdrawal: 10000 coins')">
-        <div class="withdraw-amount">10000 Coins</div>
-        <div class="withdraw-method">VIP Express (24h)</div>
-      </div>
-
-      <div style="text-align: center; margin-top: 1rem; color: #888; font-size: 0.8rem;">
-        Current Balance: <span style="color: #ffd700; font-weight: 700;" id="withdrawBalance">1,000</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Offers Section -->
   <div class="fullscreen-section" id="offersSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeOffers()">
@@ -3110,7 +3187,19 @@
     </div>
   </div>
 
-  <!-- Missions Section -->
+  <div class="fullscreen-section" id="shopSection">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closeShop()">
+        <span>←</span>
+        <span>Back</span>
+      </button>
+      <span class="fullscreen-title">🛒 Shop</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="shop-grid" id="shopGrid"></div>
+    </div>
+  </div>
+
   <div class="fullscreen-section" id="missionsSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeMissions()">
@@ -3129,7 +3218,7 @@
           Make your first deposit to unlock exclusive rewards and start your journey!
         </div>
         <div class="mission-reward" id="mission1Reward">Bonus: 500 Coins</div>
-        <button class="mission-btn" onclick="showDepositMessage()">Deposit Now</button>
+        <button class="mission-btn" onclick="openShop()">Deposit Now</button>
       </div>
 
       <div class="mission-item" style="opacity: 0.5;">
@@ -3158,7 +3247,6 @@
     </div>
   </div>
 
-  <!-- Events Section -->
   <div class="fullscreen-section" id="eventsSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeEvents()">
@@ -3230,7 +3318,6 @@
     </div>
   </div>
 
-  <!-- Customer Support Section -->
   <div class="fullscreen-section" id="supportSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeSupport()">
@@ -3284,9 +3371,7 @@
     </div>
   </div>
 
-  <!-- Main App -->
   <div class="app-container" id="appContainer">
-    <!-- Header -->
     <header class="lobby-header">
       <div class="header-left">
         <div class="profile-avatar" id="headerAvatar" onclick="openProfile()">
@@ -3311,7 +3396,6 @@
       </div>
     </header>
 
-    <!-- Announcement Banner -->
     <div class="announcement-bar">
       <div class="announcement-track">
         <div class="announcement-item">
@@ -3337,7 +3421,6 @@
       </div>
     </div>
 
-    <!-- Lobby Content -->
     <div class="lobby-content">
       <div class="games-section">
         <h2 class="section-title">
@@ -3351,8 +3434,7 @@
             <div class="game-name">Royal Match</div>
             <div class="game-stats">
               <div class="online-count">
-                <span class="online-dot"></span>
-                <span>2,847 online</span>
+                <span id="onlineCount">2,847 online</span>
               </div>
               <div class="entry-fee">Min: 10</div>
             </div>
@@ -3361,7 +3443,6 @@
         </div>
       </div>
 
-      <!-- Leaderboard -->
       <aside class="leaderboard-panel">
         <div class="leaderboard-header">
           <span>🏆</span>
@@ -3372,7 +3453,6 @@
       </aside>
     </div>
 
-    <!-- Bottom Navigation -->
     <nav class="bottom-nav">
       <button class="nav-item active" onclick="setActiveNav(this)">
         <span class="nav-icon">🏠</span>
@@ -3382,22 +3462,17 @@
         <span class="nav-icon">🎁</span>
         <span class="nav-label">Offers</span>
       </button>
-      <button class="nav-item" onclick="openModal('withdrawModal'); setActiveNav(this)">
-        <span class="nav-icon">💸</span>
-        <span class="nav-label">Withdraw</span>
-      </button>
-      <button class="nav-item" onclick="alert('Shop coming soon!'); setActiveNav(this)">
+      <button class="nav-item" onclick="openShop(); setActiveNav(this)">
         <span class="nav-icon">🛒</span>
         <span class="nav-label">Shop</span>
       </button>
-      <button class="nav-item" onclick="alert('Events coming soon!'); setActiveNav(this)">
-        <span class="nav-icon">🎉</span>
-        <span class="nav-label">Events</span>
+      <button class="nav-item" onclick="openWithdraw(); setActiveNav(this)">
+        <span class="nav-icon">💸</span>
+        <span class="nav-label">Withdraw</span>
       </button>
     </nav>
   </div>
 
-  <!-- Game View -->
   <div class="game-view" id="gameView">
     <button class="back-to-lobby" onclick="exitGame()">
       <span>←</span>
@@ -3410,7 +3485,7 @@
           <div class="logo-badge">RM</div>
           <div class="title-text">
             <span class="main">ROYAL MATCH</span>
-            <span class="sub">Match 12 Pairs to Win</span>
+            <span class="sub" id="onlineCountGame">190,000 online</span>
           </div>
         </div>
       </div>
@@ -3453,7 +3528,7 @@
           <button class="bet-option" data-bet="500" type="button">500</button>
         </div>
         <div class="custom-bet-row">
-          <input type="number" class="custom-bet-input" id="customBet" placeholder="Custom bet" min="10" max="10000" />
+          <input type="number" class="custom-bet-input" id="customBet" placeholder="Custom bet" min="10" max="5000" />
           <button class="custom-bet-btn" id="customBetBtn" type="button">SET</button>
         </div>
       </div>
@@ -3483,7 +3558,6 @@
     </div>
   </div>
 
-  <!-- Win/Lose Overlays -->
   <div class="win-overlay" id="winOverlay">
     <div class="win-label">YOU WON</div>
     <div class="win-amount" id="winAmountDisplay">0</div>
@@ -3499,14 +3573,21 @@
   </div>
 
   <script>
-    // User Authentication System
+    const pakistaniNames = [
+      'Ahmed Hassan', 'Ali Khan', 'Bilal Ahmed', 'Hassan Ali', 'Muhammad Imran',
+      'Faisal Khan', 'Karim Abdul', 'Malik Saeed', 'Nasir Ahmed', 'Omar Khan',
+      'Rashid Ali', 'Samir Khan', 'Tariq Hassan', 'Usman Ahmed', 'Wasim Khan',
+      'Yousaf Ali', 'Zain Ahmed', 'Adnan Khan', 'Babar Ahmed', 'Chand Hassan',
+      'Danyal Khan', 'Eman Ahmed', 'Farhan Ali', 'Ghani Khan', 'Hamid Ahmed',
+      'Imran Khan', 'Junaid Hassan', 'Karim Ahmed', 'Laraib Ali', 'Mazhar Khan'
+    ];
+
+    const avatarEmojis = ['👤', '👑', '🎩', '🦁', '🦅', '🐆', '🎰', '💎'];
+
     let currentUser = null;
     let tempUserData = null;
+    let isInGame = false;
 
-    // Avatar options
-    const avatarOptions = ['👤', '👑', '🎩', '🦁', '🦅', '🐆', '🎰', '💎'];
-
-    // Check for existing session
     function checkExistingSession() {
       const savedUser = localStorage.getItem('royalMatchUser');
       if (savedUser) {
@@ -3515,7 +3596,6 @@
       }
     }
 
-    // Switch Auth Tabs
     function switchAuthTab(tab) {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -3530,7 +3610,6 @@
       audio.playClick();
     }
 
-    // Handle Registration
     function handleRegister(e) {
       e.preventDefault();
       
@@ -3548,7 +3627,6 @@
         return;
       }
 
-      // Store temp data for OTP
       tempUserData = {
         username,
         phone,
@@ -3563,19 +3641,16 @@
         stats: { games: 0, wins: 0, winRate: 0 }
       };
 
-      // Show OTP Section
       document.getElementById('otpPhone').textContent = phone;
       document.getElementById('loginForm').classList.remove('active');
       document.getElementById('registerForm').classList.remove('active');
       document.getElementById('otpSection').classList.add('active');
       
-      // Simulate sending OTP
       setTimeout(() => {
         alert('Demo: OTP is 123456');
       }, 500);
     }
 
-    // OTP Input Handling
     function moveOtp(input, index) {
       if (input.value.length === 1) {
         const inputs = document.querySelectorAll('.otp-input');
@@ -3594,7 +3669,7 @@
       let otp = '';
       inputs.forEach(input => otp += input.value);
       
-      if (otp === '123456') { // Demo OTP
+      if (otp === '123456') {
         completeRegistration();
       } else if (otp.length === 6) {
         alert('Invalid OTP. Demo OTP is 123456');
@@ -3613,17 +3688,15 @@
       showPopup('Registration Successful!', 'Welcome to Royal Match, ' + currentUser.username + '!');
     }
 
-    // Handle Login
     function handleLogin(e) {
       e.preventDefault();
       const phone = document.getElementById('loginPhone').value;
       const password = document.getElementById('loginPassword').value;
 
-      // Demo login - accept any for demo, or check stored users
       const savedUsers = JSON.parse(localStorage.getItem('royalMatchUsers') || '[]');
       const user = savedUsers.find(u => u.phone === phone && u.password === password);
 
-      if (user || (phone && password)) { // Allow demo login
+      if (user || (phone && password)) {
         currentUser = user || {
           username: 'Player_' + Math.floor(Math.random() * 9999),
           phone: phone,
@@ -3642,7 +3715,6 @@
       }
     }
 
-    // Guest Login
     function guestLogin() {
       currentUser = {
         username: 'Guest_' + Math.floor(Math.random() * 9999),
@@ -3657,7 +3729,6 @@
       updateHeaderForUser();
     }
 
-    // Skip Auth (Demo Mode)
     function skipAuth() {
       if (!currentUser) {
         guestLogin();
@@ -3668,13 +3739,13 @@
 
     function closeAuth() {
       document.getElementById('authOverlay').classList.remove('active');
+      document.getElementById('appContainer').classList.add('visible');
       audio.playClick();
     }
 
     function saveUserData() {
       localStorage.setItem('royalMatchUser', JSON.stringify(currentUser));
       
-      // Also save to users list
       const users = JSON.parse(localStorage.getItem('royalMatchUsers') || '[]');
       const existingIndex = users.findIndex(u => u.phone === currentUser.phone);
       if (existingIndex >= 0) {
@@ -3699,7 +3770,6 @@
       }
     }
 
-    // Profile Functions
     function openProfile() {
       if (!currentUser) {
         document.getElementById('authOverlay').classList.add('active');
@@ -3714,7 +3784,6 @@
       document.getElementById('editProvince').value = currentUser.province || 'Punjab';
       document.getElementById('editLanguage').value = currentUser.language || 'English';
       
-      // Update stats
       document.getElementById('profileGames').textContent = currentUser.stats?.games || 0;
       document.getElementById('profileWins').textContent = currentUser.stats?.wins || 0;
       const winRate = currentUser.stats?.games > 0 
@@ -3770,28 +3839,31 @@
       document.getElementById('authOverlay').classList.add('active');
     }
 
-    // Show Popup
+    let popupTimeout;
     function showPopup(title, text) {
+      if (isInGame) return;
+      
       document.querySelector('.popup-title').textContent = title;
       document.querySelector('.popup-text').textContent = text;
       document.getElementById('successPopup').classList.add('active');
+      
+      clearTimeout(popupTimeout);
+      const delay = Math.floor(Math.random() * (18000 - 8000 + 1)) + 8000;
+      popupTimeout = setTimeout(() => {
+        closePopup();
+      }, delay);
     }
 
     function closePopup() {
       document.getElementById('successPopup').classList.remove('active');
+      clearTimeout(popupTimeout);
     }
 
-    // Leaderboard Data
-    const championNames = [
-      "Alex_Johnson", "Sarah_Williams", "Mike_Chen", "Emma_Davis",
-      "John_Smith", "Lisa_Anderson", "David_Brown", "Amy_Wilson",
-      "Chris_Taylor", "Jessica_Martin", "Ryan_Garcia", "Laura_Lee",
-      "Daniel_Kim", "Sophie_Clark", "Kevin_Wang", "Rachel_Adams"
-    ];
+    const championAvatars = ['👑', '🥈', '🥉', '🎯', '💎', '🦁', '⭐', '🏆'];
 
     let leaderboardInterval;
+    let playerNotificationInterval;
 
-    // Initialize Particles
     function createParticles() {
       const container = document.getElementById('particles');
       for (let i = 0; i < 50; i++) {
@@ -3804,7 +3876,6 @@
       }
     }
 
-    // Audio System
     class AudioSystem {
       constructor() {
         this.muted = false;
@@ -3893,7 +3964,6 @@
 
     const audio = new AudioSystem();
 
-    // Modal Functions
     function openModal(modalId) {
       document.getElementById(modalId).classList.add('active');
       audio.playClick();
@@ -3932,12 +4002,6 @@
       element.classList.add('active');
     }
 
-    function showDepositMessage() {
-      alert('Deposit system coming soon! Contact support for early access.');
-      audio.playClick();
-    }
-
-    // Offers Section Functions
     function openOffers() {
       document.getElementById('offersSection').classList.add('active');
       audio.playClick();
@@ -4002,7 +4066,51 @@
       document.getElementById('supportMessage').value = '';
     }
 
-    // Leaderboard Functions
+    const shopItems = [
+      { amount: 10, coins: 100, icon: '💰' },
+      { amount: 20, coins: 250, icon: '💵' },
+      { amount: 50, coins: 750, icon: '💴' },
+      { amount: 100, coins: 1500, icon: '💶' },
+      { amount: 200, coins: 3500, icon: '💷' },
+      { amount: 500, coins: 9000, icon: '💸' }
+    ];
+
+    function renderShopGrid() {
+      const shopGrid = document.getElementById('shopGrid');
+      shopGrid.innerHTML = shopItems.map((item, index) => `
+        <div class="shop-card" onclick="purchaseCoins(${item.coins})">
+          <div class="shop-icon">${item.icon}</div>
+          <div class="shop-amount">${item.amount}</div>
+          <div class="shop-coins">${formatNumber(item.coins)} Coins</div>
+          <button class="shop-btn">BUY NOW</button>
+        </div>
+      `).join('');
+    }
+
+    function openShop() {
+      renderShopGrid();
+      document.getElementById('shopSection').classList.add('active');
+      audio.playClick();
+    }
+
+    function closeShop() {
+      document.getElementById('shopSection').classList.remove('active');
+      audio.playClick();
+    }
+
+    function openWithdraw() {
+      alert('Withdraw feature coming soon! Minimum withdrawal: 10');
+      audio.playClick();
+    }
+
+    function purchaseCoins(coins) {
+      gameState.balance += coins;
+      updateUI();
+      closeShop();
+      showPopup('Purchase Successful!', `You received ${formatNumber(coins)} coins!`);
+      audio.playClick();
+    }
+
     function getRandomWinAmount() {
       return Math.floor(Math.random() * (99999 - 9990 + 1)) + 9990;
     }
@@ -4015,11 +4123,12 @@
     }
 
     function getRandomChampions() {
-      const shuffled = [...championNames].sort(() => 0.5 - Math.random());
+      const shuffled = [...pakistaniNames].sort(() => 0.5 - Math.random());
       return shuffled.slice(0, 7).map((name, index) => ({
         name: name,
         win: formatWinAmount(getRandomWinAmount()),
-        rank: index + 1
+        rank: index + 1,
+        avatar: championAvatars[index]
       }));
     }
 
@@ -4029,23 +4138,19 @@
       
       list.innerHTML = champions.map((champion, index) => {
         let rankClass = '';
-        let avatar = '🎯';
         
         if (index === 0) {
           rankClass = 'gold';
-          avatar = '👑';
         } else if (index === 1) {
           rankClass = 'silver';
-          avatar = '🥈';
         } else if (index === 2) {
           rankClass = 'bronze';
-          avatar = '🥉';
         }
 
         return `
           <div class="leaderboard-item">
             <div class="rank-number ${rankClass}">${champion.rank}</div>
-            <div class="leader-avatar">${avatar}</div>
+            <div class="leader-avatar">${champion.avatar}</div>
             <div class="leader-info">
               <div class="leader-name">${champion.name}</div>
               <div class="leader-win">${champion.win} won</div>
@@ -4062,13 +4167,61 @@
       }, 5000);
     }
 
-    // Random Mission Reward Generator
+    function showPlayerNotification() {
+      const randomPlayer = pakistaniNames[Math.floor(Math.random() * pakistaniNames.length)];
+      const randomAvatar = avatarEmojis[Math.floor(Math.random() * avatarEmojis.length)];
+      const actions = [
+        `just won ${formatNumber(Math.floor(Math.random() * 50000 + 5000))} coins!`,
+        `matched 12 pairs and got ${formatNumber(Math.floor(Math.random() * 100000 + 10000))}!`,
+        `hit a ${Math.floor(Math.random() * 30 + 5)}x multiplier!`,
+        `just joined the game!`,
+        `is on a winning streak!`
+      ];
+      const action = actions[Math.floor(Math.random() * actions.length)];
+
+      const notification = document.createElement('div');
+      notification.className = 'player-notification';
+      notification.innerHTML = `
+        <div class="player-notification-header">
+          <div class="player-avatar-notification">${randomAvatar}</div>
+          <div class="player-info-notification">
+            <div class="player-name-notification">${randomPlayer}</div>
+            <div class="player-location">Pakistan 🇵🇰</div>
+          </div>
+        </div>
+        <div class="player-action">
+          <span class="player-action-highlight">${action}</span>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 5000);
+    }
+
+    function startPlayerNotifications() {
+      if (isInGame) return;
+      showPlayerNotification();
+      playerNotificationInterval = setInterval(() => {
+        if (!isInGame) {
+          showPlayerNotification();
+        }
+      }, 6000);
+    }
+
+    function updateOnlineCount() {
+      const count = Math.floor(Math.random() * (500000 - 190000 + 1)) + 190000;
+      document.getElementById('onlineCount').textContent = formatNumber(count) + ' online';
+      document.getElementById('onlineCountGame').textContent = formatNumber(count) + ' online';
+    }
+
     function setRandomMissionRewards() {
       const reward1 = Math.floor(Math.random() * (5000 - 50 + 1)) + 50;
       document.getElementById('mission1Reward').textContent = `Bonus: ${reward1} Coins`;
     }
 
-    // Navigation
     function enterGame() {
       const loader = document.getElementById('gameEntryLoader');
       loader.classList.add('active');
@@ -4077,19 +4230,26 @@
       setTimeout(() => {
         loader.classList.remove('active');
         document.getElementById('gameView').classList.add('active');
-      }, 10000);
+        isInGame = true;
+        clearInterval(playerNotificationInterval);
+        updateOnlineCount();
+      }, 3000);
     }
 
     function exitGame() {
       document.getElementById('gameView').classList.remove('active');
+      isInGame = false;
       audio.playClick();
+      startPlayerNotifications();
     }
 
-    // Splash Screen - 10 seconds then show Auth
     function initApp() {
       createParticles();
       startLeaderboardRotation();
+      startPlayerNotifications();
       setRandomMissionRewards();
+      updateOnlineCount();
+      setInterval(updateOnlineCount, 8000);
       checkExistingSession();
       
       setTimeout(() => {
@@ -4098,7 +4258,6 @@
         setTimeout(() => {
           document.getElementById('splashScreen').style.display = 'none';
           
-          // Show auth if not logged in
           if (!currentUser) {
             document.getElementById('authOverlay').classList.add('active');
           } else {
@@ -4108,7 +4267,6 @@
       }, 10000);
     }
 
-    // Original Game Logic
     const CONFIG = {
       TOTAL_CARDS: 28,
       PAIRS_COUNT: 12,
@@ -4117,7 +4275,7 @@
       MULTIPLIERS: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0, 22.0, 35.0, 50.0],
       INITIAL_BALANCE: 1000,
       MIN_BET: 10,
-      MAX_BET: 10000,
+      MAX_BET: 5000,
       MISMATCH_FLIP_DELAY: 400,
       SHUFFLE_ROUNDS: 10
     };
@@ -4147,7 +4305,6 @@
     const elements = {
       balanceDisplay: document.getElementById('balanceDisplay'),
       lobbyBalance: document.getElementById('lobbyBalance'),
-      withdrawBalance: document.getElementById('withdrawBalance'),
       currentWin: document.getElementById('currentWin'),
       multiplier: document.getElementById('multiplier'),
       pairsDisplay: document.getElementById('pairsDisplay'),
@@ -4340,7 +4497,6 @@
         return;
       }
       
-      // Update user stats
       if (currentUser) {
         currentUser.stats = currentUser.stats || { games: 0, wins: 0, winRate: 0 };
         currentUser.stats.games++;
@@ -4545,7 +4701,6 @@
     function updateUI() {
       elements.balanceDisplay.textContent = formatNumber(gameState.balance);
       elements.lobbyBalance.textContent = formatNumber(gameState.balance);
-      elements.withdrawBalance.textContent = formatNumber(gameState.balance);
       elements.currentWin.textContent = formatNumber(gameState.currentWin);
       elements.multiplier.textContent = `${gameState.multiplier.toFixed(2)}x`;
       elements.pairsDisplay.textContent = `${gameState.pairsMatched}/${CONFIG.PAIRS_COUNT}`;
@@ -4599,7 +4754,6 @@
       });
     }
 
-    // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       initApp();
       setupEventListeners();
