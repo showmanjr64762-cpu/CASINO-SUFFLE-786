@@ -2864,6 +2864,38 @@
         font-size: 1.8rem;
       }
     }
+
+    .card-front.golden {
+      background: linear-gradient(145deg, #ffd700, #b8962e);
+      border: 3px solid #fff;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    }
+
+    .golden-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #000;
+    }
+
+    .golden-icon {
+      font-size: 2.5rem;
+      animation: crown-glow 1.5s infinite;
+    }
+
+    .golden-text {
+      font-size: 0.85rem;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+      text-transform: uppercase;
+      color: #5c4300;
+    }
+
+    @keyframes crown-glow {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px white); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 15px white); }
+    }
   </style>
 </head>
 <body class="theme-emerald">
@@ -3023,12 +3055,15 @@
         <div class="avatar-selection" id="avatarSelection" style="display: none;">
           <div class="avatar-option" onclick="selectAvatar('👤')">👤</div>
           <div class="avatar-option" onclick="selectAvatar('👑')">👑</div>
-          <div class="avatar-option" onclick="selectAvatar('🎩')">🎩</div>
-          <div class="avatar-option" onclick="selectAvatar('🦁')">🦁</div>
+          <div class="avatar-option" onclick="selectAvatar('🤦‍♀️')">🤦‍♀️</div>
+          <div class="avatar-option" onclick="selectAvatar('🤦‍♂️')">🤦‍♂️</div>
           <div class="avatar-option" onclick="selectAvatar('🦅')">🦅</div>
-          <div class="avatar-option" onclick="selectAvatar('🐆')">🐆</div>
-          <div class="avatar-option" onclick="selectAvatar('🎰')">🎰</div>
-          <div class="avatar-option" onclick="selectAvatar('💎')">💎</div>
+          <div class="avatar-option" onclick="selectAvatar('😎')">😎</div>
+          <div class="avatar-option" onclick="selectAvatar('🐱‍🚀')">🐱‍🚀</div>
+          <div class="avatar-option" onclick="selectAvatar('✌')">✌</div>
+
+                    <div class="avatar-option" onclick="selectAvatar('🤞')">🤞</div>
+
         </div>
 
         <div class="profile-stats">
@@ -3298,6 +3333,7 @@
           Match 12 pairs to win big, but beware of the bombs! 
           Start with a bet, flip cards to find matches, and cash out anytime. 
           The more pairs you match, the higher your multiplier grows!
+          Golden Cards: Find a pair of golden cards to win 20x your bet instantly!
         </div>
       </div>
 
@@ -3400,11 +3436,11 @@
       <div class="announcement-track">
         <div class="announcement-item">
           <span>🔥</span>
-          <span>Welcome Bonus: Get 5000 coins on your first deposit!</span>
+          <span>Welcome Bonus: Get 500 coins on your first deposit!</span>
         </div>
         <div class="announcement-item">
           <span>🎁</span>
-          <span>Daily Bonus: Free 500 Coins available now!</span>
+          <span>Daily Bonus: Free 10-500 Coins available now!</span>
         </div>
         <div class="announcement-item">
           <span>💎</span>
@@ -3416,7 +3452,7 @@
         </div>
         <div class="announcement-item">
           <span>🔥</span>
-          <span>Welcome Bonus: Get 5000 coins on your first deposit!</span>
+          <span>Welcome Bonus: Get 10-500 coins on your first deposit!</span>
         </div>
       </div>
     </div>
@@ -3526,6 +3562,10 @@
           <button class="bet-option" data-bet="100" type="button">100</button>
           <button class="bet-option" data-bet="250" type="button">250</button>
           <button class="bet-option" data-bet="500" type="button">500</button>
+
+
+
+
         </div>
         <div class="custom-bet-row">
           <input type="number" class="custom-bet-input" id="customBet" placeholder="Custom bet" min="10" max="5000" />
@@ -3579,10 +3619,13 @@
       'Rashid Ali', 'Samir Khan', 'Tariq Hassan', 'Usman Ahmed', 'Wasim Khan',
       'Yousaf Ali', 'Zain Ahmed', 'Adnan Khan', 'Babar Ahmed', 'Chand Hassan',
       'Danyal Khan', 'Eman Ahmed', 'Farhan Ali', 'Ghani Khan', 'Hamid Ahmed',
-      'Imran Khan', 'Junaid Hassan', 'Karim Ahmed', 'Laraib Ali', 'Mazhar Khan'
+      'Imran Khan', 'Junaid Hassan', 'Karim Ahmed', 'Laraib Ali', 'Mazhar Khan',
+       'Ahmed Khan', 'Ali Raza', 'Usman Ali', 'Bilal Ahmed',
+      'Hassan Raza', 'Zain Ali', 'Ahsan Khan', 'Saad Ahmed',
+      
     ];
 
-    const avatarEmojis = ['👤', '👑', '🎩', '🦁', '🦅', '🐆', '🎰', '💎'];
+    const avatarEmojis = ['👤', '👴', '🤷‍♀️', '👨', '🦅', '🕵️‍♀️', '🏎', '💎', '🤦‍♂️'];
 
     let currentUser = null;
     let tempUserData = null;
@@ -4067,12 +4110,32 @@
     }
 
     const shopItems = [
-      { amount: 10, coins: 100, icon: '💰' },
-      { amount: 20, coins: 250, icon: '💵' },
-      { amount: 50, coins: 750, icon: '💴' },
-      { amount: 100, coins: 1500, icon: '💶' },
-      { amount: 200, coins: 3500, icon: '💷' },
-      { amount: 500, coins: 9000, icon: '💸' }
+      { amount: 10, coins: 10, icon: '💰' },
+      { amount: 20, coins: 20, icon: '💰' },
+      { amount: 50, coins: 50, icon: '💰' },
+      { amount: 100, coins: 100, icon: '💰' },
+      { amount: 200, coins: 200, icon: '💰' },
+      { amount: 500, coins: 500, icon: '💰' },
+      { amount: 1000, coins: 1000, icon: '💰' },
+      { amount: 2000, coins: 2000, icon: '💰' },
+      { amount: 5000, coins: 5000, icon: '💰' },
+      { amount: 1000, coins: 10000, icon: '💰' },
+      { amount: 20000, coins: 20000, icon: '💰' },
+      { amount: 30000, coins: 30000, icon: '💰' },
+      { amount: 40000, coins: 40000, icon: '💰' },
+      { amount: 50000, coins: 50000, icon: '💰' }
+
+
+
+
+
+
+
+
+
+
+
+      
     ];
 
     function renderShopGrid() {
@@ -4269,8 +4332,10 @@
 
     const CONFIG = {
       TOTAL_CARDS: 28,
-      PAIRS_COUNT: 12,
+      PAIRS_COUNT: 11,
       BOMB_COUNT: 4,
+      GOLDEN_COUNT: 2,
+      GOLDEN_MULTIPLIER: 20,
       GRID_COLUMNS: 7,
       MULTIPLIERS: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0, 22.0, 35.0, 50.0],
       INITIAL_BALANCE: 1000,
@@ -4299,7 +4364,8 @@
       firstCard: null,
       secondCard: null,
       cards: [],
-      matchedCards: new Set()
+      matchedCards: new Set(),
+      goldenCardsFound: 0
     };
 
     const elements = {
@@ -4375,7 +4441,7 @@
       for (let i = 0; i < CONFIG.PAIRS_COUNT; i++) {
         const value = CARD_VALUES[i];
         const suit = CARD_SUITS[i % CARD_SUITS.length];
-        const card = { value, suit, isBomb: false };
+        const card = { value, suit, isBomb: false, isGolden: false };
         cards.push({ ...card, id: `card-${i}-a` });
         cards.push({ ...card, id: `card-${i}-b` });
       }
@@ -4384,16 +4450,20 @@
           id: `bomb-${i}`,
           value: 'BOMB',
           suit: null,
-          isBomb: true
+          isBomb: true,
+          isGolden: false
         });
       }
-      let shuffledCards = shuffleArray(cards);
-      for (let i = 0; i < 50; i++) {
-        const idx1 = Math.floor(Math.random() * shuffledCards.length);
-        const idx2 = Math.floor(Math.random() * shuffledCards.length);
-        [shuffledCards[idx1], shuffledCards[idx2]] = [shuffledCards[idx2], shuffledCards[idx1]];
+      for (let i = 0; i < CONFIG.GOLDEN_COUNT; i++) {
+        cards.push({
+          id: `golden-${i}`,
+          value: 'GOLD',
+          suit: null,
+          isBomb: false,
+          isGolden: true
+        });
       }
-      return shuffledCards;
+      return shuffleArray(cards);
     }
 
     function createCardElement(card, index) {
@@ -4403,9 +4473,9 @@
       cardEl.dataset.id = card.id;
       cardEl.dataset.value = card.value;
       cardEl.dataset.isBomb = card.isBomb;
+      cardEl.dataset.isGolden = card.isGolden;
 
-      if (card.isBomb) {
-        cardEl.innerHTML = `
+      const backHTML = `
           <div class="card-face card-back">
             <div class="card-back-pattern"></div>
             <div class="card-back-corner tl"></div>
@@ -4413,25 +4483,27 @@
             <div class="card-back-corner bl"></div>
             <div class="card-back-corner br"></div>
             <span class="card-back-logo">RM</span>
-          </div>
+          </div>`;
+
+      if (card.isBomb) {
+        cardEl.innerHTML = backHTML + `
           <div class="card-face card-front bomb">
             <div class="bomb-content">
               <span class="bomb-icon">💣</span>
               <span class="bomb-text">BOOM!</span>
             </div>
-          </div>
-        `;
+          </div>`;
+      } else if (card.isGolden) {
+        cardEl.innerHTML = backHTML + `
+          <div class="card-face card-front golden">
+            <div class="golden-content">
+              <span class="golden-icon">👑</span>
+              <span class="golden-text">20X WIN!</span>
+            </div>
+          </div>`;
       } else {
         const colorClass = card.suit.color;
-        cardEl.innerHTML = `
-          <div class="card-face card-back">
-            <div class="card-back-pattern"></div>
-            <div class="card-back-corner tl"></div>
-            <div class="card-back-corner tr"></div>
-            <div class="card-back-corner bl"></div>
-            <div class="card-back-corner br"></div>
-            <span class="card-back-logo">RM</span>
-          </div>
+        cardEl.innerHTML = backHTML + `
           <div class="card-face card-front ${colorClass}">
             <div class="card-corner card-corner-tl">
               <span class="card-rank">${card.value}</span>
@@ -4442,8 +4514,7 @@
               <span class="card-rank">${card.value}</span>
               <span class="card-suit-small">${card.suit.symbol}</span>
             </div>
-          </div>
-        `;
+          </div>`;
       }
 
       cardEl.addEventListener('click', () => handleCardClick(cardEl));
@@ -4507,6 +4578,7 @@
       gameState.currentWin = 0;
       gameState.multiplier = 1;
       gameState.pairsMatched = 0;
+      gameState.goldenCardsFound = 0;
       gameState.isPlaying = true;
       gameState.canFlip = false;
       gameState.firstCard = null;
@@ -4524,11 +4596,10 @@
       updateProgress();
 
       setMessage('Shuffling cards...');
-
       await animateShuffle();
 
       gameState.canFlip = true;
-      setMessage('Find matching pairs! Avoid the bombs!');
+      setMessage('Find matching pairs! Avoid the bombs! Find golden pairs to win 20x!');
       audio.playClick();
     }
 
@@ -4546,6 +4617,7 @@
       if (cardEl.classList.contains('matched')) return;
 
       const isBomb = cardEl.dataset.isBomb === 'true';
+      const isGolden = cardEl.dataset.isGolden === 'true';
 
       cardEl.classList.add('flipped');
       audio.playCardFlip();
@@ -4555,13 +4627,66 @@
         return;
       }
 
+      if (isGolden) {
+        if (!gameState.firstCard) {
+          gameState.firstCard = cardEl;
+        } else {
+          gameState.secondCard = cardEl;
+          gameState.canFlip = false;
+          setTimeout(() => checkGoldenMatch(), 500);
+        }
+        return;
+      }
+
       if (!gameState.firstCard) {
         gameState.firstCard = cardEl;
       } else {
         gameState.secondCard = cardEl;
         gameState.canFlip = false;
-
         setTimeout(() => checkMatch(), 500);
+      }
+    }
+
+    function checkGoldenMatch() {
+      const firstValue = gameState.firstCard.dataset.value;
+      const secondValue = gameState.secondCard.dataset.value;
+      const firstIsGolden = gameState.firstCard.dataset.isGolden === 'true';
+      const secondIsGolden = gameState.secondCard.dataset.isGolden === 'true';
+
+      if (firstIsGolden && secondIsGolden) {
+        gameState.firstCard.classList.add('matched');
+        gameState.secondCard.classList.add('matched');
+        gameState.matchedCards.add(gameState.firstCard.dataset.id);
+        gameState.matchedCards.add(gameState.secondCard.dataset.id);
+        gameState.goldenCardsFound++;
+
+        gameState.currentWin = gameState.currentBet * CONFIG.GOLDEN_MULTIPLIER;
+        gameState.multiplier = CONFIG.GOLDEN_MULTIPLIER;
+
+        audio.playWin();
+        updateUI();
+
+        if (currentUser) {
+          currentUser.stats.wins++;
+          saveUserData();
+        }
+
+        setTimeout(() => {
+          gameState.firstCard = null;
+          gameState.secondCard = null;
+          gameState.canFlip = true;
+          setMessage(`Golden Match! Win: ${formatNumber(gameState.currentWin)} (${gameState.multiplier}x)`, 'win');
+          showCashoutOption();
+        }, 400);
+      } else {
+        setTimeout(() => {
+          gameState.firstCard.classList.remove('flipped');
+          gameState.secondCard.classList.remove('flipped');
+          gameState.firstCard = null;
+          gameState.secondCard = null;
+          gameState.canFlip = true;
+          setMessage('No match! Try again.');
+        }, CONFIG.MISMATCH_FLIP_DELAY);
       }
     }
 
@@ -4629,11 +4754,9 @@
       }
       
       audio.playCashout();
-
       elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
       elements.winMultiplierDisplay.textContent = `${gameState.multiplier}x`;
       elements.winOverlay.classList.add('active');
-
       endRound();
     }
 
@@ -4656,18 +4779,15 @@
           card.classList.add('bomb-revealed');
         }
       });
-
       endRound();
     }
 
     function handleMaxWin() {
       gameState.balance += gameState.currentWin;
       audio.playWin();
-
       elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
       elements.winMultiplierDisplay.textContent = `${CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1]}x - MAX WIN!`;
       elements.winOverlay.classList.add('active');
-
       endRound();
     }
 
@@ -4691,6 +4811,7 @@
       gameState.currentWin = 0;
       gameState.multiplier = 1;
       gameState.pairsMatched = 0;
+      gameState.goldenCardsFound = 0;
 
       updateUI();
       updateBetSelection();
