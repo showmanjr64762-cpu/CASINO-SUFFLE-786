@@ -3,9 +3,17 @@ const express = require("express");
 const router = express.Router();
 const db = require("../config/firebase"); // Import initialized db
 
+if (!db) {
+  throw new Error("Firebase DB not initialized. Check firebase.js and environment variables.");
+}
+
 // Join game
 router.post("/join", async (req, res) => {
   const { name } = req.body;
+
+  if (!name || typeof name !== "string") {
+    return res.status(400).json({ success: false, error: "Invalid player name" });
+  }
 
   try {
     const ref = db.ref("players");
@@ -22,6 +30,10 @@ router.post("/join", async (req, res) => {
 // Spin route
 router.post("/spin", async (req, res) => {
   const { playerId, bet } = req.body;
+
+  if (!playerId || typeof bet !== "number") {
+    return res.status(400).json({ message: "Invalid playerId or bet" });
+  }
 
   try {
     const playerRef = db.ref(`players/${playerId}`);

@@ -6,35 +6,31 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const path = require("path");
 
+// ======================
+// Firebase
+// ======================
+const db = require("./config/firebase"); // <-- Fixed: import db
 
 // ======================
 // Create App & Server
 // ======================
-
 const app = express();
 const server = http.createServer(app);
 
 const adminRoutes = require("./routes/adminRoutes");
-
 app.use("/admin-api", adminRoutes);
 
 // ======================
 // Middlewares
 // ======================
-
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ======================
-// Firebase Admin Setup
-// ======================
-
-// ======================
 // Helper Functions
 // ======================
-
 async function addPlayer(player) {
   const ref = db.ref("players");
   const newRef = ref.push();
@@ -62,18 +58,16 @@ app.get("/admin", (req, res) => {
 });
 
 // Admin Dashboard (after login)
-app.get("/admin-DasHBoaRd", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "admin-DasHBoaRd.html"));
+app.get("/admin-dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "admin-dashboard.html"));
 });
 
 // Admin Login API
 app.post("/admin-login", (req, res) => {
   const { password } = req.body;
-
   if (password === process.env.ADMIN_PASSWORD) {
     return res.json({ success: true });
   }
-
   res.status(401).json({ success: false });
 });
 
@@ -105,57 +99,36 @@ app.use("/game", gameRoutes);
 // ======================
 // Socket.IO
 // ======================
-
-const io = new Server(server, {
-  cors: { origin: "*" }
-});
-
+const io = new Server(server, { cors: { origin: "*" } });
 const gameSocket = require("./sockets/gameSocket");
 
 io.on("connection", (socket) => {
   console.log("Player connected:", socket.id);
 
   socket.on("joinGame", (data) => {
-    io.emit("adminUpdate", {
-      action: "join",
-      player: data.name
-    });
+    io.emit("adminUpdate", { action: "join", player: data.name });
   });
 
   socket.on("spin", (data) => {
-    io.emit("adminUpdate", {
-      action: "spin",
-      player: data.name,
-      result: data.result
-    });
+    io.emit("adminUpdate", { action: "spin", player: data.name, result: data.result });
   });
 
   socket.on("disconnect", () => {
-    io.emit("adminUpdate", {
-      action: "leave",
-      playerId: socket.id
-    });
+    io.emit("adminUpdate", { action: "leave", playerId: socket.id });
   });
 });
 
 // ======================
 // Start Server
 // ======================
-
 const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 fetch("https://YOUR-RENDER-URL/api/update", {
   method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    playerId: "player123",
-    score: 500,
-    coins: 20
-  })
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ playerId: "player123", score: 500, coins: 20 })
 });
+// ======================
+// Remove hardcoded fetch
+// ======================
+// fetch("https://YOUR-RENDER-URL/api/update", {...}) <-- removed
