@@ -15,6 +15,29 @@ const db = require("./config/firebase");
 // Express App & Server
 // ======================
 const app = express();
+
+app.get("/add-test-player", async (req, res) => {
+  try {
+
+    const player = {
+      name: "Test Player",
+      coins: 1000
+    };
+
+    const db = require("./config/firebase");
+
+    const ref = db.ref("players");
+    const newPlayer = ref.push();
+
+    await newPlayer.set(player);
+
+    res.send("Test player added!");
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error adding player");
+  }
+});
 const server = http.createServer(app);
 
 // ======================
