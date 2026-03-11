@@ -15,31 +15,31 @@ router.get("/players", async (req, res) => {
   }
 });
 
-// Add coins
-router.post("/addCoins", async (req, res) => {
-  const { playerId, amount } = req.body;
 
-  if (!playerId || typeof amount !== "number" || amount <= 0) {
-    return res.status(400).json({ error: "Invalid playerId or amount" });
-  }
+
+// Add coins to player
+router.post("/add-coins", async (req, res) => {
+  const { playerId, coins } = req.body;
 
   try {
-    const ref = db.ref(`players/${playerId}`);
-    const snapshot = await ref.once("value");
+    const playerRef = db.ref("players/" + playerId);
+
+    const snapshot = await playerRef.once("value");
     const player = snapshot.val();
 
-    if (!player) return res.status(404).json({ error: "Player not found" });
+    const newCoins = (player.coins || 0) + Number(coins);
 
-    player.coins += amount;
+    await playerRef.update({
+      coins: newCoins
+    });
 
-    await ref.set(player);
+    res.json({ success: true });
 
-    res.json({ success: true, coins: player.coins });
   } catch (err) {
-    console.error("Error adding coins:", err);
-    res.status(500).json({ error: "Failed to add coins" });
+    res.status(500).json({ error: "Failed to update coins" });
   }
 });
+
 
 // Remove coins
 router.post("/removeCoins", async (req, res) => {
