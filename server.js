@@ -1,4 +1,3 @@
-// server.js
 require("dotenv").config();
 
 const express = require("express");
@@ -8,18 +7,18 @@ const cors = require("cors");
 const path = require("path");
 
 // ======================
-// Firebase Admin
+// Firebase Database
 // ======================
-const db = require("./config/firebase"); // use the fixed firebase.js
+const db = require("./config/firebase");
 
 // ======================
-// Express App & Server
+// Express App
 // ======================
 const app = express();
 const server = http.createServer(app);
 
 // ======================
-// Middlewares
+// Middleware
 // ======================
 app.use(cors());
 app.use(express.json());
@@ -35,7 +34,9 @@ const gameRoutes = require("./routes/gameRoutes");
 app.use("/admin-api", adminRoutes);
 app.use("/game", gameRoutes);
 
-// Home & Admin Pages
+// ======================
+// Pages
+// ======================
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -44,18 +45,18 @@ app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin-login.html"));
 });
 
-app.get("/admin-DasHBoaRd", (req, res) => {
+app.get("/admin-dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin-DasHBoaRd.html"));
 });
 
 // ======================
-// Helper Functions
+// Player Helpers
 // ======================
 async function addPlayer(player) {
   const ref = db.ref("players");
-  const newRef = ref.push();
-  await newRef.set(player);
-  return newRef.key;
+  const newPlayer = ref.push();
+  await newPlayer.set(player);
+  return newPlayer.key;
 }
 
 async function getPlayers() {
@@ -63,13 +64,26 @@ async function getPlayers() {
   return snapshot.val() || {};
 }
 
-// Test player endpoint
+// ======================
+// Test Endpoint
+// ======================
 app.get("/add-test-player", async (req, res) => {
   try {
-    const player = { name: "Test Player", coins: 1000 };
-    await addPlayer(player);
-    res.send("Test player added");
-  } catch (error) {
+    const player = {
+      name: "Test Player",
+      coins: 1000,
+      createdAt: Date.now()
+    };
+
+    const id = await addPlayer(player);
+
+    res.json({
+      status: "success",
+      playerId: id
+    });
+
+  } catch (err) {
+    console.error(err);
     res.status(500).send("Error adding test player");
   }
 });
@@ -77,9 +91,12 @@ app.get("/add-test-player", async (req, res) => {
 // ======================
 // Socket.IO
 // ======================
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  }
+});
 
-// Use the modular gameSocket handler
 const gameSocket = require("./sockets/gameSocket");
 gameSocket(io);
 
@@ -87,6 +104,7 @@ gameSocket(io);
 // Start Server
 // ======================
 const PORT = process.env.PORT || 3000;
+
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
