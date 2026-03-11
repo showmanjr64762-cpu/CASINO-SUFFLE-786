@@ -1,7 +1,7 @@
 // config/firebase.js
 const admin = require("firebase-admin");
 
-// Ensure required environment variables are present
+// Ensure environment variables exist
 const requiredEnv = ["FB_PROJECT_ID", "FB_CLIENT_EMAIL", "FB_PRIVATE_KEY"];
 requiredEnv.forEach((key) => {
   if (!process.env[key]) {
@@ -23,10 +23,9 @@ const serviceAccount = {
 // Initialize Firebase Admin
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  // Use your database URL directly
-  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com",
+  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com", // Your DB URL
 });
 
-// Export the database instance
+// Export database instance
 const db = admin.database();
 module.exports = db;
