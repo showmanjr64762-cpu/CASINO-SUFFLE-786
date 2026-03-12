@@ -1,17 +1,20 @@
 {
-  "name": "royal-match-1.com",
+  "name": "royal-match-backend",
   "version": "1.0.0",
-  "description": "royal-match-1.com Backend",
+  "description": "Backend for Royal Match Premium Casino Game",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.6.1",
-    "express": "^4.19.2",
-    "firebase-admin": "^12.5.0",
-    "pg": "^8.20.0",
-    "socket.io": "^4.8.3"
+    "dotenv": "^16.0.3",
+    "firebase-admin": "^11.8.0",
+    "express-rate-limit": "^6.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
   }
 }
