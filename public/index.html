@@ -4911,7 +4911,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 
-const socket = io();
+const socket = io("https://royal-match-1-com.onrender.com");
 
 // When user logs in
 socket.emit('user:join', {
