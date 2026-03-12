@@ -11,15 +11,16 @@ const app = express();
 
 // Firebase Setup
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DB_URL
+  databaseURL: process.env.FIREBASE_DB_URL,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET  // <-- Add this
 });
 
 const db = admin.database();
 const auth = admin.auth();
-const storage = admin.storage().bucket();
-
+const storage = admin.storage().bucket();  // This will now use the bucket from above
 // Middleware
 app.use(cors());
 app.use(express.json());
