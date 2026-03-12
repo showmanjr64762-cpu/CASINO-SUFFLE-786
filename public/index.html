@@ -4611,6 +4611,22 @@
       });
     }
 
+function playerJoin(name){
+
+  const playerId = Date.now();
+
+  db.ref("players/" + playerId).set({
+    name: name,
+    coins: 1000,
+    status: "online",
+    lastSeen: Date.now()
+  });
+
+  return playerId;
+}
+
+
+
     function handleCardClick(cardEl) {
       if (!gameState.canFlip) return;
       if (cardEl.classList.contains('flipped')) return;
@@ -4882,5 +4898,18 @@
       generateMultiplierDisplay();
     });
   </script>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.database();
+</script>
 </body>
 </html>
