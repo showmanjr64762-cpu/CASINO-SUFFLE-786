@@ -3855,6 +3855,51 @@
       audio.playClick();
     }
 
+
+
+const socket = io();
+
+// When user logs in
+socket.emit('user:join', {
+  userId: 'user-id-here',
+  username: 'username-here'
+});
+
+// When game finishes
+async function submitGameResult(coinsEarned, xpEarned, won, duration) {
+  const response = await fetch('/api/games/result', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ coinsEarned, xpEarned, won, duration })
+  });
+
+  const data = await response.json();
+  console.log('Result saved:', data);
+  
+  // Socket.io will automatically broadcast the update
+}
+
+// When user closes game
+window.addEventListener('beforeunload', () => {
+  fetch('/api/multiplayer/offline', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  socket.disconnect();
+});
+
+
+
+
+
+
+
+
     function saveProfile(e) {
       e.preventDefault();
       currentUser.username = document.getElementById('editUsername').value;

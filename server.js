@@ -4,38 +4,80 @@ const dotenv = require('dotenv');
 const admin = require('firebase-admin');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
+const socketIO = require('socket.io');
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: { origin: "*", methods: ["GET", "POST"] }
+});
 
 // Firebase Setup
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DB_URL,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET  // <-- Add this
+  databaseURL: process.env.FIREBASE_DB_URL
 });
 
 const db = admin.database();
 const auth = admin.auth();
-const storage = admin.storage().bucket();  // This will now use the bucket from above
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100
 });
 app.use('/api/', limiter);
 
+// ==================== SOCKET.IO REAL-TIME ====================
+
+const connectedUsers = {};
+const adminConnections = new Set();
+
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // User joins with their ID
+  socket.on('user:join', (data) => {
+    connectedUsers[socket.id] = {
+      userId: data.userId,
+      username: data.username,
+      socketId: socket.id
+    };
+    socket.join(`user:${data.userId}`);
+    io.emit('users:online-count', Object.keys(connectedUsers).length);
+  });
+
+  // Admin joins dashboard
+  socket.on('admin:join', (data) => {
+    adminConnections.add(socket.id);
+    socket.join('admin');
+    console.log('Admin connected:', socket.id);
+  });
+
+  // Game completed - broadcast to dashboard
+  socket.on('game:completed', (data) => {
+    io.to('admin').emit('game:new-result', data);
+    io.emit('leaderboard:update', data);
+  });
+
+  // User disconnects
+  socket.on('disconnect', () => {
+    delete connectedUsers[socket.id];
+    adminConnections.delete(socket.id);
+    io.emit('users:online-count', Object.keys(connectedUsers).length);
+    console.log('User disconnected:', socket.id);
+  });
+});
+
 // ==================== AUTHENTICATION ====================
 
-// Verify Token Middleware
 const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split('Bearer ')[1];
@@ -50,7 +92,6 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// Register
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, username } = req.body;
@@ -88,15 +129,10 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Login
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Note: Firebase Admin SDK doesn't have direct login. 
-    // Use Firebase Client SDK on frontend or custom token
     const customToken = await auth.createCustomToken(email);
-    
     res.json({ token: customToken });
   } catch (error) {
     res.status(401).json({ error: 'Authentication failed' });
@@ -105,7 +141,6 @@ app.post('/api/auth/login', async (req, res) => {
 
 // ==================== USER PROFILE ====================
 
-// Get User Profile
 app.get('/api/users/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -121,7 +156,6 @@ app.get('/api/users/:userId', verifyToken, async (req, res) => {
   }
 });
 
-// Update User Profile
 app.put('/api/users/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -144,11 +178,10 @@ app.put('/api/users/:userId', verifyToken, async (req, res) => {
 
 // ==================== GAME RESULTS ====================
 
-// Save Game Result
 app.post('/api/games/result', verifyToken, async (req, res) => {
   try {
     const { userId } = req;
-    const { coinsEarned, xpEarned, won, level, duration } = req.body;
+    const { coinsEarned, xpEarned, won, duration } = req.body;
 
     if (!coinsEarned || !xpEarned || won === undefined) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -174,9 +207,8 @@ app.post('/api/games/result', verifyToken, async (req, res) => {
       lastPlayedAt: admin.database.ServerValue.TIMESTAMP
     });
 
-    // Save game result
     const gameId = db.ref('games').push().key;
-    await db.ref(`games/${gameId}`).set({
+    const gameData = {
       userId,
       username: user.username,
       coinsEarned,
@@ -184,6 +216,26 @@ app.post('/api/games/result', verifyToken, async (req, res) => {
       won,
       duration,
       createdAt: admin.database.ServerValue.TIMESTAMP
+    };
+
+    await db.ref(`games/${gameId}`).set(gameData);
+
+    // Broadcast real-time update to dashboard
+    io.to('admin').emit('game:new-result', {
+      username: user.username,
+      coinsEarned,
+      xpEarned,
+      won,
+      level: newLevel
+    });
+
+    // Update leaderboard in real-time
+    io.emit('leaderboard:update', {
+      userId,
+      username: user.username,
+      level: newLevel,
+      totalWins: newWins,
+      coins: newCoins
     });
 
     res.json({
@@ -197,7 +249,6 @@ app.post('/api/games/result', verifyToken, async (req, res) => {
   }
 });
 
-// Get Game History
 app.get('/api/games/history/:userId', verifyToken, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -221,7 +272,6 @@ app.get('/api/games/history/:userId', verifyToken, async (req, res) => {
 
 // ==================== LEADERBOARD ====================
 
-// Get Global Leaderboard
 app.get('/api/leaderboard', async (req, res) => {
   try {
     const snapshot = await db.ref('users')
@@ -246,7 +296,6 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-// Get Level Leaderboard
 app.get('/api/leaderboard/level', async (req, res) => {
   try {
     const snapshot = await db.ref('users')
@@ -272,7 +321,6 @@ app.get('/api/leaderboard/level', async (req, res) => {
 
 // ==================== MULTIPLAYER ====================
 
-// Set Online Status
 app.post('/api/multiplayer/online', verifyToken, async (req, res) => {
   try {
     const { userId } = req;
@@ -284,13 +332,18 @@ app.post('/api/multiplayer/online', verifyToken, async (req, res) => {
       timestamp: admin.database.ServerValue.TIMESTAMP
     });
 
+    io.emit('players:online-update', {
+      userId,
+      username: userSnapshot.val().username,
+      level: userSnapshot.val().level
+    });
+
     res.json({ message: 'Online status updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get Online Players
 app.get('/api/multiplayer/online', async (req, res) => {
   try {
     const snapshot = await db.ref('onlinePlayers').once('value');
@@ -309,11 +362,13 @@ app.get('/api/multiplayer/online', async (req, res) => {
   }
 });
 
-// Set Offline
 app.post('/api/multiplayer/offline', verifyToken, async (req, res) => {
   try {
     const { userId } = req;
     await db.ref(`onlinePlayers/${userId}`).remove();
+    
+    io.emit('players:offline-update', { userId });
+
     res.json({ message: 'Offline status updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -322,7 +377,6 @@ app.post('/api/multiplayer/offline', verifyToken, async (req, res) => {
 
 // ==================== ADMIN DASHBOARD ====================
 
-// Admin Verification
 const verifyAdmin = async (req, res, next) => {
   try {
     const { userId } = req;
@@ -338,7 +392,6 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
-// Dashboard Stats
 app.get('/api/admin/stats', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const usersSnapshot = await db.ref('users').once('value');
@@ -365,7 +418,6 @@ app.get('/api/admin/stats', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Get All Users (Admin)
 app.get('/api/admin/users', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const snapshot = await db.ref('users').once('value');
@@ -384,7 +436,6 @@ app.get('/api/admin/users', verifyToken, verifyAdmin, async (req, res) => {
   }
 });
 
-// Ban User (Admin)
 app.post('/api/admin/users/:userId/ban', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -394,13 +445,14 @@ app.post('/api/admin/users/:userId/ban', verifyToken, verifyAdmin, async (req, r
       bannedAt: admin.database.ServerValue.TIMESTAMP
     });
 
+    io.to('admin').emit('user:banned', { userId });
+
     res.json({ message: 'User banned successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Unban User (Admin)
 app.post('/api/admin/users/:userId/unban', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -409,13 +461,14 @@ app.post('/api/admin/users/:userId/unban', verifyToken, verifyAdmin, async (req,
       banned: false
     });
 
+    io.to('admin').emit('user:unbanned', { userId });
+
     res.json({ message: 'User unbanned successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Add Coins to User (Admin)
 app.post('/api/admin/users/:userId/coins', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
@@ -429,13 +482,14 @@ app.post('/api/admin/users/:userId/coins', verifyToken, verifyAdmin, async (req,
       coins: currentCoins + amount
     });
 
+    io.to('admin').emit('admin:coins-added', { userId, amount, newBalance: currentCoins + amount });
+
     res.json({ message: 'Coins added', newBalance: currentCoins + amount });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Get Game Analytics (Admin)
 app.get('/api/admin/analytics', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const gamesSnapshot = await db.ref('games').once('value');
@@ -463,7 +517,6 @@ app.get('/api/admin/analytics', verifyToken, verifyAdmin, async (req, res) => {
 
 // ==================== CLEANUP ====================
 
-// Clean up offline players every 5 minutes
 setInterval(async () => {
   try {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
@@ -479,7 +532,7 @@ setInterval(async () => {
   }
 }, 5 * 60 * 1000);
 
-// ==================== SERVE DASHBOARD ====================
+// ==================== SERVE PAGES ====================
 
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
@@ -492,6 +545,6 @@ app.get('/', (req, res) => {
 // ==================== START SERVER ====================
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
