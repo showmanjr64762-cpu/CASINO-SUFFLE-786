@@ -10,11 +10,19 @@ const serviceAccount = {
   client_email: process.env.FB_CLIENT_EMAIL
 };
 
+
+ 
+
+const admin = require("firebase-admin");
+
+const serviceAccount = require("../firebase-key.json");
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FB_DATABASE_URL
+  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com"
 });
 
+module.exports = admin;
 const db = admin.database();
 
 module.exports = db;
