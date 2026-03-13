@@ -1277,33 +1277,7 @@
       font-size: 0.9rem;
     }
 
-    .support-form {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 16px;
-      padding: 1.5rem;
-    }
-
-    .form-textarea {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
-      color: #fff;
-      font-family: inherit;
-      font-size: 1rem;
-      outline: none;
-      transition: border-color 0.3s;
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .form-textarea:focus {
-      border-color: #ffd700;
-    }
-
-    .submit-btn {
+    .support-btn {
       width: 100%;
       padding: 1rem;
       background: linear-gradient(145deg, #d4af37, #ffd700);
@@ -1317,11 +1291,11 @@
       margin-top: 1rem;
     }
 
-    .submit-btn:hover {
+    .support-btn:hover {
       transform: scale(1.02);
     }
 
-    .submit-btn:active {
+    .support-btn:active {
       transform: scale(0.98);
     }
 
@@ -3061,9 +3035,7 @@
           <div class="avatar-option" onclick="selectAvatar('😎')">😎</div>
           <div class="avatar-option" onclick="selectAvatar('🐱‍🚀')">🐱‍🚀</div>
           <div class="avatar-option" onclick="selectAvatar('✌')">✌</div>
-
-                    <div class="avatar-option" onclick="selectAvatar('🤞')">🤞</div>
-
+          <div class="avatar-option" onclick="selectAvatar('🤞')">🤞</div>
         </div>
 
         <div class="profile-stats">
@@ -3366,10 +3338,10 @@
       <div class="support-container">
         <div class="support-info">
           <div class="support-item">
-            <div class="support-icon-box">📧</div>
+            <div class="support-icon-box">🤖</div>
             <div class="support-item-info">
-              <h4>Email Support</h4>
-              <p>support@royalmatch.com</p>
+              <h4>AI Support Bot</h4>
+              <p>Get instant help 24/7</p>
             </div>
           </div>
           <div class="support-item">
@@ -3388,21 +3360,7 @@
           </div>
         </div>
 
-        <div class="support-form">
-          <div class="form-group">
-            <label class="form-label">Your Name</label>
-            <input type="text" class="form-input" placeholder="Enter your name" id="supportName">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Subject</label>
-            <input type="text" class="form-input" placeholder="How can we help?" id="supportSubject">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Message</label>
-            <textarea class="form-textarea" placeholder="Describe your issue or question..." id="supportMessage"></textarea>
-          </div>
-          <button class="submit-btn" onclick="sendSupportMessage()">Send Message</button>
-        </div>
+        <button class="support-btn" onclick="openSupportBot()">💬 Open AI Support Chat</button>
       </div>
     </div>
   </div>
@@ -3562,10 +3520,6 @@
           <button class="bet-option" data-bet="100" type="button">100</button>
           <button class="bet-option" data-bet="250" type="button">250</button>
           <button class="bet-option" data-bet="500" type="button">500</button>
-
-
-
-
         </div>
         <div class="custom-bet-row">
           <input type="number" class="custom-bet-input" id="customBet" placeholder="Custom bet" min="10" max="5000" />
@@ -3620,9 +3574,8 @@
       'Yousaf Ali', 'Zain Ahmed', 'Adnan Khan', 'Babar Ahmed', 'Chand Hassan',
       'Danyal Khan', 'Eman Ahmed', 'Farhan Ali', 'Ghani Khan', 'Hamid Ahmed',
       'Imran Khan', 'Junaid Hassan', 'Karim Ahmed', 'Laraib Ali', 'Mazhar Khan',
-       'Ahmed Khan', 'Ali Raza', 'Usman Ali', 'Bilal Ahmed',
+      'Ahmed Khan', 'Ali Raza', 'Usman Ali', 'Bilal Ahmed',
       'Hassan Raza', 'Zain Ali', 'Ahsan Khan', 'Saad Ahmed',
-      
     ];
 
     const avatarEmojis = ['👤', '👴', '🤷‍♀️', '👨', '🦅', '🕵️‍♀️', '🏎', '💎', '🤦‍♂️'];
@@ -3854,6 +3807,7 @@
       saveUserData();
       audio.playClick();
     }
+
     function saveProfile(e) {
       e.preventDefault();
       currentUser.username = document.getElementById('editUsername').value;
@@ -4092,20 +4046,10 @@
       openOffers();
     }
 
-    function sendSupportMessage() {
-      const name = document.getElementById('supportName').value;
-      const subject = document.getElementById('supportSubject').value;
-      const message = document.getElementById('supportMessage').value;
-
-      if (!name || !subject || !message) {
-        alert('Please fill in all fields');
-        return;
-      }
-
-      showPopup('Message Sent!', 'Your message has been sent. We will contact you soon.');
-      document.getElementById('supportName').value = '';
-      document.getElementById('supportSubject').value = '';
-      document.getElementById('supportMessage').value = '';
+    function openSupportBot() {
+      const supportBotUrl = 'https://bots.easy-peasy.ai/bot/74d4a40f-b3ee-4e22-9ae0-bbb8f2b9fdd5?_gl=1*h5eugf*_gcl_au*MTc1NjY2NzIxOS4xNzczMzg0ODE0';
+      window.open(supportBotUrl, '_blank');
+      audio.playClick();
     }
 
     const shopItems = [
@@ -4123,18 +4067,6 @@
       { amount: 30000, coins: 30000, icon: '💰' },
       { amount: 40000, coins: 40000, icon: '💰' },
       { amount: 50000, coins: 50000, icon: '💰' }
-
-
-
-
-
-
-
-
-
-
-
-      
     ];
 
     function renderShopGrid() {
@@ -4610,22 +4542,6 @@
       });
     }
 
-function playerJoin(name){
-
-  const playerId = Date.now();
-
-  db.ref("players/" + playerId).set({
-    name: name,
-    coins: 1000,
-    status: "online",
-    lastSeen: Date.now()
-  });
-
-  return playerId;
-}
-
-
-
     function handleCardClick(cardEl) {
       if (!gameState.canFlip) return;
       if (cardEl.classList.contains('flipped')) return;
@@ -4897,57 +4813,5 @@ function playerJoin(name){
       generateMultiplierDisplay();
     });
   </script>
-
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-<script>
-const firebaseConfig = {
-  databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.database();
-
-
-const socket = io("https://royal-match-1-com.onrender.com");
-
-// When user logs in
-socket.emit('user:join', {
-  userId: 'user-id-here',
-  username: 'username-here'
-});
-
-// When game finishes
-async function submitGameResult(coinsEarned, xpEarned, won, duration) {
-  const response = await fetch('/api/games/result', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ coinsEarned, xpEarned, won, duration })
-  });
-
-  const data = await response.json();
-  console.log('Result saved:', data);
-  
-  // Socket.io will automatically broadcast the update
-}
-
-// When user closes game
-window.addEventListener('beforeunload', () => {
-  fetch('/api/multiplayer/offline', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  socket.disconnect();
-});
-
-
-</script>
 </body>
 </html>
