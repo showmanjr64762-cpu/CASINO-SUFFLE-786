@@ -35,11 +35,10 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+let connectedUsers = {};
+let adminConnections = new Set();
 // ==================== SOCKET.IO REAL-TIME ====================
 
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
 
 
 let onlinePlayers = {};
