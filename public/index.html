@@ -5014,6 +5014,57 @@
       updateUI();
       generateMultiplierDisplay();
     });
+
+    const SERVER = "https://royal-match.onrender.com";
+
+    async function register(email,password,username){
+
+const res = await fetch(SERVER + "/api/auth/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+email:email,
+password:password,
+username:username
+})
+});
+
+const data = await res.json();
+
+console.log(data);
+
+}
+async function loadPlayer(userId,token){
+
+const res = await fetch(SERVER + "/api/users/"+userId,{
+headers:{
+Authorization:"Bearer "+token
+}
+});
+
+const player = await res.json();
+
+console.log(player);
+
+}
+
+const socket = io(SERVER);
+
+socket.emit("user:join",{
+userId:userId,
+username:username
+});
+
+socket.emit("game:completed",{
+userId:userId,
+username:username,
+win:true,
+coinsWon:200
+});
+
   </script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 </body>
 </html>
