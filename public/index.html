@@ -4942,6 +4942,8 @@
       });
     }
 
+
+    
     function handleLoginSubmit(form) {
       const formData = new FormData(form);
       const errorContainer = document.getElementById('loginErrors');
@@ -5017,6 +5019,7 @@
 
     const SERVER = "https://royal-match.onrender.com";
 
+
     async function register(email,password,username){
 
 const res = await fetch(SERVER + "/api/auth/register",{
@@ -5044,13 +5047,27 @@ Authorization:"Bearer "+token
 }
 });
 
+
+
 const player = await res.json();
 
 console.log(player);
 
 }
 
+
+
 const socket = io(SERVER);
+
+socket.on("connect", () => {
+  console.log("Connected to server:", socket.id);
+});
+
+
+
+
+
+
 
 socket.emit("user:join",{
 userId:userId,
@@ -5065,6 +5082,9 @@ coinsWon:200
 });
 
   </script>
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+
 </body>
 </html>
