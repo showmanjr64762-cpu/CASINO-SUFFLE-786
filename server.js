@@ -35,30 +35,65 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-let connectedUsers = {};
-let adminConnections = new Set();
+
+
 // ==================== SOCKET.IO REAL-TIME ====================
 
+let connectedUsers = {};
+let adminConnections = new Set();
 
+io.on("connection", (socket) => {
 
-let onlinePlayers = {};
-let rooms = {};
+  console.log("User connected:", socket.id);
 
-io.on("connection",(socket)=>{
+  // USER JOIN
+  socket.on('user:join', (data) => {
 
-  console.log("Player connected:",socket.id);
-
-  // Player joins
-  socket.on("player_join",(data)=>{
-
-    onlinePlayers[socket.id] = {
-      uid:data.uid,
-      username:data.username,
-      coins:data.coins
+    connectedUsers[socket.id] = {
+      userId: data.userId,
+      username: data.username,
+      socketId: socket.id
     };
 
-    io.emit("online_players",Object.values(onlinePlayers));
+    socket.join(`user:${data.userId}`);
+
+    io.emit('users:online-count', Object.keys(connectedUsers).length);
+
   });
+
+  // ADMIN JOIN
+  socket.on('admin:join', () => {
+
+    adminConnections.add(socket.id);
+    socket.join('admin');
+
+    console.log("Admin connected:", socket.id);
+
+  });
+
+  // GAME COMPLETED
+  socket.on('game:completed', (data) => {
+
+    io.to('admin').emit('game:new-result', data);
+    io.emit('leaderboard:update', data);
+
+  });
+
+  // DISCONNECT
+  socket.on("disconnect", () => {
+
+    delete connectedUsers[socket.id];
+    adminConnections.delete(socket.id);
+
+    io.emit('users:online-count', Object.keys(connectedUsers).length);
+
+    console.log("User disconnected:", socket.id);
+
+  });
+
+});
+
+
 
   // Create room
   socket.on("create_room",(data)=>{
@@ -110,7 +145,7 @@ io.on("connection",(socket)=>{
 
   });
 
-});
+
 
 server.listen(3000,()=>{
   console.log("Game server running");
