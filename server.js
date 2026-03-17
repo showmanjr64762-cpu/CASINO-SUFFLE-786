@@ -9,11 +9,19 @@ const socketIO = require("socket.io");
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 
-const io = socketIO(server,{
-  cors:{origin:"*",methods:["GET","POST"]}
+
+const io = socketIO(server, {
+  cors: {
+    origin: ["https://nj777-2756c.web.app"],
+    methods: ["GET", "POST"],
+    credentials: true
+  },
+  transports: ["websocket", "polling"]
 });
+
 
 app.use(cors());
 app.use(express.json());

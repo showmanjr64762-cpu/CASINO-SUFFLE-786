@@ -1,3 +1,5 @@
+
+document.addEventListener("DOMContentLoaded", () => {
 const pakistaniNames = [
       'Ahmed Hassan', 'Ali Khan', 'Bilal Ahmed', 'Hassan Ali', 'Muhammad Imran',
       'Faisal Khan', 'Karim Abdul', 'Malik Saeed', 'Nasir Ahmed', 'Omar Khan',
@@ -1511,7 +1513,9 @@ const pakistaniNames = [
 
   document.querySelectorAll('.profile-close').forEach(btn => {
     btn.addEventListener('click', () => {
-      profileOverlay && profileOverlay.classList.remove('active');
+if (profileOverlay) {
+  profileOverlay.classList.remove('active');
+}
     });
   });
 
@@ -1619,9 +1623,28 @@ const pakistaniNames = [
       }, 800);
     }
 
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors");
+
+const app = express();
+app.use(cors({
+  origin: "*", // allow all (for now)
+  methods: ["GET", "POST"]
+}));
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
 
 
- document.addEventListener('DOMContentLoaded', () => {
+
   initApp();
   setupEventListeners();
   updateUI();
@@ -1638,4 +1661,22 @@ const pakistaniNames = [
       }, 700);
     }, 10500); // 10.5 seconds
   }
+const socket = io("https://royal-match.onrender.com");
+
+socket.on("connect", () => {
+  console.log("✅ Connected to server:", socket.id);
+});
+
+socket.on("connect_error", (err) => {
+  console.log("❌ Connection error:", err.message);
+});
+});
+  
+
+app.get("/", (req, res) => {
+  res.send("Server is running ✅");
+});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
