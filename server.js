@@ -7,17 +7,7 @@ const path = require("path");
 const http = require("http");
 const socketIO = require("socket.io");
 
-// Socket connection (Render URL)
-const socket = io("https://royal-match.onrender.com", {
-  transports: ["websocket", "polling"]
-});
-
-// Fix profile overlay safely
-const profileOverlay = document.querySelector('.profile-modal-overlay');
-
 dotenv.config();
-
-
 
 const app = express();
 const server = http.createServer(app);
@@ -82,7 +72,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ================= AUTH =================
+// ================= AUTH MIDDLEWARE =================
 const verifyToken = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split("Bearer ")[1];
@@ -96,7 +86,8 @@ const verifyToken = async (req, res, next) => {
   }
 };
 
-// ================= REGISTER =================
+// ================= REGISTER ROUTE =================
+app.post("/api/register", async (req, res) => {
   try {
     const { email, password, username } = req.body;
     const user = await auth.createUser({
@@ -121,9 +112,23 @@ const verifyToken = async (req, res, next) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
+});
 
+// ================= LOGIN ROUTE =================
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email } = req.body;
+    // Note: Actual token verification should be done client-side with Firebase Auth
+    // This is a simplified version
+    const user = await auth.getUserByEmail(email);
+    res.json({ uid: user.uid, email: user.email, username: user.displayName });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
-// ================= USER PROFILE =================
+// ================= USER PROFILE ROUTE =================
+app.get("/api/users/:userId", verifyToken, async (req, res) => {
   try {
     const snap = await db.ref("users/" + req.params.userId).once("value");
     if (!snap.exists()) return res.status(404).json({ error: "User not found" });
@@ -131,9 +136,21 @@ const verifyToken = async (req, res, next) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
 
+// ================= UPDATE USER COINS ROUTE =================
+app.post("/api/users/:userId/coins", verifyToken, async (req, res) => {
+  try {
+    const { coins } = req.body;
+    await db.ref("users/" + req.params.userId).update({ coins });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// ================= LEADERBOARD =================
+// ================= LEADERBOARD ROUTE =================
+app.get("/api/leaderboard", async (req, res) => {
   try {
     const snap = await db
       .ref("users")
@@ -150,16 +167,27 @@ const verifyToken = async (req, res, next) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-// ================= SERVE PAGES =================
+});
+
+// ================= SERVE INDEX PAGE =================
+app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
-
+// ================= SERVE ADMIN PAGE =================
+app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "admin-DasHBoaRd.html"));
+});
 
+// ================= HEALTH CHECK =================
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
 
 // ================= START SERVER =================
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
 });
