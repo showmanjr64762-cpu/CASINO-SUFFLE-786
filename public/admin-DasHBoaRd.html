@@ -455,6 +455,10 @@
 
     // Refresh stats every 60 seconds
     setInterval(loadStats, 60000);
+
+    app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
   </script>
 </body>
 </html>

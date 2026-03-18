@@ -37,7 +37,7 @@
 
       <div class="auth-content">
         <!-- LOGIN FORM -->
-        <form class="auth-form active" id="loginForm" method="POST" action="server.php">
+        <form id="loginForm" class="auth-form active" onsubmit="event.preventDefault(); handleLoginSubmit(this)">
           <div id="loginErrors" class="error-message"></div>
           <div id="loginSuccess" class="success-message"></div>
           
@@ -51,7 +51,7 @@
             <input type="password" name="password" class="form-input" placeholder="Enter your password" required>
           </div>
 
-          <button type="submit" name="login_user" class="auth-btn">Login</button>
+          <button type="submit" class="auth-btn">Login</button>
           
           <div class="auth-divider">
             <span>OR</span>
@@ -68,7 +68,7 @@
         </form>
 
         <!-- REGISTER FORM -->
-        <form class="auth-form" id="registerForm" method="POST" action="server.php">
+        <form id="registerForm" class="auth-form" onsubmit="event.preventDefault(); handleRegisterSubmit(this)">
           <div id="registerErrors" class="error-message"></div>
           <div id="registerSuccess" class="success-message"></div>
           
@@ -92,7 +92,7 @@
             <input type="password" name="password_2" class="form-input" placeholder="Confirm password" required>
           </div>
 
-          <button type="submit" name="reg_user" class="auth-btn">Register</button>
+          <button type="submit" class="auth-btn">Register</button>
 
           <div class="auth-link">
             Already a member? <a onclick="switchAuthTab('login')">Sign in</a>
@@ -264,7 +264,7 @@
     <div class="fullscreen-content">
       <div class="shop-grid" id="shopGrid"></div>
 
-      <!-- NEW: Pakistani Payment Methods -->
+      <!-- Pakistani Payment Methods -->
       <h2 class="section-title" style="margin-top: 2rem;">
         <span>🇵🇰</span>
         <span>Pakistani Payment Methods</span>
@@ -560,48 +560,8 @@
     <div class="lose-text">BOOM!</div>
     <div class="lose-subtext" id="loseSubtext">You lost everything</div>
     <button class="play-again-btn" id="playAgainLose" type="button">TRY AGAIN</button>
-    <div class="profile-modal-overlay"></div>
   </div>
 
   <script src="script.js"></script>
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script>
-
-document.addEventListener('DOMContentLoaded', () => {
-  const splash = document.querySelector('.splash-screen');
-  if (splash) {
-    // match your loading animation duration (10s) + a bit extra
-    setTimeout(() => {
-      splash.classList.add('fade-out');
-      setTimeout(() => splash.remove(), 700);
-    }, 10500);
-  }
-
-
-    // Close auth
-    document.querySelectorAll('.close-auth').forEach(btn => {
-      btn.addEventListener('click', () => {
-        authOverlay?.classList.remove('active');
-      });
-    });
-
-    // Close profile
-    document.querySelectorAll('.profile-close').forEach(btn => {
-      btn.addEventListener('click', () => {
-        profileOverlay?.classList.remove('active');
-      });
-    });
-
-    // Close on overlay click
-    [authOverlay, profileOverlay].forEach(overlay => {
-      overlay?.addEventListener('click', e => {
-        if (e.target === overlay) overlay.classList.remove('active');
-      });
-    });
-  });
-  const socket = io("https://royal-match.onrender.com", {
-  transports: ["websocket"]
-});
-</script>
 </body>
 </html>
