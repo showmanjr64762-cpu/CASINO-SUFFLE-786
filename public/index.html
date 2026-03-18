@@ -662,5 +662,74 @@
 
   <!-- Your game script -->
   <script src="script.js"></script>
+
+<!-- FINAL FIX - Remove "Feature is disabled" error -->
+<script>
+  (function() {
+    // ===== COMPLETELY REMOVE "FEATURE IS DISABLED" ERROR =====
+    
+    // Method 1: Override console.error to filter out the message
+    const originalError = console.error;
+    console.error = function() {
+      const args = Array.from(arguments);
+      const message = args.join(' ');
+      
+      // If this is the extension error, don't show it
+      if (message.includes('Feature is disabled') || 
+          message.includes('content.js') ||
+          (args[0] && args[0].toString && args[0].toString().includes('content.js'))) {
+        // Silently ignore - no console output at all
+        return;
+      }
+      
+      // Show all other errors
+      originalError.apply(console, args);
+    };
+    
+    // Method 2: Override console.log to also filter (just in case)
+    const originalLog = console.log;
+    console.log = function() {
+      const args = Array.from(arguments);
+      const message = args.join(' ');
+      
+      if (message.includes('Feature is disabled') || 
+          message.includes('content.js')) {
+        return;
+      }
+      
+      originalLog.apply(console, args);
+    };
+    
+    // Method 3: Add a global error handler to prevent it from showing
+    window.addEventListener('error', function(e) {
+      if (e.message && (e.message.includes('Feature is disabled') || 
+                         e.message.includes('content.js'))) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }, true);
+    
+    // Method 4: Override the console for all methods
+    const consoleMethods = ['warn', 'info', 'debug'];
+    consoleMethods.forEach(method => {
+      const original = console[method];
+      if (original) {
+        console[method] = function() {
+          const args = Array.from(arguments);
+          const message = args.join(' ');
+          if (message.includes('Feature is disabled') || 
+              message.includes('content.js')) {
+            return;
+          }
+          original.apply(console, args);
+        };
+      }
+    });
+    
+    console.log("✅ Extension error blocker activated");
+  })();
+</script>
+
 </body>
 </html>
