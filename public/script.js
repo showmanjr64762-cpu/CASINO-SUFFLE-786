@@ -1,5 +1,202 @@
+// Add this near your other routes in server.js
+app.get('/favicon.ico', (req, res) => {
+  res.set('Content-Type', 'image/svg+xml');
+  res.send('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">👑</text></svg>');
+});
+
+
+
+// ================= GLOBAL ERROR HANDLER =================
+window.addEventListener('error', function(e) {
+  console.error('Global error caught:', e.error?.message || e.message);
+  // Prevent the error from breaking the game
+  e.preventDefault?.();
+  return true;
+});
+
+// ================= FIREBASE CHECK =================
+console.log("🔍 Checking Firebase status...");
+
+let firebaseAvailable = false;
+try {
+  if (typeof firebase !== 'undefined') {
+    console.log("✅ Firebase object exists");
+    
+    // Check if Firebase is initialized
+    if (firebase.apps && firebase.apps.length > 0) {
+      console.log("✅ Firebase is initialized with app:", firebase.apps[0].name);
+      
+      // Check auth
+      if (firebase.auth) {
+        console.log("✅ Firebase Auth available");
+        firebaseAvailable = true;
+      } else {
+        console.warn("⚠️ Firebase Auth not available");
+      }
+      
+      // Check database
+      if (firebase.database) {
+        console.log("✅ Firebase Database available");
+      } else {
+        console.warn("⚠️ Firebase Database not available");
+      }
+    } else {
+      console.warn("⚠️ Firebase not initialized. No apps found.");
+    }
+  } else {
+    console.warn("⚠️ Firebase SDK not loaded");
+  }
+} catch (e) {
+  console.error("❌ Firebase check failed:", e.message);
+}
+
+// ================= FEATURE DISABLED FIX =================
+// Override any functions that might be disabled
+if (!firebaseAvailable) {
+  console.log("⚠️ Firebase not available - running in offline mode");
+  
+  // Create mock Firebase functions to prevent "feature disabled" errors
+  window.firebase = window.firebase || {};
+  window.firebase.auth = window.firebase.auth || function() {
+    return {
+      signInWithEmailAndPassword: async () => ({ user: { uid: 'offline-' + Date.now() } }),
+      createUserWithEmailAndPassword: async () => ({ user: { uid: 'offline-' + Date.now() } }),
+      signOut: async () => {},
+      onAuthStateChanged: (callback) => { 
+        callback(null);
+        return () => {};
+      }
+    };
+  };
+  
+  window.firebase.database = window.firebase.database || function() {
+    return {
+      ref: () => ({
+        once: async () => ({ exists: () => false, val: () => ({}) }),
+        set: async () => {},
+        update: async () => {},
+        on: (event, callback) => {
+          if (event === 'value') callback({ exists: () => false, val: () => ({}) });
+          return () => {};
+        }
+      })
+    };
+  };
+  
+  console.log("✅ Mock Firebase created - game will run in offline mode");
+}
+
+// ================= MOCK DATABASE FOR OFFLINE MODE =================
+class OfflineDatabase {
+  constructor() {
+    this.data = {};
+    this.loadFromStorage();
+  }
+  
+  loadFromStorage() {
+    try {
+      const saved = localStorage.getItem('royalMatchOffline');
+      if (saved) {
+        this.data = JSON.parse(saved);
+        console.log("✅ Loaded offline data from storage");
+      }
+    } catch (e) {
+      console.error("Failed to load offline data:", e);
+    }
+  }
+  
+  saveToStorage() {
+    try {
+      localStorage.setItem('royalMatchOffline', JSON.stringify(this.data));
+    } catch (e) {
+      console.error("Failed to save offline data:", e);
+    }
+  }
+  
+  ref(path) {
+    return {
+      once: async () => {
+        return {
+          exists: () => !!this.data[path],
+          val: () => this.data[path] || {}
+        };
+      },
+      set: async (value) => {
+        this.data[path] = value;
+        this.saveToStorage();
+      },
+      update: async (value) => {
+        this.data[path] = { ...(this.data[path] || {}), ...value };
+        this.saveToStorage();
+      }
+    };
+  }
+}
+
+// Create offline database if needed
+if (!firebaseAvailable) {
+  window.offlineDB = new OfflineDatabase();
+}
+
 // Global variables
 const profileOverlay = document.getElementById('profileModal');
+// Add at the VERY TOP of script.js
+console.log("Script loaded - checking Firebase...");
+
+// Check if Firebase is available
+if (typeof firebase === 'undefined') {
+  console.error("❌ Firebase SDK not loaded! Make sure Firebase scripts are included.");
+} else {
+  console.log("✅ Firebase SDK loaded successfully");
+  
+  // Check if Firebase is initialized
+  try {
+    const app = firebase.app();
+    console.log("✅ Firebase initialized:", app.name);
+  } catch (e) {
+    console.error("❌ Firebase not initialized:", e.message);
+  }
+}
+
+// Check if Socket.io is available
+if (typeof io === 'undefined') {
+  console.error("❌ Socket.io not loaded!");
+} else {
+  console.log("✅ Socket.io loaded successfully");
+}
+
+
+// Add near the top of script.js
+function checkFirebaseFeatures() {
+  try {
+    // Check if Firebase Auth is available
+    if (firebase.auth) {
+      console.log("✅ Firebase Auth available");
+    } else {
+      console.warn("⚠️ Firebase Auth not available");
+    }
+    
+    // Check if Firebase Database is available
+    if (firebase.database) {
+      console.log("✅ Firebase Database available");
+    } else {
+      console.warn("⚠️ Firebase Database not available");
+    }
+    
+    return true;
+  } catch (e) {
+    console.error("❌ Firebase feature check failed:", e);
+    return false;
+  }
+}
+
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+  checkFirebaseFeatures();
+});
+
+
+
 const pakistaniNames = [
   'Ahmed Hassan', 'Ali Khan', 'Bilal Ahmed', 'Hassan Ali', 'Muhammad Imran',
   'Faisal Khan', 'Karim Abdul', 'Malik Saeed', 'Nasir Ahmed', 'Omar Khan',

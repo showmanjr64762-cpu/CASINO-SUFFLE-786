@@ -4,21 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Royal Match - Premium Casino</title>
+  
+  <!-- Favicon - Prevents 404 error -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+  
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
-<script>
-  const socket = io("https://royal-match-1-com.onrender.com");
-</script>
-
-<script>
- 
-</script>
 <body class="theme-emerald">
   <div class="pattern-overlay"></div>
   <div class="particles" id="particles"></div>
 
+  <!-- Splash Screen -->
   <div class="splash-screen" id="splashScreen">
     <div class="splash-content">
       <div class="splash-logo"></div>
@@ -33,6 +33,7 @@
     </div>
   </div>
 
+  <!-- Auth Modal -->
   <div class="auth-overlay" id="authOverlay">
     <div class="auth-container">
       <button class="close-auth" onclick="closeAuth()">×</button>
@@ -110,6 +111,7 @@
     </div>
   </div>
 
+  <!-- Profile Modal -->
   <div class="profile-modal-overlay" id="profileModal">
     <div class="profile-container">
       <div class="profile-header">
@@ -142,6 +144,7 @@
     </div>
   </div>
 
+  <!-- Game Entry Loader -->
   <div class="game-entry-loader" id="gameEntryLoader">
     <div class="game-loader-content">
       <div class="game-loader-icon">👑</div>
@@ -153,6 +156,7 @@
     </div>
   </div>
 
+  <!-- Success Popup -->
   <div class="popup-overlay" id="successPopup">
     <div class="popup-content">
       <div class="popup-icon">✅</div>
@@ -162,6 +166,7 @@
     </div>
   </div>
 
+  <!-- VIP Popup -->
   <div class="popup-overlay" id="vipPopup">
     <div class="popup-content">
       <div class="popup-icon">👑</div>
@@ -174,6 +179,7 @@
     </div>
   </div>
 
+  <!-- Settings Modal -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -222,6 +228,7 @@
     </div>
   </div>
 
+  <!-- Offers Section -->
   <div class="fullscreen-section" id="offersSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeOffers()">
@@ -261,6 +268,7 @@
     </div>
   </div>
 
+  <!-- Shop Section -->
   <div class="fullscreen-section" id="shopSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeShop()">
@@ -281,6 +289,7 @@
     </div>
   </div>
 
+  <!-- Missions Section -->
   <div class="fullscreen-section" id="missionsSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeMissions()">
@@ -289,11 +298,10 @@
       </button>
       <span class="fullscreen-title">🎯 Missions</span>
     </div>
-    <div class="fullscreen-content" id="missionsContent">
-      <!-- Missions will be rendered here -->
-    </div>
+    <div class="fullscreen-content" id="missionsContent"></div>
   </div>
 
+  <!-- Events Section -->
   <div class="fullscreen-section" id="eventsSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeEvents()">
@@ -366,6 +374,7 @@
     </div>
   </div>
 
+  <!-- Support Section -->
   <div class="fullscreen-section" id="supportSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeSupport()">
@@ -398,6 +407,7 @@
     </div>
   </div>
 
+  <!-- Main App Container -->
   <div class="app-container" id="appContainer">
     <header class="lobby-header">
       <div class="header-left">
@@ -476,6 +486,7 @@
     </nav>
   </div>
 
+  <!-- Game View -->
   <div class="game-view" id="gameView">
     <button class="back-to-lobby" onclick="exitGame()">
       <span>←</span>
@@ -556,6 +567,7 @@
     </div>
   </div>
 
+  <!-- Win/Lose Overlays -->
   <div class="win-overlay" id="winOverlay">
     <div class="win-label">YOU WON</div>
     <div class="win-amount" id="winAmountDisplay">0</div>
@@ -570,6 +582,107 @@
     <button class="play-again-btn" id="playAgainLose" type="button">TRY AGAIN</button>
   </div>
 
+  <!-- ========== SCRIPTS - LOADED IN CORRECT ORDER ========== -->
+  
+  <!-- 1. Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+
+  <!-- 2. Firebase Configuration - FIXED YOUR URL ERRORS -->
+  <script>
+    // Your Firebase configuration - FIXED databaseURL format
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgxEgtvrugTxXL5l10hvzQBILmqUzWBLA",
+      authDomain: "nj777-2756c.firebaseapp.com", // Fixed: Removed https://
+      databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com", // Fixed: Added missing colon after https
+      projectId: "nj777-2756c",
+      storageBucket: "nj777-2756c.appspot.com",
+      messagingSenderId: "388549837175",
+      appId: "1:388549837175:web:6c831e431443d8227c2172"
+    };
+
+    // Initialize Firebase with error handling
+    let firebaseApp;
+    let firebaseAuth;
+    let firebaseDatabase;
+
+    try {
+      // Check if Firebase is already initialized
+      if (!firebase.apps.length) {
+        firebaseApp = firebase.initializeApp(firebaseConfig);
+        console.log("✅ Firebase initialized successfully");
+      } else {
+        firebaseApp = firebase.app();
+        console.log("✅ Firebase already initialized");
+      }
+
+      // Initialize services
+      firebaseAuth = firebase.auth();
+      firebaseDatabase = firebase.database();
+      
+      // Test database connection
+      const testRef = firebaseDatabase.ref('.info/connected');
+      testRef.on('value', (snap) => {
+        if (snap.val() === true) {
+          console.log("✅ Firebase database connected");
+        } else {
+          console.log("⚠️ Firebase database not connected");
+        }
+      });
+
+    } catch (error) {
+      console.error("❌ Firebase initialization failed:", error);
+    }
+
+    // Make Firebase services globally available
+    window.firebaseApp = firebaseApp;
+    window.firebaseAuth = firebaseAuth;
+    window.firebaseDatabase = firebaseDatabase;
+  </script>
+
+  <!-- 3. Socket.io - Only ONE instance -->
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  
+  <script>
+    // Socket.io connection - SINGLE INSTANCE
+    let socket;
+    
+    try {
+      // Try to connect to the backend
+      const backendUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:3000' 
+        : 'https://your-backend-url.onrender.com'; // REPLACE WITH YOUR RENDER BACKEND URL
+      
+      socket = io(backendUrl, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 10000
+      });
+
+      socket.on('connect', () => {
+        console.log('✅ Socket.io connected:', socket.id);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('❌ Socket.io connection error:', error.message);
+      });
+
+      socket.on('disconnect', (reason) => {
+        console.log('⚠️ Socket.io disconnected:', reason);
+      });
+
+    } catch (error) {
+      console.error('❌ Socket.io initialization failed:', error);
+      socket = null;
+    }
+
+    window.socket = socket;
+  </script>
+
+  <!-- 4. Your game script -->
   <script src="script.js"></script>
 </body>
 </html>
