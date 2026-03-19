@@ -1716,6 +1716,7 @@ function setupEventListeners() {
 }
 
 // ===== FIXED AUTH FUNCTIONS =====
+
 function handleLoginSubmit(form) {
   const email = form.email.value.trim();
   const password = form.password.value.trim();
@@ -1745,17 +1746,41 @@ function handleLoginSubmit(form) {
   submitBtn.textContent = 'Logging in...';
   submitBtn.disabled = true;
 
+  console.log("Attempting login with:", email);
+
   firebase.auth().signInWithEmailAndPassword(email, password)
     .then(userCredential => {
+      console.log("Login successful!", userCredential.user.uid);
       const user = userCredential.user;
       return firebase.database().ref('users/' + user.uid).once('value');
     })
     .then(snapshot => {
       const userData = snapshot.val();
-      if (!userData) throw new Error('User data not found');
-      
+      if (!userData) {
+        // Create user data if it doesn't exist
+        const user = firebase.auth().currentUser;
+        return firebase.database().ref('users/' + user.uid).set({
+          username: email.split('@')[0],
+          email: email,
+          coins: 1000,
+          gamesPlayed: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          createdAt: new Date().toISOString()
+        }).then(() => {
+          return {
+            username: email.split('@')[0],
+            coins: 1000,
+            gamesPlayed: 0,
+            totalWins: 0
+          };
+        });
+      }
+      return userData;
+    })
+    .then(userData => {
       currentUser = {
-        username: userData.username,
+        username: userData.username || email.split('@')[0],
         avatar: '👤',
         isGuest: false,
         id: firebase.auth().currentUser.uid,
@@ -1778,137 +1803,40 @@ function handleLoginSubmit(form) {
       
       setTimeout(() => {
         closeAuth();
-        showPopup('Welcome back!', `Good to see you, ${userData.username}`);
+        showPopup('Welcome back!', `Good to see you, ${currentUser.username}`);
       }, 800);
       
-      // Load user data
       loadUserDataFromFirebase(currentUser.id);
     })
     .catch(error => {
-      console.error("Login error:", error);
-      if (errorContainer) {
-        let errorMessage = error.message;
-        if (error.code === 'auth/user-not-found') {
+      console.error("Login error:", error.code, error.message);
+      
+      let errorMessage = 'Login failed';
+      
+      switch(error.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled';
+          break;
+        case 'auth/user-not-found':
           errorMessage = 'No account found with this email';
-        } else if (error.code === 'auth/wrong-password') {
+          break;
+        case 'auth/wrong-password':
           errorMessage = 'Incorrect password';
-        } else if (error.code === 'auth/invalid-email') {
-          errorMessage = 'Invalid email address';
-        } else if (error.code === 'auth/too-many-requests') {
+          break;
+        case 'auth/too-many-requests':
           errorMessage = 'Too many failed attempts. Try again later';
-        }
-        errorContainer.innerHTML = errorMessage;
-        errorContainer.classList.add('active');
-      }
-    })
-    .finally(() => {
-      submitBtn.textContent = originalText;
-      submitBtn.disabled = false;
-    });
-}
-
-function handleRegisterSubmit(form) {
-  const username = form.username.value.trim();
-  const email = form.email.value.trim();
-  const password1 = form.password_1.value.trim();
-  const password2 = form.password_2.value.trim();
-  const errorContainer = document.getElementById('registerErrors');
-  const successContainer = document.getElementById('registerSuccess');
-
-  if (errorContainer) {
-    errorContainer.classList.remove('active');
-    errorContainer.innerHTML = '';
-  }
-  if (successContainer) {
-    successContainer.classList.remove('active');
-    successContainer.innerHTML = '';
-  }
-
-  // Validation
-  if (!username || !email || !password1 || !password2) {
-    if (errorContainer) {
-      errorContainer.innerHTML = 'Please fill in all fields';
-      errorContainer.classList.add('active');
-    }
-    return;
-  }
-
-  if (password1 !== password2) {
-    if (errorContainer) {
-      errorContainer.innerHTML = 'Passwords do not match';
-      errorContainer.classList.add('active');
-    }
-    return;
-  }
-
-  if (password1.length < 6) {
-    if (errorContainer) {
-      errorContainer.innerHTML = 'Password must be at least 6 characters';
-      errorContainer.classList.add('active');
-    }
-    return;
-  }
-
-  // Show loading
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const originalText = submitBtn.textContent;
-  submitBtn.textContent = 'Creating account...';
-  submitBtn.disabled = true;
-
-  // Create user
-  firebase.auth().createUserWithEmailAndPassword(email, password1)
-    .then(userCredential => {
-      const user = userCredential.user;
-      
-      // Save user data to database
-      return firebase.database().ref('users/' + user.uid).set({
-        username: username,
-        email: email,
-        coins: 1000,
-        gamesPlayed: 0,
-        totalWins: 0,
-        totalLosses: 0,
-        createdAt: new Date().toISOString()
-      }).then(() => user);
-    })
-    .then(user => {
-      currentUser = {
-        username: username,
-        avatar: '👤',
-        isGuest: false,
-        id: user.uid,
-        stats: { games: 0, wins: 0, winRate: 0 }
-      };
-
-      gameState.balance = 1000;
-      
-      updateHeaderForUser();
-      updateUI();
-      
-      if (successContainer) {
-        successContainer.textContent = 'Registration successful!';
-        successContainer.classList.add('active');
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Check your connection';
+          break;
+        default:
+          errorMessage = error.message;
       }
       
-      setTimeout(() => {
-        closeAuth();
-        showPopup('Welcome!', `Account created successfully, ${username}`);
-      }, 800);
-      
-      // Load user data
-      loadUserDataFromFirebase(currentUser.id);
-    })
-    .catch(error => {
-      console.error("Registration error:", error);
       if (errorContainer) {
-        let errorMessage = error.message;
-        if (error.code === 'auth/email-already-in-use') {
-          errorMessage = 'Email already in use';
-        } else if (error.code === 'auth/invalid-email') {
-          errorMessage = 'Invalid email address';
-        } else if (error.code === 'auth/weak-password') {
-          errorMessage = 'Password is too weak';
-        }
         errorContainer.innerHTML = errorMessage;
         errorContainer.classList.add('active');
       }
@@ -1930,7 +1858,7 @@ document.addEventListener('DOMContentLoaded', () => {
   generateMultiplierDisplay();
   initApp();
   
-  // Check if user is already logged in
+ 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       firebase.database().ref('users/' + user.uid).once('value').then(snapshot => {
