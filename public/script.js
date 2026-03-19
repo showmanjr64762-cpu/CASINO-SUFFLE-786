@@ -1,6 +1,4 @@
-// ===== ROYAL MATCH - COMPLETE FIXED VERSION =====
-// This is the ENTIRE game script with all fixes included
-
+// ===== ROYAL MATCH - COMPLETE FIXED VERSION WITH FIREBASE SAVING =====
 console.log("🎮 Royal Match - Loading...");
 
 // ===== GLOBAL ERROR HANDLER =====
@@ -395,6 +393,93 @@ const MissionSystem = {
   }
 };
 
+// ===== FIREBASE DATA SAVING FUNCTIONS =====
+// Save game result to Firebase
+function saveGameResultToFirebase(won, winAmount) {
+  // Check if user is logged in (not guest)
+  if (!currentUser || currentUser.isGuest) {
+    console.log("Guest mode - not saving to Firebase");
+    return;
+  }
+  
+  const userId = currentUser.id;
+  const userRef = firebase.database().ref('users/' + userId);
+  
+  console.log("💾 Saving game result to Firebase...");
+  
+  // Get current user data first
+  userRef.once('value')
+    .then(snapshot => {
+      const userData = snapshot.val() || {};
+      
+      // Calculate new stats
+      const gamesPlayed = (userData.gamesPlayed || 0) + 1;
+      const totalWins = (userData.totalWins || 0) + (won ? 1 : 0);
+      const totalLosses = (userData.totalLosses || 0) + (won ? 0 : 1);
+      const coins = gameState ? gameState.balance : (userData.coins || 1000);
+      
+      // Update data
+      return userRef.update({
+        gamesPlayed: gamesPlayed,
+        totalWins: totalWins,
+        totalLosses: totalLosses,
+        coins: coins,
+        lastGamePlayed: new Date().toISOString(),
+        lastGameResult: won ? 'win' : 'loss',
+        lastWinAmount: winAmount || 0
+      });
+    })
+    .then(() => {
+      console.log("✅ Game result saved to Firebase!");
+    })
+    .catch(error => {
+      console.error("❌ Error saving game result:", error);
+    });
+}
+
+// Save coins update to Firebase
+function saveCoinsToFirebase(newBalance) {
+  if (!currentUser || currentUser.isGuest) return;
+  
+  const userId = currentUser.id;
+  firebase.database().ref('users/' + userId).update({
+    coins: newBalance,
+    lastUpdated: new Date().toISOString()
+  })
+  .then(() => console.log("✅ Coins saved to Firebase"))
+  .catch(error => console.error("❌ Error saving coins:", error));
+}
+
+// Load user data from Firebase when logging in
+function loadUserDataFromFirebase(userId) {
+  firebase.database().ref('users/' + userId).once('value')
+    .then(snapshot => {
+      const userData = snapshot.val();
+      if (userData) {
+        console.log("✅ Loaded user data:", userData);
+        
+        // Update game balance
+        if (gameState && userData.coins) {
+          gameState.balance = userData.coins;
+          updateUI();
+        }
+        
+        // Update currentUser stats
+        if (currentUser) {
+          currentUser.stats = {
+            games: userData.gamesPlayed || 0,
+            wins: userData.totalWins || 0,
+            winRate: userData.gamesPlayed ? 
+              Math.round((userData.totalWins / userData.gamesPlayed) * 100) : 0
+          };
+        }
+      }
+    })
+    .catch(error => {
+      console.error("❌ Error loading user data:", error);
+    });
+}
+
 // ===== UI FUNCTIONS =====
 function openAuthModal(tab) {
   const overlay = document.getElementById('authOverlay');
@@ -436,7 +521,7 @@ function guestLogin() {
   
   closeAuth();
   updateHeaderForUser();
-  if (window.gameState) gameState.balance = 1000;
+  if (gameState) gameState.balance = 1000;
   updateUI();
   if (audio) audio.playClick();
 }
@@ -501,7 +586,7 @@ function logout() {
   if (headerAvatar) headerAvatar.textContent = '👤';
   if (userStatus) userStatus.textContent = 'Tap to login';
   
-  if (window.gameState) gameState.balance = 1000;
+  if (gameState) gameState.balance = 1000;
   updateUI();
   
   const authOverlay = document.getElementById('authOverlay');
@@ -545,7 +630,7 @@ function closeVIPPopup() {
 }
 
 function unlockVIP() {
-  if (!window.gameState) return;
+  if (!gameState) return;
   
   if (gameState.balance < 100000) {
     showPopup('Insufficient Balance', 'You need ₨100,000 to unlock VIP room!');
@@ -850,7 +935,7 @@ function claimMissionReward(missionId) {
   }
 
   if (result.success) {
-    if (window.gameState) gameState.balance += result.reward;
+    if (gameState) gameState.balance += result.reward;
     updateUI();
     showPopup('Reward Claimed!', `You received ${result.reward} coins!`);
     if (audio) audio.playWin();
@@ -956,12 +1041,15 @@ function selectPaymentMethod(method) {
 }
 
 function purchaseCoins(coins) {
-  if (!window.gameState) return;
+  if (!gameState) return;
   
   gameState.balance += coins;
   updateUI();
   
   MissionSystem.recordDeposit(coins);
+  
+  // Save to Firebase
+  saveCoinsToFirebase(gameState.balance);
   
   closeShop();
   showPopup('Purchase Successful!', `You received ${formatNumber(coins)} coins!`);
@@ -1054,7 +1142,7 @@ function enterGame() {
     if (audio) audio.playClick();
     
     // Reset game state
-    if (window.gameState) {
+    if (gameState) {
       gameState.isPlaying = false;
       gameState.canFlip = false;
       gameState.currentBet = 0;
@@ -1516,6 +1604,9 @@ function cashout() {
   
   MissionSystem.recordGamePlayed(true);
   
+  // Save to Firebase
+  saveGameResultToFirebase(true, gameState.currentWin);
+  
   if (audio) audio.playCashout();
   if (elements.winAmountDisplay) elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
   if (elements.winMultiplierDisplay) elements.winMultiplierDisplay.textContent = `${gameState.multiplier}x`;
@@ -1534,6 +1625,9 @@ function continuePlaying() {
 function handleBomb() {
   MissionSystem.recordGamePlayed(false);
   
+  // Save to Firebase
+  saveGameResultToFirebase(false, 0);
+  
   if (audio) audio.playBomb();
   if (elements.loseSubtext) elements.loseSubtext.textContent = `You lost ${formatNumber(gameState.currentBet)}`;
   if (elements.loseOverlay) elements.loseOverlay.classList.add('active');
@@ -1551,6 +1645,9 @@ function handleMaxWin() {
   gameState.balance += gameState.currentWin;
   
   MissionSystem.recordGamePlayed(true);
+  
+  // Save to Firebase
+  saveGameResultToFirebase(true, gameState.currentWin);
   
   if (audio) audio.playWin();
   if (elements.winAmountDisplay) elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
@@ -1668,9 +1765,9 @@ function handleLoginSubmit(form) {
     return;
   }
 
-  // Fake successful login
+  // Demo login - no actual Firebase auth
   currentUser = {
-    username,
+    username: username,
     avatar: '👤',
     isGuest: false,
     id: 'USER' + Math.floor(Math.random() * 99999),
@@ -1688,7 +1785,6 @@ function handleLoginSubmit(form) {
   }, 800);
 }
 
-
 function handleRegisterSubmit(form) {
   const username = form.username.value.trim();
   const email = form.email.value.trim();
@@ -1697,10 +1793,10 @@ function handleRegisterSubmit(form) {
   const errorContainer = document.getElementById('registerErrors');
   const successContainer = document.getElementById('registerSuccess');
 
-  errorContainer.classList.remove('active');
-  successContainer.classList.remove('active');
-  errorContainer.innerHTML = '';
-  successContainer.innerHTML = '';
+  if (errorContainer) errorContainer.classList.remove('active');
+  if (successContainer) successContainer.classList.remove('active');
+  if (errorContainer) errorContainer.innerHTML = '';
+  if (successContainer) successContainer.innerHTML = '';
 
   const errors = [];
   if (!username) errors.push('Username is required');
@@ -1710,66 +1806,70 @@ function handleRegisterSubmit(form) {
   if (password1 !== password2) errors.push('Passwords do not match');
 
   if (errors.length) {
-    errorContainer.innerHTML = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-    errorContainer.classList.add('active');
+    if (errorContainer) {
+      errorContainer.innerHTML = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+      errorContainer.classList.add('active');
+    }
     return;
   }
 
-  // ===== NEW CODE: Save to Firebase =====
-  try {
-    // Create user in Firebase Auth
-    firebase.auth().createUserWithEmailAndPassword(email, password1)
-      .then((userCredential) => {
-        // User created successfully
-        const user = userCredential.user;
-        
-        // Save user data to Realtime Database
-        return firebase.database().ref('users/' + user.uid).set({
-          username: username,
-          email: email,
-          coins: 1000,
-          level: 1,
-          xp: 0,
-          totalWins: 0,
-          totalLosses: 0,
-          gamesPlayed: 0,
-          createdAt: firebase.database.ServerValue.TIMESTAMP
-        });
-      })
-      .then(() => {
-        // Data saved successfully
-        console.log("✅ User saved to database");
-        
-        // Set current user
-        currentUser = {
-          username: username,
-          avatar: '👤',
-          isGuest: false,
-          id: firebase.auth().currentUser.uid,
-          stats: { games: 0, wins: 0, winRate: 0 }
-        };
+  // Show loading
+  if (successContainer) {
+    successContainer.textContent = 'Creating account...';
+    successContainer.classList.add('active');
+  }
 
-        updateHeaderForUser();
+  // Create user in Firebase Auth
+  firebase.auth().createUserWithEmailAndPassword(email, password1)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      console.log("✅ User created in Auth:", user.uid);
+      
+      // Save user data to Realtime Database
+      return firebase.database().ref('users/' + user.uid).set({
+        username: username,
+        email: email,
+        coins: 1000,
+        gamesPlayed: 0,
+        totalWins: 0,
+        totalLosses: 0,
+        createdAt: new Date().toISOString()
+      });
+    })
+    .then(() => {
+      console.log("✅ User data saved to Realtime Database");
+      
+      // Set current user
+      currentUser = {
+        username: username,
+        avatar: '👤',
+        isGuest: false,
+        id: firebase.auth().currentUser.uid,
+        stats: { games: 0, wins: 0, winRate: 0 }
+      };
+
+      // Load the user data we just saved
+      loadUserDataFromFirebase(currentUser.id);
+
+      updateHeaderForUser();
+      
+      if (successContainer) {
         successContainer.textContent = 'Registration successful!';
-        successContainer.classList.add('active');
-
-        setTimeout(() => {
-          switchAuthTab('login');
-          closeAuth();
-        }, 800);
-      })
-      .catch((error) => {
-        // Handle errors
-        console.error("❌ Firebase error:", error);
+      }
+      
+      setTimeout(() => {
+        switchAuthTab('login');
+        closeAuth();
+      }, 1500);
+    })
+    .catch((error) => {
+      console.error("❌ Firebase error:", error);
+      if (errorContainer) {
         errorContainer.innerHTML = '<ul><li>' + error.message + '</li></ul>';
         errorContainer.classList.add('active');
-      });
-      
-  } catch (error) {
-    console.error("❌ Registration error:", error);
-    errorContainer.innerHTML = '<ul><li>' + error.message + '</li></ul>';
-    errorContainer.classList.add('active');
-  }
+      }
+      if (successContainer) successContainer.classList.remove('active');
+    });
 }
 
 // ===== INITIALIZATION =====
@@ -1829,86 +1929,7 @@ window.purchaseCoins = purchaseCoins;
 window.enterGame = enterGame;
 window.exitGame = exitGame;
 window.handleLoginSubmit = handleLoginSubmit;
-function handleRegisterSubmit(form) {
-  const username = form.username.value.trim();
-  const email = form.email.value.trim();
-  const password1 = form.password_1.value.trim();
-  const password2 = form.password_2.value.trim();
-  const errorContainer = document.getElementById('registerErrors');
-  const successContainer = document.getElementById('registerSuccess');
-
-  errorContainer.classList.remove('active');
-  successContainer.classList.remove('active');
-  errorContainer.innerHTML = '';
-  successContainer.innerHTML = '';
-
-  const errors = [];
-  if (!username) errors.push('Username is required');
-  if (!email) errors.push('Email is required');
-  if (!password1) errors.push('Password is required');
-  if (password1 && password1.length < 6) errors.push('Password must be at least 6 characters');
-  if (password1 !== password2) errors.push('Passwords do not match');
-
-  if (errors.length) {
-    errorContainer.innerHTML = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-    errorContainer.classList.add('active');
-    return;
-  }
-
-  // Show loading message
-  successContainer.textContent = 'Creating account...';
-  successContainer.classList.add('active');
-
-  // Create user in Firebase Auth
-  firebase.auth().createUserWithEmailAndPassword(email, password1)
-    .then((userCredential) => {
-      // User created successfully
-      const user = userCredential.user;
-      console.log("✅ User created in Auth:", user.uid);
-      
-      // Save user data to Realtime Database
-      return firebase.database().ref('users/' + user.uid).set({
-        username: username,
-        email: email,
-        coins: 1000,
-        level: 1,
-        xp: 0,
-        totalWins: 0,
-        totalLosses: 0,
-        gamesPlayed: 0,
-        createdAt: firebase.database.ServerValue.TIMESTAMP
-      });
-    })
-    .then(() => {
-      console.log("✅ User data saved to Realtime Database");
-      
-      // Set current user
-      currentUser = {
-        username: username,
-        avatar: '👤',
-        isGuest: false,
-        id: firebase.auth().currentUser.uid,
-        stats: { games: 0, wins: 0, winRate: 0 }
-      };
-
-      updateHeaderForUser();
-      
-      // Show success message
-      successContainer.textContent = 'Registration successful!';
-      
-      setTimeout(() => {
-        switchAuthTab('login');
-        closeAuth();
-      }, 1500);
-    })
-    .catch((error) => {
-      console.error("❌ Firebase error:", error);
-      errorContainer.innerHTML = '<ul><li>' + error.message + '</li></ul>';
-      errorContainer.classList.add('active');
-      successContainer.classList.remove('active');
-    });
-}
-
+window.handleRegisterSubmit = handleRegisterSubmit;
 window.closePopup = closePopup;
 
 console.log("✅ Royal Match fully loaded!");
