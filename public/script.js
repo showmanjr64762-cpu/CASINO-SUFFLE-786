@@ -1884,6 +1884,132 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   });
+
+  // ===== FIXED REGISTER FUNCTION =====
+function handleRegisterSubmit(form) {
+  const username = form.username.value.trim();
+  const email = form.email.value.trim();
+  const password1 = form.password_1.value.trim();
+  const password2 = form.password_2.value.trim();
+  const errorContainer = document.getElementById('registerErrors');
+  const successContainer = document.getElementById('registerSuccess');
+
+  if (errorContainer) {
+    errorContainer.classList.remove('active');
+    errorContainer.innerHTML = '';
+  }
+  if (successContainer) {
+    successContainer.classList.remove('active');
+    successContainer.innerHTML = '';
+  }
+
+  // Validation
+  if (!username || !email || !password1 || !password2) {
+    if (errorContainer) {
+      errorContainer.innerHTML = 'Please fill in all fields';
+      errorContainer.classList.add('active');
+    }
+    return;
+  }
+
+  if (password1 !== password2) {
+    if (errorContainer) {
+      errorContainer.innerHTML = 'Passwords do not match';
+      errorContainer.classList.add('active');
+    }
+    return;
+  }
+
+  if (password1.length < 6) {
+    if (errorContainer) {
+      errorContainer.innerHTML = 'Password must be at least 6 characters';
+      errorContainer.classList.add('active');
+    }
+    return;
+  }
+
+  // Show loading
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Creating account...';
+  submitBtn.disabled = true;
+
+  console.log("Attempting registration with:", email);
+
+  // Create user
+  firebase.auth().createUserWithEmailAndPassword(email, password1)
+    .then(userCredential => {
+      const user = userCredential.user;
+      console.log("✅ User created in Auth:", user.uid);
+      
+      // Save user data to database
+      return firebase.database().ref('users/' + user.uid).set({
+        username: username,
+        email: email,
+        coins: 1000,
+        gamesPlayed: 0,
+        totalWins: 0,
+        totalLosses: 0,
+        createdAt: new Date().toISOString()
+      }).then(() => user);
+    })
+    .then(user => {
+      console.log("✅ User data saved to database");
+      
+      currentUser = {
+        username: username,
+        avatar: '👤',
+        isGuest: false,
+        id: user.uid,
+        stats: { games: 0, wins: 0, winRate: 0 }
+      };
+
+      gameState.balance = 1000;
+      
+      updateHeaderForUser();
+      updateUI();
+      
+      if (successContainer) {
+        successContainer.textContent = 'Registration successful!';
+        successContainer.classList.add('active');
+      }
+      
+      setTimeout(() => {
+        closeAuth();
+        showPopup('Welcome!', `Account created successfully, ${username}`);
+      }, 800);
+      
+      loadUserDataFromFirebase(currentUser.id);
+    })
+    .catch(error => {
+      console.error("Registration error:", error.code, error.message);
+      
+      let errorMessage = 'Registration failed';
+      
+      switch(error.code) {
+        case 'auth/email-already-in-use':
+          errorMessage = 'Email already in use';
+          break;
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/weak-password':
+          errorMessage = 'Password is too weak';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      
+      if (errorContainer) {
+        errorContainer.innerHTML = errorMessage;
+        errorContainer.classList.add('active');
+      }
+    })
+    .finally(() => {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    });
+}
   
   // Make functions globally available
   window.openAuthModal = openAuthModal;
@@ -1919,7 +2045,143 @@ document.addEventListener('DOMContentLoaded', () => {
   window.purchaseCoins = purchaseCoins;
   window.enterGame = enterGame;
   window.exitGame = exitGame;
-  window.handleLoginSubmit = handleLoginSubmit;
+
+// ===== FIXED LOGIN FUNCTION =====
+function handleLoginSubmit(form) {
+  const email = form.email.value.trim();
+  const password = form.password.value.trim();
+  const errorContainer = document.getElementById('loginErrors');
+  const successContainer = document.getElementById('loginSuccess');
+
+  if (errorContainer) {
+    errorContainer.classList.remove('active');
+    errorContainer.innerHTML = '';
+  }
+  if (successContainer) {
+    successContainer.classList.remove('active');
+    successContainer.innerHTML = '';
+  }
+
+  if (!email || !password) {
+    if (errorContainer) {
+      errorContainer.innerHTML = 'Please fill in all fields';
+      errorContainer.classList.add('active');
+    }
+    return;
+  }
+
+  // Show loading
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Logging in...';
+  submitBtn.disabled = true;
+
+  console.log("Attempting login with:", email);
+
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      console.log("✅ Login successful!");
+      const user = userCredential.user;
+      return firebase.database().ref('users/' + user.uid).once('value');
+    })
+    .then(snapshot => {
+      const userData = snapshot.val();
+      
+      // If user exists in database
+      if (userData) {
+        currentUser = {
+          username: userData.username,
+          avatar: '👤',
+          isGuest: false,
+          id: firebase.auth().currentUser.uid,
+          stats: {
+            games: userData.gamesPlayed || 0,
+            wins: userData.totalWins || 0,
+            winRate: userData.gamesPlayed ? Math.round((userData.totalWins / userData.gamesPlayed) * 100) : 0
+          }
+        };
+        gameState.balance = userData.coins || 1000;
+      } else {
+        // Create user data if it doesn't exist
+        const user = firebase.auth().currentUser;
+        const username = email.split('@')[0];
+        
+        return firebase.database().ref('users/' + user.uid).set({
+          username: username,
+          email: email,
+          coins: 1000,
+          gamesPlayed: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          createdAt: new Date().toISOString()
+        }).then(() => {
+          currentUser = {
+            username: username,
+            avatar: '👤',
+            isGuest: false,
+            id: user.uid,
+            stats: { games: 0, wins: 0, winRate: 0 }
+          };
+          gameState.balance = 1000;
+        });
+      }
+    })
+    .then(() => {
+      updateHeaderForUser();
+      updateUI();
+      
+      if (successContainer) {
+        successContainer.textContent = 'Login successful!';
+        successContainer.classList.add('active');
+      }
+      
+      setTimeout(() => {
+        closeAuth();
+        showPopup('Welcome back!', `Good to see you, ${currentUser.username}`);
+      }, 800);
+      
+      if (currentUser && !currentUser.isGuest) {
+        loadUserDataFromFirebase(currentUser.id);
+      }
+    })
+    .catch(error => {
+      console.error("Login error:", error.code, error.message);
+      
+      let errorMessage = 'Login failed';
+      
+      switch(error.code) {
+        case 'auth/invalid-email':
+          errorMessage = 'Invalid email address';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled';
+          break;
+        case 'auth/user-not-found':
+          errorMessage = 'No account found with this email';
+          break;
+        case 'auth/wrong-password':
+          errorMessage = 'Incorrect password';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed attempts. Try again later';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Check your connection';
+          break;
+        default:
+          errorMessage = error.message;
+      }
+      
+      if (errorContainer) {
+        errorContainer.innerHTML = errorMessage;
+        errorContainer.classList.add('active');
+      }
+    })
+    .finally(() => {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    });
+}
   window.handleRegisterSubmit = handleRegisterSubmit;
   window.closePopup = closePopup;
   
