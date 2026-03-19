@@ -1,28 +1,26 @@
-// ===== ROYAL MATCH - COMPLETE FIXED VERSION WITH FIREBASE SAVING =====
-console.log("🎮 Royal Match - Loading...");
+// ===== ROYAL MATCH - COMPLETE MULTIPLAYER VERSION =====
+console.log("🎮 Royal Match Live - Loading...");
 
-// ===== GLOBAL ERROR HANDLER =====
-window.addEventListener('error', function(e) {
-  console.error('❌ Global error:', e.error?.message || e.message);
-});
+// ===== GLOBAL VARIABLES =====
+let currentUser = null;
+let isInGame = false;
+let notificationsEnabled = true;
 
-// ===== ENSURE GAME STATE EXISTS =====
-if (typeof window.gameState === 'undefined') {
-  window.gameState = {
-    balance: 1000,
-    currentBet: 0,
-    currentWin: 0,
-    multiplier: 1,
-    pairsMatched: 0,
-    isPlaying: false,
-    canFlip: false,
-    firstCard: null,
-    secondCard: null,
-    cards: [],
-    matchedCards: new Set(),
-    goldenCardsFound: 0
-  };
-}
+// ===== GAME STATE =====
+const gameState = {
+  balance: 1000,
+  currentBet: 0,
+  currentWin: 0,
+  multiplier: 1,
+  pairsMatched: 0,
+  isPlaying: false,
+  canFlip: false,
+  firstCard: null,
+  secondCard: null,
+  cards: [],
+  matchedCards: new Set(),
+  goldenCardsFound: 0
+};
 
 // ===== DATA =====
 const pakistaniNames = [
@@ -44,9 +42,6 @@ const pakistaniPaymentMethods = [
   { name: 'UBL Omni', icon: '🏦', desc: 'Bank transfer via UBL Omni' },
   { name: 'Bank Transfer', icon: '🏪', desc: 'Direct bank transfer' }
 ];
-
-let currentUser = null;
-let isInGame = false;
 
 // ===== MISSION SYSTEM =====
 const MissionSystem = {
@@ -89,9 +84,7 @@ const MissionSystem = {
     const data = this.getMissionData();
     const today = this.getTodayString();
     
-    if (data.lastLoginDate === today) {
-      return;
-    }
+    if (data.lastLoginDate === today) return;
 
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -106,11 +99,6 @@ const MissionSystem = {
     data.lastLoginDate = today;
     data.loginRewardClaimed = false;
     
-    if (data.consecutiveLoginDays >= 7 && !data.sevenDayRewardClaimed) {
-    } else if (data.consecutiveLoginDays === 1) {
-      data.sevenDayRewardClaimed = false;
-    }
-
     this.saveMissionData(data);
   },
 
@@ -119,7 +107,7 @@ const MissionSystem = {
   },
 
   claimLoginReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
+    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required' };
     
     const data = this.getMissionData();
     const today = this.getTodayString();
@@ -148,7 +136,7 @@ const MissionSystem = {
   },
 
   claimFirstDepositReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
+    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required' };
     
     const data = this.getMissionData();
     
@@ -168,7 +156,7 @@ const MissionSystem = {
   },
 
   claimSevenDayReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
+    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required' };
     
     const data = this.getMissionData();
     
@@ -196,106 +184,6 @@ const MissionSystem = {
     this.saveMissionData(data);
   },
 
-  claimGamesPlayedReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
-    
-    const data = this.getMissionData();
-    
-    if (data.gamesPlayed < 10) {
-      return { success: false, message: 'Need to play 10 games' };
-    }
-    
-    if (data.gamesPlayedRewardClaimed) {
-      return { success: false, message: 'Already claimed' };
-    }
-
-    const reward = this.getRandomReward(25, 40);
-    data.gamesPlayedRewardClaimed = true;
-    this.saveMissionData(data);
-
-    return { success: true, reward };
-  },
-
-  claimBigWinReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
-    
-    const data = this.getMissionData();
-    
-    if (data.totalWins < 5) {
-      return { success: false, message: 'Need 5 wins' };
-    }
-    
-    if (data.bigWinRewardClaimed) {
-      return { success: false, message: 'Already claimed' };
-    }
-
-    const reward = this.getRandomReward(30, 50);
-    data.bigWinRewardClaimed = true;
-    this.saveMissionData(data);
-
-    return { success: true, reward };
-  },
-
-  claimDepositMilestoneReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
-    
-    const data = this.getMissionData();
-    
-    if (data.totalDeposits < 500) {
-      return { success: false, message: 'Need 500+ total deposits' };
-    }
-    
-    if (data.depositMilestoneClaimed) {
-      return { success: false, message: 'Already claimed' };
-    }
-
-    const reward = this.getRandomReward(40, 75);
-    data.depositMilestoneClaimed = true;
-    this.saveMissionData(data);
-
-    return { success: true, reward };
-  },
-
-  claimHundredWinsReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
-    
-    const data = this.getMissionData();
-    
-    if (data.totalWins < 100) {
-      return { success: false, message: 'Need 100 wins' };
-    }
-    
-    if (data.hundredWinsRewardClaimed) {
-      return { success: false, message: 'Already claimed' };
-    }
-
-    const reward = this.getRandomReward(60, 100);
-    data.hundredWinsRewardClaimed = true;
-    this.saveMissionData(data);
-
-    return { success: true, reward };
-  },
-
-  claimThousandCoinsDepositReward() {
-    if (!currentUser || currentUser.isGuest) return { success: false, message: 'Login Required: Register or login to claim rewards' };
-    
-    const data = this.getMissionData();
-    
-    if (data.totalDeposits < 1000) {
-      return { success: false, message: 'Need 1000+ total deposits' };
-    }
-    
-    if (data.thousandCoinsDepositClaimed) {
-      return { success: false, message: 'Already claimed' };
-    }
-
-    const reward = this.getRandomReward(80, 120);
-    data.thousandCoinsDepositClaimed = true;
-    this.saveMissionData(data);
-
-    return { success: true, reward };
-  },
-
   getMissionsStatus() {
     const data = this.getMissionData();
     const today = this.getTodayString();
@@ -308,7 +196,6 @@ const MissionSystem = {
         description: 'Login daily to claim your reward!',
         reward: '10-25 Coins',
         status: (data.loginRewardClaimedDate === today) ? 'claimed' : 'available',
-        progress: null,
         canClaim: data.loginRewardClaimedDate !== today,
         isHard: false
       },
@@ -316,10 +203,9 @@ const MissionSystem = {
         id: 'firstDeposit',
         icon: '💰',
         title: 'First Deposit Bonus',
-        description: 'Make your first deposit of 100+ coins to unlock this reward!',
+        description: 'Make your first deposit of 100+ coins',
         reward: '15-30 Coins',
         status: data.firstDepositRewardClaimed ? 'claimed' : (data.firstDepositMade ? 'available' : 'locked'),
-        progress: data.firstDepositMade ? 'Deposit made!' : 'Deposit 100+ coins',
         canClaim: data.firstDepositMade && !data.firstDepositRewardClaimed,
         isHard: false
       },
@@ -327,76 +213,19 @@ const MissionSystem = {
         id: 'sevenDay',
         icon: '📅',
         title: '7-Day Login Streak',
-        description: 'Login for 7 consecutive days to claim this reward!',
+        description: 'Login for 7 consecutive days',
         reward: '20-40 Coins',
         status: data.sevenDayRewardClaimed ? 'claimed' : (data.consecutiveLoginDays >= 7 ? 'available' : 'locked'),
         progress: `${data.consecutiveLoginDays}/7 days`,
         canClaim: data.consecutiveLoginDays >= 7 && !data.sevenDayRewardClaimed,
         isHard: false
-      },
-      {
-        id: 'gamesPlayed',
-        icon: '🎮',
-        title: 'Game Enthusiast',
-        description: 'Play 10 games to unlock this reward!',
-        reward: '25-40 Coins',
-        status: data.gamesPlayedRewardClaimed ? 'claimed' : (data.gamesPlayed >= 10 ? 'available' : 'locked'),
-        progress: `${Math.min(data.gamesPlayed, 10)}/10 games`,
-        canClaim: data.gamesPlayed >= 10 && !data.gamesPlayedRewardClaimed,
-        isHard: false
-      },
-      {
-        id: 'bigWin',
-        icon: '🏆',
-        title: 'Winner\'s Circle',
-        description: 'Win 5 games to unlock this reward!',
-        reward: '30-50 Coins',
-        status: data.bigWinRewardClaimed ? 'claimed' : (data.totalWins >= 5 ? 'available' : 'locked'),
-        progress: `${Math.min(data.totalWins, 5)}/5 wins`,
-        canClaim: data.totalWins >= 5 && !data.bigWinRewardClaimed,
-        isHard: false
-      },
-      {
-        id: 'depositMilestone',
-        icon: '💎',
-        title: 'High Roller',
-        description: 'Deposit a total of 500+ coins to unlock this reward!',
-        reward: '40-75 Coins',
-        status: data.depositMilestoneClaimed ? 'claimed' : (data.totalDeposits >= 500 ? 'available' : 'locked'),
-        progress: `${Math.min(data.totalDeposits, 500)}/500 coins`,
-        canClaim: data.totalDeposits >= 500 && !data.depositMilestoneClaimed,
-        isHard: true
-      },
-      {
-        id: 'hundredWins',
-        icon: '⭐',
-        title: 'Century Champion',
-        description: 'Win 100 games to unlock this exclusive reward!',
-        reward: '60-100 Coins',
-        status: data.hundredWinsRewardClaimed ? 'claimed' : (data.totalWins >= 100 ? 'available' : 'locked'),
-        progress: `${Math.min(data.totalWins, 100)}/100 wins`,
-        canClaim: data.totalWins >= 100 && !data.hundredWinsRewardClaimed,
-        isHard: true
-      },
-      {
-        id: 'thousandDeposit',
-        icon: '👑',
-        title: 'Royal Investor',
-        description: 'Deposit a total of 1000+ coins to unlock this ultimate reward!',
-        reward: '80-120 Coins',
-        status: data.thousandCoinsDepositClaimed ? 'claimed' : (data.totalDeposits >= 1000 ? 'available' : 'locked'),
-        progress: `${Math.min(data.totalDeposits, 1000)}/1000 coins`,
-        canClaim: data.totalDeposits >= 1000 && !data.thousandCoinsDepositClaimed,
-        isHard: true
       }
     ];
   }
 };
 
 // ===== FIREBASE DATA SAVING FUNCTIONS =====
-// Save game result to Firebase
 function saveGameResultToFirebase(won, winAmount) {
-  // Check if user is logged in (not guest)
   if (!currentUser || currentUser.isGuest) {
     console.log("Guest mode - not saving to Firebase");
     return;
@@ -405,20 +234,15 @@ function saveGameResultToFirebase(won, winAmount) {
   const userId = currentUser.id;
   const userRef = firebase.database().ref('users/' + userId);
   
-  console.log("💾 Saving game result to Firebase...");
-  
-  // Get current user data first
   userRef.once('value')
     .then(snapshot => {
       const userData = snapshot.val() || {};
       
-      // Calculate new stats
       const gamesPlayed = (userData.gamesPlayed || 0) + 1;
       const totalWins = (userData.totalWins || 0) + (won ? 1 : 0);
       const totalLosses = (userData.totalLosses || 0) + (won ? 0 : 1);
-      const coins = gameState ? gameState.balance : (userData.coins || 1000);
+      const coins = gameState.balance;
       
-      // Update data
       return userRef.update({
         gamesPlayed: gamesPlayed,
         totalWins: totalWins,
@@ -430,14 +254,13 @@ function saveGameResultToFirebase(won, winAmount) {
       });
     })
     .then(() => {
-      console.log("✅ Game result saved to Firebase!");
+      console.log("✅ Game result saved to Firebase");
     })
     .catch(error => {
       console.error("❌ Error saving game result:", error);
     });
 }
 
-// Save coins update to Firebase
 function saveCoinsToFirebase(newBalance) {
   if (!currentUser || currentUser.isGuest) return;
   
@@ -450,21 +273,18 @@ function saveCoinsToFirebase(newBalance) {
   .catch(error => console.error("❌ Error saving coins:", error));
 }
 
-// Load user data from Firebase when logging in
 function loadUserDataFromFirebase(userId) {
   firebase.database().ref('users/' + userId).once('value')
     .then(snapshot => {
       const userData = snapshot.val();
       if (userData) {
-        console.log("✅ Loaded user data:", userData);
+        console.log("✅ Loaded user data");
         
-        // Update game balance
-        if (gameState && userData.coins) {
+        if (userData.coins) {
           gameState.balance = userData.coins;
           updateUI();
         }
         
-        // Update currentUser stats
         if (currentUser) {
           currentUser.stats = {
             games: userData.gamesPlayed || 0,
@@ -478,6 +298,94 @@ function loadUserDataFromFirebase(userId) {
     .catch(error => {
       console.error("❌ Error loading user data:", error);
     });
+}
+
+// ===== REAL-TIME MULTIPLAYER FEATURES =====
+
+// Toggle notifications
+function toggleNotifications() {
+  notificationsEnabled = !notificationsEnabled;
+  const toggle = document.getElementById('notificationToggle');
+  if (toggle) toggle.classList.toggle('active');
+}
+
+// Show live notification
+function showLiveNotification(message, icon = '🔔') {
+  if (!notificationsEnabled) return;
+  
+  const notification = document.createElement('div');
+  notification.className = 'real-time-notification';
+  notification.innerHTML = `${icon} ${message}`;
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.classList.add('show'), 100);
+  setTimeout(() => {
+    notification.classList.remove('show');
+    setTimeout(() => notification.remove(), 500);
+  }, 3000);
+}
+
+// Add to live feed
+function addToLiveFeed(message, type = 'normal') {
+  const feed = document.getElementById('liveActivityFeed');
+  const gameFeed = document.getElementById('gameActivityFeed');
+  if (!feed && !gameFeed) return;
+  
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const item = document.createElement('div');
+  item.className = `activity-item ${type}`;
+  item.innerHTML = `
+    <span>${message}</span>
+    <span class="activity-time">${time}</span>
+  `;
+  
+  if (feed) {
+    feed.insertBefore(item, feed.firstChild);
+    if (feed.children.length > 10) feed.removeChild(feed.lastChild);
+  }
+  
+  if (gameFeed) {
+    gameFeed.insertBefore(item.cloneNode(true), gameFeed.firstChild);
+    if (gameFeed.children.length > 5) gameFeed.removeChild(gameFeed.lastChild);
+  }
+}
+
+// Update live players list
+function updateLivePlayersList(players) {
+  const list = document.getElementById('livePlayersList');
+  if (!list) return;
+  
+  if (!players || players.length === 0) {
+    list.innerHTML = '<div class="activity-item">No players online</div>';
+    return;
+  }
+  
+  list.innerHTML = players.slice(0, 10).map(p => `
+    <div class="activity-item">
+      <span class="live-dot" style="width: 8px; height: 8px;"></span>
+      <span>${p.username}</span>
+      <span class="activity-time">${p.status || 'playing'}</span>
+    </div>
+  `).join('');
+}
+
+// Update recent winners
+function updateRecentWinners(winners) {
+  const list = document.getElementById('recentWinners');
+  if (!list) return;
+  
+  if (!winners || winners.length === 0) {
+    list.innerHTML = '<div class="activity-item">No winners yet</div>';
+    return;
+  }
+  
+  list.innerHTML = winners.slice(0, 5).map(w => `
+    <div class="activity-item win">
+      <span>🏆 ${w.username}</span>
+      <span>+${w.amount}</span>
+      <span class="activity-time">${w.time}</span>
+    </div>
+  `).join('');
 }
 
 // ===== UI FUNCTIONS =====
@@ -521,7 +429,7 @@ function guestLogin() {
   
   closeAuth();
   updateHeaderForUser();
-  if (gameState) gameState.balance = 1000;
+  gameState.balance = 1000;
   updateUI();
   if (audio) audio.playClick();
 }
@@ -534,7 +442,13 @@ function updateHeaderForUser() {
     
     if (headerUsername) headerUsername.textContent = currentUser.username;
     if (headerAvatar) headerAvatar.textContent = currentUser.avatar;
-    if (userStatus) userStatus.textContent = currentUser.isGuest ? 'Guest Mode' : 'Verified Player';
+    if (userStatus) {
+      if (!currentUser.isGuest && window.socket && window.socket.connected) {
+        userStatus.innerHTML = '<span class="live-dot" style="width:8px;height:8px;background:#00ff88;"></span> Live';
+      } else {
+        userStatus.innerHTML = '<span class="live-dot" style="width:8px;height:8px;"></span> Offline';
+      }
+    }
   }
 }
 
@@ -554,6 +468,7 @@ function openProfile() {
   const gamesDisplay = document.getElementById('profileGames');
   const winsDisplay = document.getElementById('profileWins');
   const winRateDisplay = document.getElementById('profileWinRate');
+  const liveStatus = document.getElementById('liveStatusIndicator');
   
   if (nameDisplay) nameDisplay.textContent = currentUser.username;
   if (idDisplay) idDisplay.textContent = 'ID: ' + currentUser.id;
@@ -566,6 +481,14 @@ function openProfile() {
     : 0;
   if (winRateDisplay) winRateDisplay.textContent = winRate + '%';
   
+  if (liveStatus) {
+    if (!currentUser.isGuest && window.socket && window.socket.connected) {
+      liveStatus.innerHTML = '<span class="live-dot" style="background:#00ff88;"></span> <span>Live Mode</span>';
+    } else {
+      liveStatus.innerHTML = '<span class="live-dot"></span> <span>Offline Mode</span>';
+    }
+  }
+  
   if (audio) audio.playClick();
 }
 
@@ -575,6 +498,10 @@ function closeProfile() {
 }
 
 function logout() {
+  if (window.socket && currentUser && !currentUser.isGuest) {
+    window.socket.emit('user-left', { username: currentUser.username });
+  }
+  
   currentUser = null;
   closeProfile();
   
@@ -584,9 +511,9 @@ function logout() {
   
   if (headerUsername) headerUsername.textContent = 'Guest';
   if (headerAvatar) headerAvatar.textContent = '👤';
-  if (userStatus) userStatus.textContent = 'Tap to login';
+  if (userStatus) userStatus.innerHTML = '<span class="live-dot"></span> Offline';
   
-  if (gameState) gameState.balance = 1000;
+  gameState.balance = 1000;
   updateUI();
   
   const authOverlay = document.getElementById('authOverlay');
@@ -630,8 +557,6 @@ function closeVIPPopup() {
 }
 
 function unlockVIP() {
-  if (!gameState) return;
-  
   if (gameState.balance < 100000) {
     showPopup('Insufficient Balance', 'You need ₨100,000 to unlock VIP room!');
     return;
@@ -640,7 +565,7 @@ function unlockVIP() {
   gameState.balance -= 100000;
   updateUI();
   closeVIPPopup();
-  showPopup('VIP Unlocked!', '🎉 Welcome to the VIP room! Enjoy exclusive benefits!');
+  showPopup('VIP Unlocked!', '🎉 Welcome to the VIP room!');
   if (audio) audio.playWin();
 }
 
@@ -796,6 +721,12 @@ function setActiveNav(element) {
   if (element) element.classList.add('active');
 }
 
+function closeAllSections() {
+  document.querySelectorAll('.fullscreen-section').forEach(section => {
+    section.classList.remove('active');
+  });
+}
+
 // ===== SECTION FUNCTIONS =====
 function openOffers() {
   const section = document.getElementById('offersSection');
@@ -806,7 +737,6 @@ function openOffers() {
 function closeOffers() {
   const section = document.getElementById('offersSection');
   if (section) section.classList.remove('active');
-  if (audio) audio.playClick();
 }
 
 function openMissions() {
@@ -842,15 +772,8 @@ function renderMissions() {
   }
 
   const easyMissions = missions.filter(m => !m.isHard);
-  const hardMissions = missions.filter(m => m.isHard);
 
-  html += '<h3 style="color: #ffd700; margin-bottom: 1rem; font-family: Playfair Display;">Easy Missions</h3>';
   easyMissions.forEach(mission => {
-    html += renderMissionCard(mission, isGuest);
-  });
-
-  html += '<h3 style="color: #ff6b6b; margin-top: 2rem; margin-bottom: 1rem; font-family: Playfair Display;">⚡ Hard Missions (High Rewards)</h3>';
-  hardMissions.forEach(mission => {
     html += renderMissionCard(mission, isGuest);
   });
 
@@ -872,17 +795,14 @@ function renderMissionCard(mission, isGuest) {
     btnHtml = `<button class="mission-btn claim" onclick="claimMissionReward('${mission.id}')">Claim Reward</button>`;
   }
 
-  const hardClass = mission.isHard ? 'hard' : '';
-  const statusBadgeClass = mission.isHard ? 'hard' : mission.status;
-
   return `
-    <div class="mission-item ${hardClass}">
+    <div class="mission-item">
       <div class="mission-header">
         <div class="mission-title">
           <span>${mission.icon}</span>
           <span>${mission.title}</span>
         </div>
-        <span class="mission-status ${statusBadgeClass}">${statusText}</span>
+        <span class="mission-status ${mission.status}">${statusText}</span>
       </div>
       <div class="mission-desc">${mission.description}</div>
       ${mission.progress ? `
@@ -915,27 +835,12 @@ function claimMissionReward(missionId) {
     case 'sevenDay':
       result = MissionSystem.claimSevenDayReward();
       break;
-    case 'gamesPlayed':
-      result = MissionSystem.claimGamesPlayedReward();
-      break;
-    case 'bigWin':
-      result = MissionSystem.claimBigWinReward();
-      break;
-    case 'depositMilestone':
-      result = MissionSystem.claimDepositMilestoneReward();
-      break;
-    case 'hundredWins':
-      result = MissionSystem.claimHundredWinsReward();
-      break;
-    case 'thousandDeposit':
-      result = MissionSystem.claimThousandCoinsDepositReward();
-      break;
     default:
       result = { success: false, message: 'Unknown mission' };
   }
 
   if (result.success) {
-    if (gameState) gameState.balance += result.reward;
+    gameState.balance += result.reward;
     updateUI();
     showPopup('Reward Claimed!', `You received ${result.reward} coins!`);
     if (audio) audio.playWin();
@@ -945,17 +850,78 @@ function claimMissionReward(missionId) {
   }
 }
 
-function openEvents() {
-  const section = document.getElementById('eventsSection');
+function openLiveEvents() {
+  const section = document.getElementById('liveEventsSection');
   if (section) section.classList.add('active');
   closeOffers();
   if (audio) audio.playClick();
+  
+  // Update live event data
+  updateEventLeaderboard();
+  startEventTimers();
 }
 
-function closeEvents() {
-  const section = document.getElementById('eventsSection');
+function closeLiveEvents() {
+  const section = document.getElementById('liveEventsSection');
   if (section) section.classList.remove('active');
+}
+
+function updateEventLeaderboard() {
+  const list = document.getElementById('eventLeaderboard');
+  if (!list) return;
+  
+  // Mock data - replace with real data from server
+  const leaders = [
+    { name: 'Player1', score: '15000' },
+    { name: 'Player2', score: '12000' },
+    { name: 'Player3', score: '9000' }
+  ];
+  
+  list.innerHTML = leaders.map(l => `
+    <div class="activity-item">
+      <span>👤 ${l.name}</span>
+      <span>${l.score}</span>
+    </div>
+  `).join('');
+}
+
+function startEventTimers() {
+  // Championship countdown
+  const timer = document.getElementById('championshipTimer');
+  if (timer) {
+    let timeLeft = 194400; // 2 days 5 hours in seconds
+    setInterval(() => {
+      if (timer) {
+        const days = Math.floor(timeLeft / 86400);
+        const hours = Math.floor((timeLeft % 86400) / 3600);
+        timer.textContent = `${days}d ${hours}h`;
+        timeLeft--;
+      }
+    }, 1000);
+  }
+  
+  // Update prize pool randomly
+  const prizePool = document.getElementById('prizePool');
+  if (prizePool) {
+    setInterval(() => {
+      const increase = Math.floor(Math.random() * 1000);
+      const current = parseInt(prizePool.textContent.replace(/,/g, '')) || 1000000;
+      prizePool.textContent = (current + increase).toLocaleString();
+    }, 30000);
+  }
+}
+
+function openLivePlayers() {
   openOffers();
+  document.getElementById('livePlayerBadge').style.display = 'none';
+}
+
+function refreshLeaderboard() {
+  if (window.socket) {
+    window.socket.emit('request-leaderboard');
+  }
+  renderLeaderboard();
+  showLiveNotification('Leaderboard updated', '🔄');
 }
 
 function openSupport() {
@@ -996,7 +962,7 @@ function renderShopGrid() {
   shopGrid.innerHTML = shopItems.map((item) => `
     <div class="shop-card" onclick="purchaseCoins(${item.coins})">
       <div class="shop-icon">${item.icon}</div>
-      <div class="shop-amount">${item.amount}</div>
+      <div class="shop-amount">₨${item.amount}</div>
       <div class="shop-coins">${formatNumber(item.coins)} Coins</div>
       <button class="shop-btn">BUY NOW</button>
     </div>
@@ -1041,8 +1007,6 @@ function selectPaymentMethod(method) {
 }
 
 function purchaseCoins(coins) {
-  if (!gameState) return;
-  
   gameState.balance += coins;
   updateUI();
   
@@ -1066,6 +1030,10 @@ function formatWinAmount(amount) {
     return Math.floor(amount / 1000) + 'k';
   }
   return amount.toString();
+}
+
+function formatNumber(num) {
+  return num.toLocaleString();
 }
 
 function getRandomChampions() {
@@ -1117,59 +1085,40 @@ function startLeaderboardRotation() {
 }
 
 function updateOnlineCount() {
-  const count = Math.floor(Math.random() * (500000 - 190000 + 1)) + 190000;
-  const onlineCount = document.getElementById('onlineCount');
-  const onlineCountGame = document.getElementById('onlineCountGame');
-  
-  if (onlineCount) onlineCount.textContent = formatNumber(count) + ' online';
-  if (onlineCountGame) onlineCountGame.textContent = formatNumber(count) + ' online';
+  // This is now handled by socket.io
 }
 
 // ===== GAME FUNCTIONS =====
 function enterGame() {
-  console.log("🎮 Entering game...");
+  console.log("🎮 Entering live game...");
   
   const loader = document.getElementById('gameEntryLoader');
   const gameView = document.getElementById('gameView');
   
-  if (!loader || !gameView) {
-    console.error("❌ Game elements not found");
-    return;
-  }
+  if (!loader || !gameView) return;
   
-  try {
-    loader.classList.add('active');
-    if (audio) audio.playClick();
-    
-    // Reset game state
-    if (gameState) {
-      gameState.isPlaying = false;
-      gameState.canFlip = false;
-      gameState.currentBet = 0;
-    }
-    
-    setTimeout(() => {
-      loader.classList.remove('active');
-      gameView.classList.add('active');
-      isInGame = true;
-      updateOnlineCount();
-      
-      // Reset bet panel
-      const betPanel = document.getElementById('betPanel');
-      const startBtn = document.getElementById('startBtn');
-      if (betPanel) betPanel.classList.remove('hidden');
-      if (startBtn) startBtn.classList.remove('hidden');
-      
-      // Reset message
-      const messageText = document.getElementById('messageText');
-      if (messageText) messageText.textContent = 'Select your bet and tap START GAME';
-      
-      console.log("✅ Game screen activated");
-    }, 3000);
-  } catch (e) {
-    console.error("❌ Error entering game:", e);
+  loader.classList.add('active');
+  if (audio) audio.playClick();
+  
+  gameState.isPlaying = false;
+  gameState.canFlip = false;
+  gameState.currentBet = 0;
+  
+  setTimeout(() => {
     loader.classList.remove('active');
-  }
+    gameView.classList.add('active');
+    isInGame = true;
+    
+    const betPanel = document.getElementById('betPanel');
+    const startBtn = document.getElementById('startBtn');
+    if (betPanel) betPanel.classList.remove('hidden');
+    if (startBtn) startBtn.classList.remove('hidden');
+    
+    const messageText = document.getElementById('messageText');
+    if (messageText) messageText.textContent = currentUser ? 'Select your bet and tap START' : 'Login to play live!';
+    
+    addToLiveFeed(`${currentUser?.username || 'Guest'} started playing`, 'normal');
+  }, 3000);
 }
 
 function exitGame() {
@@ -1182,19 +1131,11 @@ function exitGame() {
 function initApp() {
   console.log("🚀 Initializing app...");
   
-  try {
-    createParticles();
-    startLeaderboardRotation();
-    
-    MissionSystem.checkLoginStreak();
-    
-    updateOnlineCount();
-    setInterval(updateOnlineCount, 8000);
-    
-    console.log("✅ App initialized successfully");
-  } catch (e) {
-    console.error("❌ Error in initApp:", e);
-  }
+  createParticles();
+  startLeaderboardRotation();
+  MissionSystem.checkLoginStreak();
+  
+  console.log("✅ App initialized");
 }
 
 // ===== GAME CONFIG =====
@@ -1220,9 +1161,6 @@ const CARD_SUITS = [
   { symbol: '♦', color: 'red' },
   { symbol: '♣', color: 'black' }
 ];
-
-// Game state
-const gameState = window.gameState;
 
 // DOM Elements
 const elements = {
@@ -1265,10 +1203,6 @@ function shuffleArray(array) {
   return shuffled;
 }
 
-function formatNumber(num) {
-  return num.toLocaleString();
-}
-
 function setMessage(text, type = 'normal') {
   if (elements.messageText) {
     elements.messageText.textContent = text;
@@ -1286,7 +1220,6 @@ function generateMultiplierDisplay() {
   CONFIG.MULTIPLIERS.forEach((mult, index) => {
     const item = document.createElement('span');
     item.className = 'multiplier-item';
-    item.dataset.step = index + 1;
     if (index === CONFIG.MULTIPLIERS.length - 1) {
       item.classList.add('final');
       item.textContent = `ALL:${mult}x`;
@@ -1428,6 +1361,12 @@ function updateBetSelection() {
 }
 
 async function startGame() {
+  if (!currentUser) {
+    setMessage('Please login first!');
+    openAuthModal('login');
+    return;
+  }
+  
   if (gameState.currentBet <= 0) {
     setMessage('Select a bet first!');
     return;
@@ -1458,8 +1397,10 @@ async function startGame() {
   await animateShuffle();
 
   gameState.canFlip = true;
-  setMessage('Find matching pairs! Avoid the bombs! Find golden pairs to win 20x!');
+  setMessage('Find matching pairs! Avoid the bombs!');
   if (audio) audio.playClick();
+  
+  addToLiveFeed(`${currentUser?.username} started a game`, 'normal');
 }
 
 function renderCards() {
@@ -1607,6 +1548,22 @@ function cashout() {
   // Save to Firebase
   saveGameResultToFirebase(true, gameState.currentWin);
   
+  // Notify live server
+  if (window.socket && currentUser && !currentUser.isGuest) {
+    window.socket.emit('game-won', {
+      userId: currentUser.id,
+      username: currentUser.username,
+      amount: gameState.currentWin,
+      multiplier: gameState.multiplier
+    });
+    
+    addToLiveFeed(`${currentUser.username} won ${formatNumber(gameState.currentWin)}!`, 'win');
+    
+    if (gameState.currentWin > 1000) {
+      showLiveNotification(`🏆 ${currentUser.username} won BIG!`);
+    }
+  }
+  
   if (audio) audio.playCashout();
   if (elements.winAmountDisplay) elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
   if (elements.winMultiplierDisplay) elements.winMultiplierDisplay.textContent = `${gameState.multiplier}x`;
@@ -1628,6 +1585,16 @@ function handleBomb() {
   // Save to Firebase
   saveGameResultToFirebase(false, 0);
   
+  if (window.socket && currentUser && !currentUser.isGuest) {
+    window.socket.emit('game-lost', {
+      userId: currentUser.id,
+      username: currentUser.username,
+      amount: gameState.currentBet
+    });
+    
+    addToLiveFeed(`${currentUser.username} lost ${formatNumber(gameState.currentBet)}`, 'loss');
+  }
+  
   if (audio) audio.playBomb();
   if (elements.loseSubtext) elements.loseSubtext.textContent = `You lost ${formatNumber(gameState.currentBet)}`;
   if (elements.loseOverlay) elements.loseOverlay.classList.add('active');
@@ -1648,6 +1615,18 @@ function handleMaxWin() {
   
   // Save to Firebase
   saveGameResultToFirebase(true, gameState.currentWin);
+  
+  if (window.socket && currentUser && !currentUser.isGuest) {
+    window.socket.emit('game-maxwin', {
+      userId: currentUser.id,
+      username: currentUser.username,
+      amount: gameState.currentWin,
+      multiplier: CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1]
+    });
+    
+    addToLiveFeed(`🔥 ${currentUser.username} hit MAX WIN!`, 'win');
+    showLiveNotification(`🔥 ${currentUser.username} won BIG!`, '🏆');
+  }
   
   if (audio) audio.playWin();
   if (elements.winAmountDisplay) elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
@@ -1765,7 +1744,7 @@ function handleLoginSubmit(form) {
     return;
   }
 
-  // Demo login - no actual Firebase auth
+  // Demo login
   currentUser = {
     username: username,
     avatar: '👤',
@@ -1775,10 +1754,21 @@ function handleLoginSubmit(form) {
   };
 
   updateHeaderForUser();
+  
+  // Tell server user is online
+  if (window.socket) {
+    window.socket.emit('user-online', {
+      userId: currentUser.id,
+      username: currentUser.username
+    });
+  }
+  
   if (successContainer) {
     successContainer.textContent = 'Login successful!';
     successContainer.classList.add('active');
   }
+  
+  showLiveNotification(`Welcome ${username}!`, '👋');
 
   setTimeout(() => {
     closeAuth();
@@ -1839,7 +1829,6 @@ function handleRegisterSubmit(form) {
     .then(() => {
       console.log("✅ User data saved to Realtime Database");
       
-      // Set current user
       currentUser = {
         username: username,
         avatar: '👤',
@@ -1848,14 +1837,22 @@ function handleRegisterSubmit(form) {
         stats: { games: 0, wins: 0, winRate: 0 }
       };
 
-      // Load the user data we just saved
-      loadUserDataFromFirebase(currentUser.id);
+      // Tell server user is online
+      if (window.socket) {
+        window.socket.emit('user-online', {
+          userId: currentUser.id,
+          username: currentUser.username
+        });
+      }
 
+      loadUserDataFromFirebase(currentUser.id);
       updateHeaderForUser();
       
       if (successContainer) {
         successContainer.textContent = 'Registration successful!';
       }
+      
+      showLiveNotification(`Welcome ${username}!`, '👋');
       
       setTimeout(() => {
         switchAuthTab('login');
@@ -1874,62 +1871,61 @@ function handleRegisterSubmit(form) {
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("📄 DOM loaded - starting game");
+  console.log("📄 DOM loaded - starting live game");
   
-  // Initialize game state
   gameState.balance = CONFIG.INITIAL_BALANCE;
   
-  // Setup event listeners
   setupEventListeners();
-  
-  // Update UI
   updateUI();
-  
-  // Generate multiplier display
   generateMultiplierDisplay();
-  
-  // Initialize app
   initApp();
   
-  console.log("✅ Game initialization complete");
+  // Make functions globally available
+  window.showLiveNotification = showLiveNotification;
+  window.addToLiveFeed = addToLiveFeed;
+  window.updateLivePlayersList = updateLivePlayersList;
+  window.updateRecentWinners = updateRecentWinners;
+  window.toggleNotifications = toggleNotifications;
+  window.openLiveEvents = openLiveEvents;
+  window.closeLiveEvents = closeLiveEvents;
+  window.openLivePlayers = openLivePlayers;
+  window.refreshLeaderboard = refreshLeaderboard;
+  window.closeAllSections = closeAllSections;
+  window.showPopup = showPopup;
+  window.closePopup = closePopup;
+  window.openVIPPopup = openVIPPopup;
+  window.closeVIPPopup = closeVIPPopup;
+  window.unlockVIP = unlockVIP;
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.toggleSound = toggleSound;
+  window.showThemeSelector = showThemeSelector;
+  window.changeTheme = changeTheme;
+  window.setActiveNav = setActiveNav;
+  window.openOffers = openOffers;
+  window.closeOffers = closeOffers;
+  window.openMissions = openMissions;
+  window.closeMissions = closeMissions;
+  window.claimMissionReward = claimMissionReward;
+  window.openSupport = openSupport;
+  window.closeSupport = closeSupport;
+  window.openSupportBot = openSupportBot;
+  window.openShop = openShop;
+  window.closeShop = closeShop;
+  window.openWithdraw = openWithdraw;
+  window.selectPaymentMethod = selectPaymentMethod;
+  window.purchaseCoins = purchaseCoins;
+  window.enterGame = enterGame;
+  window.exitGame = exitGame;
+  window.guestLogin = guestLogin;
+  window.openProfile = openProfile;
+  window.closeProfile = closeProfile;
+  window.logout = logout;
+  window.openAuthModal = openAuthModal;
+  window.switchAuthTab = switchAuthTab;
+  window.closeAuth = closeAuth;
+  window.handleLoginSubmit = handleLoginSubmit;
+  window.handleRegisterSubmit = handleRegisterSubmit;
+  
+  console.log("✅ Royal Match Live ready!");
 });
-
-// Make functions globally available
-window.openAuthModal = openAuthModal;
-window.switchAuthTab = switchAuthTab;
-window.closeAuth = closeAuth;
-window.guestLogin = guestLogin;
-window.openProfile = openProfile;
-window.closeProfile = closeProfile;
-window.logout = logout;
-window.openVIPPopup = openVIPPopup;
-window.closeVIPPopup = closeVIPPopup;
-window.unlockVIP = unlockVIP;
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.toggleSound = toggleSound;
-window.showThemeSelector = showThemeSelector;
-window.changeTheme = changeTheme;
-window.setActiveNav = setActiveNav;
-window.openOffers = openOffers;
-window.closeOffers = closeOffers;
-window.openMissions = openMissions;
-window.closeMissions = closeMissions;
-window.claimMissionReward = claimMissionReward;
-window.openEvents = openEvents;
-window.closeEvents = closeEvents;
-window.openSupport = openSupport;
-window.closeSupport = closeSupport;
-window.openSupportBot = openSupportBot;
-window.openShop = openShop;
-window.closeShop = closeShop;
-window.openWithdraw = openWithdraw;
-window.selectPaymentMethod = selectPaymentMethod;
-window.purchaseCoins = purchaseCoins;
-window.enterGame = enterGame;
-window.exitGame = exitGame;
-window.handleLoginSubmit = handleLoginSubmit;
-window.handleRegisterSubmit = handleRegisterSubmit;
-window.closePopup = closePopup;
-
-console.log("✅ Royal Match fully loaded!");

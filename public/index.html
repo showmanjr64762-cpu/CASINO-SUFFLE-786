@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Royal Match - Premium Casino</title>
+  <title>Royal Match - Live Multiplayer Casino</title>
   
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -11,8 +11,89 @@
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
   
-  <!-- Favicon - Prevents 404 -->
+  <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+  
+  <style>
+    /* Real-time notification styles */
+    .real-time-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(145deg, #10b981, #059669);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 50px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      z-index: 10000;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      font-weight: 600;
+      border-left: 4px solid #ffd700;
+      max-width: 300px;
+    }
+    
+    .real-time-notification.show {
+      transform: translateX(0);
+    }
+    
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255,0,0,0.2);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #ff6b6b;
+    }
+    
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      background: #ff4444;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    .player-activity {
+      background: rgba(0,0,0,0.3);
+      border-radius: 10px;
+      padding: 10px;
+      margin-top: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border-bottom: 1px solid rgba(255,215,0,0.1);
+      font-size: 0.85rem;
+    }
+    
+    .activity-item.win {
+      color: #00ff88;
+    }
+    
+    .activity-item.loss {
+      color: #ff6b6b;
+    }
+    
+    .activity-time {
+      color: #888;
+      font-size: 0.7rem;
+      margin-left: auto;
+    }
+  </style>
 </head>
 <body class="theme-emerald">
   <div class="pattern-overlay"></div>
@@ -23,12 +104,12 @@
     <div class="splash-content">
       <div class="splash-logo"></div>
       <div class="splash-title">ROYAL MATCH</div>
-      <div class="splash-subtitle">PREMIUM CASINO EXPERIENCE</div>
+      <div class="splash-subtitle">LIVE MULTIPLAYER CASINO</div>
       <div class="splash-progress">
         <div class="progress-bar-container">
           <div class="progress-bar-fill"></div>
         </div>
-        <div class="loading-text">LOADING ROYAL EXPERIENCE...</div>
+        <div class="loading-text">CONNECTING TO LIVE SERVER...</div>
       </div>
     </div>
   </div>
@@ -41,7 +122,7 @@
       <div class="auth-header">
         <div class="auth-logo">♛</div>
         <div class="auth-title" id="authTitle">Login</div>
-        <div class="auth-subtitle">Enter your credentials</div>
+        <div class="auth-subtitle">Enter the live casino</div>
       </div>
 
       <div class="auth-content">
@@ -60,7 +141,7 @@
             <input type="password" name="password" class="form-input" placeholder="Enter your password" required>
           </div>
 
-          <button type="submit" class="auth-btn">Login</button>
+          <button type="submit" class="auth-btn">Login & Play Live</button>
           
           <div class="auth-divider">
             <span>OR</span>
@@ -68,11 +149,11 @@
 
           <button type="button" class="guest-btn" onclick="guestLogin()">
             <span>👤</span>
-            <span>Continue as Guest</span>
+            <span>Continue as Guest (Offline)</span>
           </button>
 
           <div class="auth-link">
-            Not yet a member? <a onclick="switchAuthTab('register')">Sign up</a>
+            New player? <a onclick="switchAuthTab('register')">Create account</a>
           </div>
         </form>
 
@@ -101,10 +182,10 @@
             <input type="password" name="password_2" class="form-input" placeholder="Confirm password" required>
           </div>
 
-          <button type="submit" class="auth-btn">Register</button>
+          <button type="submit" class="auth-btn">Join Live Casino</button>
 
           <div class="auth-link">
-            Already a member? <a onclick="switchAuthTab('login')">Sign in</a>
+            Already have account? <a onclick="switchAuthTab('login')">Sign in</a>
           </div>
         </form>
       </div>
@@ -121,6 +202,10 @@
         </div>
         <div class="profile-name" id="profileNameDisplay">Guest User</div>
         <div class="profile-id" id="profileIdDisplay">ID: GUEST001</div>
+        <div class="live-indicator" id="liveStatusIndicator">
+          <span class="live-dot"></span>
+          <span>Offline Mode</span>
+        </div>
       </div>
 
       <div class="profile-content">
@@ -149,7 +234,7 @@
     <div class="game-loader-content">
       <div class="game-loader-icon">👑</div>
       <div class="game-loader-text">ROYAL MATCH</div>
-      <div class="game-loader-subtext">Loading Game Table...</div>
+      <div class="game-loader-subtext">Loading Live Game Table...</div>
       <div class="loader-bar">
         <div class="loader-bar-fill"></div>
       </div>
@@ -160,8 +245,8 @@
   <div class="popup-overlay" id="successPopup">
     <div class="popup-content">
       <div class="popup-icon">✅</div>
-      <div class="popup-title">Message Sent!</div>
-      <div class="popup-text">Your message has been sent. We will contact you soon.</div>
+      <div class="popup-title">Success!</div>
+      <div class="popup-text"></div>
       <button class="popup-close" onclick="closePopup()">OK</button>
     </div>
   </div>
@@ -197,9 +282,9 @@
       <div class="settings-option">
         <div class="settings-label">
           <span class="settings-icon">🔔</span>
-          <span>Notifications</span>
+          <span>Live Notifications</span>
         </div>
-        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+        <div class="toggle-switch active" id="notificationToggle" onclick="toggleNotifications()"></div>
       </div>
 
       <button class="change-theme-btn" onclick="showThemeSelector()">
@@ -227,42 +312,63 @@
     </div>
   </div>
 
-  <!-- Offers Section -->
+  <!-- Offers Section (Live Feed) -->
   <div class="fullscreen-section" id="offersSection">
     <div class="fullscreen-header">
       <button class="back-btn" onclick="closeOffers()">
         <span>←</span>
         <span>Back</span>
       </button>
-      <span class="fullscreen-title">🎁 Offers</span>
+      <span class="fullscreen-title">🎁 Live Feed</span>
     </div>
     <div class="fullscreen-content">
       <div class="offers-grid">
         <div class="offer-card" onclick="openMissions()">
-          <div class="offer-badge">NEW</div>
+          <div class="offer-badge">LIVE</div>
           <div class="offer-icon">🎯</div>
           <div class="offer-title">Missions</div>
-          <div class="offer-desc">Complete tasks and earn rewards</div>
+          <div class="offer-desc">Compete with players worldwide</div>
         </div>
 
         <div class="offer-card" onclick="openVIPPopup()">
           <div class="offer-icon">👑</div>
           <div class="offer-title">VIP Club</div>
-          <div class="offer-desc">Exclusive benefits for VIP members</div>
+          <div class="offer-desc">Exclusive live benefits</div>
         </div>
 
-        <div class="offer-card" onclick="openEvents()">
-          <div class="offer-badge">HOT</div>
+        <div class="offer-card" onclick="openLiveEvents()">
+          <div class="offer-badge">🔥 LIVE</div>
           <div class="offer-icon">🎉</div>
-          <div class="offer-title">Events</div>
-          <div class="offer-desc">Special events and tournaments</div>
+          <div class="offer-title">Live Events</div>
+          <div class="offer-desc">Tournaments happening now</div>
         </div>
 
         <div class="offer-card" onclick="openSupport()">
           <div class="offer-icon">🎧</div>
-          <div class="offer-title">Support</div>
-          <div class="offer-desc">24/7 customer support</div>
+          <div class="offer-title">Live Support</div>
+          <div class="offer-desc">24/7 live chat</div>
         </div>
+      </div>
+      
+      <!-- Live Players Section -->
+      <h2 class="section-title" style="margin-top: 2rem;">
+        <span>👥</span>
+        <span>Players Online Now</span>
+        <span class="live-indicator" style="margin-left: 10px;">
+          <span class="live-dot"></span>
+          <span id="liveOnlineCount">0</span>
+        </span>
+      </h2>
+      <div class="player-activity" id="livePlayersList">
+        <div class="activity-item">Loading live players...</div>
+      </div>
+      
+      <h2 class="section-title" style="margin-top: 2rem;">
+        <span>⚡</span>
+        <span>Live Activity Feed</span>
+      </h2>
+      <div class="player-activity" id="liveActivityFeed">
+        <div class="activity-item">Waiting for activity...</div>
       </div>
     </div>
   </div>
@@ -274,12 +380,11 @@
         <span>←</span>
         <span>Back</span>
       </button>
-      <span class="fullscreen-title">🛒 Shop</span>
+      <span class="fullscreen-title">🛒 Live Shop</span>
     </div>
     <div class="fullscreen-content">
       <div class="shop-grid" id="shopGrid"></div>
 
-      <!-- Pakistani Payment Methods -->
       <h2 class="section-title" style="margin-top: 2rem;">
         <span>🇵🇰</span>
         <span>Pakistani Payment Methods</span>
@@ -295,80 +400,64 @@
         <span>←</span>
         <span>Back</span>
       </button>
-      <span class="fullscreen-title">🎯 Missions</span>
+      <span class="fullscreen-title">🎯 Live Missions</span>
     </div>
     <div class="fullscreen-content" id="missionsContent"></div>
   </div>
 
-  <!-- Events Section -->
-  <div class="fullscreen-section" id="eventsSection">
+  <!-- Live Events Section -->
+  <div class="fullscreen-section" id="liveEventsSection">
     <div class="fullscreen-header">
-      <button class="back-btn" onclick="closeEvents()">
+      <button class="back-btn" onclick="closeLiveEvents()">
         <span>←</span>
         <span>Back</span>
       </button>
-      <span class="fullscreen-title">🎉 Events</span>
+      <span class="fullscreen-title">🎉 Live Events</span>
     </div>
     <div class="fullscreen-content">
       <div class="event-card featured">
         <div class="event-header">
-          <div class="event-icon-large">🎡</div>
-          <div class="event-title-section">
-            <h3>Daily Lucky Spin</h3>
-            <div class="event-timer">⏰ Resets in 12:45:30</div>
-          </div>
-        </div>
-        <div class="event-description">
-          Spin the wheel every day for free coins! Win up to 10,000 coins daily. 
-          Don't miss your chance to win big with our daily lucky spin event.
-        </div>
-        <div class="event-reward">Free Entry</div>
-      </div>
-
-      <div class="event-card">
-        <div class="event-header">
           <div class="event-icon-large">🏆</div>
           <div class="event-title-section">
-            <h3>Royal Championship</h3>
-            <div class="event-timer">⏰ Starts in 2 days</div>
+            <h3>Weekly Championship</h3>
+            <div class="event-timer">⏰ Ends in <span id="championshipTimer">2d 5h</span></div>
           </div>
         </div>
         <div class="event-description">
-          Compete with players worldwide in our weekly championship. 
-          Top 100 players win exclusive prizes and special badges.
+          Compete live with players worldwide. Top 10 win massive prizes!
         </div>
-        <div class="event-reward">Prize Pool: 1M Coins</div>
-      </div>
-
-      <div class="event-card">
-        <div class="event-header">
-          <div class="event-icon-large">📚</div>
-          <div class="event-title-section">
-            <h3>About Royal Match</h3>
-          </div>
-        </div>
-        <div class="event-description">
-          Royal Match is a thrilling card matching game where strategy meets luck. 
-          Match 12 pairs to win big, but beware of the bombs! 
-          Start with a bet, flip cards to find matches, and cash out anytime. 
-          The more pairs you match, the higher your multiplier grows!
-          Golden Cards: Find a pair of golden cards to win 20x your bet instantly!
+        <div class="event-reward">Prize Pool: <span id="prizePool">1,000,000</span> Coins</div>
+        <div class="leaderboard-list" id="eventLeaderboard" style="margin-top: 1rem;">
+          <div class="activity-item">Loading live rankings...</div>
         </div>
       </div>
 
       <div class="event-card">
         <div class="event-header">
-          <div class="event-icon-large">🎁</div>
+          <div class="event-icon-large">⚡</div>
           <div class="event-title-section">
-            <h3>Weekend Bonus</h3>
-            <div class="event-timer">⏰ Every Weekend</div>
+            <h3>Hot Streak Challenge</h3>
+            <div class="event-timer">⏰ <span id="streakPlayers">127</span> players competing</div>
           </div>
         </div>
         <div class="event-description">
-          Get 2x experience points and special bonuses every weekend. 
-          Play more, win more during our special weekend events!
+          Highest multiplier wins. Live updates every minute!
         </div>
-        <div class="event-reward">2x XP + Bonuses</div>
+        <div class="event-reward">Bonus: 500% on next win</div>
+      </div>
+
+      <div class="event-card">
+        <div class="event-header">
+          <div class="event-icon-large">👑</div>
+          <div class="event-title-section">
+            <h3>VIP Tournament</h3>
+            <div class="event-timer">⏰ Invitation only</div>
+          </div>
+        </div>
+        <div class="event-description">
+          Exclusive for VIP members. Live private tournament.
+        </div>
+        <div class="event-reward">Entry: 10,000 Coins</div>
       </div>
     </div>
   </div>
@@ -380,7 +469,7 @@
         <span>←</span>
         <span>Back</span>
       </button>
-      <span class="fullscreen-title">🎧 Support</span>
+      <span class="fullscreen-title">🎧 Live Support</span>
     </div>
     <div class="fullscreen-content">
       <div class="support-container">
@@ -389,19 +478,19 @@
             <div class="support-icon-box">🤖</div>
             <div class="support-item-info">
               <h4>AI Support Bot</h4>
-              <p>Get instant help 24/7</p>
+              <p>Instant answers 24/7</p>
             </div>
           </div>
           <div class="support-item">
             <div class="support-icon-box">💬</div>
             <div class="support-item-info">
               <h4>Live Chat</h4>
-              <p>Available 24/7</p>
+              <p><span class="live-dot" style="display: inline-block;"></span> <span id="supportAgents">3</span> agents online</p>
             </div>
           </div>
         </div>
 
-        <button class="support-btn" onclick="openSupportBot()">💬 Open AI Support Chat</button>
+        <button class="support-btn" onclick="openSupportBot()">💬 Open Live Chat</button>
       </div>
     </div>
   </div>
@@ -415,7 +504,10 @@
         </div>
         <div class="user-info">
           <div class="username" id="headerUsername">Guest</div>
-          <div class="user-status" id="userStatus">Tap to login</div>
+          <div class="user-status" id="userStatus">
+            <span class="live-dot" style="width: 8px; height: 8px; display: inline-block;"></span>
+            Offline
+          </div>
         </div>
         <div class="balance-container">
           <div class="coin-icon">🪙</div>
@@ -424,11 +516,12 @@
       </div>
 
       <div class="header-center">
-        <button class="auth-header-btn" onclick="openAuthModal('login')">🔑 Login</button>
-        <button class="auth-header-btn register" onclick="openAuthModal('register')">📝 Register</button>
+        <button class="auth-header-btn" onclick="openAuthModal('login')">🔑 Login Live</button>
+        <button class="auth-header-btn register" onclick="openAuthModal('register')">📝 Join Live</button>
       </div>
 
       <div class="header-actions">
+        <button class="header-btn" title="Live Players" onclick="openLivePlayers()">👥 <span class="notification-badge" id="livePlayerBadge" style="display: none;">3</span></button>
         <button class="header-btn" title="Settings" onclick="openModal('settingsModal')">⚙️</button>
       </div>
     </header>
@@ -437,50 +530,71 @@
       <div class="games-section">
         <h2 class="section-title">
           <span>🎮</span>
-          <span>Featured Game</span>
+          <span>Live Game</span>
+          <span class="live-indicator">
+            <span class="live-dot"></span>
+            <span id="lobbyOnlineCount">0 online</span>
+          </span>
         </h2>
         
         <div class="games-grid">
           <div class="game-tile hot" onclick="enterGame()">
             <div class="game-icon">👑</div>
-            <div class="game-name">Royal Match</div>
+            <div class="game-name">Royal Match Live</div>
             <div class="game-stats">
               <div class="online-count">
-                <span id="onlineCount">2,847 online</span>
+                <span id="onlineCount">0 online</span>
               </div>
-              <div class="entry-fee">Min: 10</div>
+              <div class="entry-fee">Min Bet: 10</div>
             </div>
-            <button class="play-btn">Play Now</button>
+            <button class="play-btn">Play Live Now</button>
           </div>
+        </div>
+        
+        <!-- Recent Winners -->
+        <h2 class="section-title" style="margin-top: 1rem;">
+          <span>🏆</span>
+          <span>Recent Live Winners</span>
+        </h2>
+        <div class="player-activity" id="recentWinners" style="max-height: 150px;">
+          <div class="activity-item">Loading live winners...</div>
         </div>
       </div>
 
       <aside class="leaderboard-panel">
         <div class="leaderboard-header">
           <span>🏆</span>
-          <span class="leaderboard-title">Today's Champions</span>
+          <span class="leaderboard-title">Live Leaderboard</span>
+          <span class="live-indicator" style="margin-left: auto;">
+            <span class="live-dot"></span>
+            <span>LIVE</span>
+          </span>
         </div>
         
         <div class="leaderboard-list" id="leaderboardList"></div>
+        
+        <div style="margin-top: 1rem; text-align: center;">
+          <button class="shop-btn" onclick="refreshLeaderboard()" style="padding: 0.5rem;">🔄 Refresh Live</button>
+        </div>
       </aside>
     </div>
 
     <nav class="bottom-nav">
-      <button class="nav-item active" onclick="setActiveNav(this)">
+      <button class="nav-item active" onclick="setActiveNav(this); closeAllSections()">
         <span class="nav-icon">🏠</span>
-        <span class="nav-label">Home</span>
+        <span class="nav-label">Live Home</span>
       </button>
       <button class="nav-item" onclick="openOffers(); setActiveNav(this)">
-        <span class="nav-icon">🎁</span>
-        <span class="nav-label">Offers</span>
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Live Feed</span>
       </button>
       <button class="nav-item" onclick="openShop(); setActiveNav(this)">
         <span class="nav-icon">🛒</span>
         <span class="nav-label">Shop</span>
       </button>
-      <button class="nav-item" onclick="openWithdraw(); setActiveNav(this)">
-        <span class="nav-icon">💸</span>
-        <span class="nav-label">Withdraw</span>
+      <button class="nav-item" onclick="openLiveEvents(); setActiveNav(this)">
+        <span class="nav-icon">🎉</span>
+        <span class="nav-label">Events</span>
       </button>
     </nav>
   </div>
@@ -497,8 +611,10 @@
         <div class="game-logo-title">
           <div class="logo-badge">RM</div>
           <div class="title-text">
-            <span class="main">ROYAL MATCH</span>
-            <span class="sub" id="onlineCountGame">190,000 online</span>
+            <span class="main">ROYAL MATCH LIVE</span>
+            <span class="sub" id="onlineCountGame">
+              <span class="live-dot" style="width: 6px; height: 6px;"></span> 0 online
+            </span>
           </div>
         </div>
       </div>
@@ -507,6 +623,10 @@
         <div class="balance-left">
           <div class="balance-icon">💰</div>
           <span class="balance-amount" id="balanceDisplay">0</span>
+        </div>
+        <div class="live-indicator" style="font-size: 0.7rem;">
+          <span class="live-dot"></span>
+          <span>LIVE</span>
         </div>
       </div>
 
@@ -526,7 +646,7 @@
       </div>
 
       <div class="bet-panel" id="betPanel">
-        <div class="bet-panel-title">Select Your Bet</div>
+        <div class="bet-panel-title">Select Your Live Bet</div>
         <div class="bet-options" id="betOptions">
           <button class="bet-option" data-bet="10" type="button">10</button>
           <button class="bet-option" data-bet="25" type="button">25</button>
@@ -542,13 +662,13 @@
       </div>
 
       <div class="action-buttons" id="actionButtons">
-        <button class="action-btn start-btn" id="startBtn" type="button">START GAME</button>
+        <button class="action-btn start-btn" id="startBtn" type="button">START LIVE GAME</button>
         <button class="action-btn cashout-btn hidden" id="cashoutBtn" type="button">CASH OUT</button>
         <button class="action-btn continue-btn hidden" id="continueBtn" type="button">CONTINUE</button>
       </div>
 
       <div class="message-display" id="messageDisplay">
-        <p class="message-text" id="messageText">Select your bet and tap START GAME</p>
+        <p class="message-text" id="messageText">Login to play live with others!</p>
       </div>
 
       <div class="progress-section hidden" id="progressSection">
@@ -563,12 +683,17 @@
       </div>
 
       <div class="card-grid" id="cardGrid"></div>
+      
+      <!-- Live game activity -->
+      <div class="player-activity" style="margin-top: 1rem; max-height: 100px;" id="gameActivityFeed">
+        <div class="activity-item">🎮 Live game started</div>
+      </div>
     </div>
   </div>
 
   <!-- Win/Lose Overlays -->
   <div class="win-overlay" id="winOverlay">
-    <div class="win-label">YOU WON</div>
+    <div class="win-label">🎉 LIVE WIN 🎉</div>
     <div class="win-amount" id="winAmountDisplay">0</div>
     <div class="win-multiplier" id="winMultiplierDisplay">0x</div>
     <button class="play-again-btn" id="playAgainWin" type="button">PLAY AGAIN</button>
@@ -581,16 +706,15 @@
     <button class="play-again-btn" id="playAgainLose" type="button">TRY AGAIN</button>
   </div>
 
-  <!-- ========== SCRIPTS - LOADED IN CORRECT ORDER ========== -->
+  <!-- ========== SCRIPTS ========== -->
   
-  <!-- 1. Firebase v8 (compatible with your code) -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- 2. Firebase Configuration - FIXED -->
   <script>
-    // Your Firebase configuration
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDgxEgtvrugTxXL5l10hvzQBILmqUzWBLA",
       authDomain: "nj777-2756c.firebaseapp.com",
@@ -602,27 +726,80 @@
     };
 
     // Initialize Firebase
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-        console.log("✅ Firebase initialized");
-      }
-    } catch (e) {
-      console.log("⚠️ Firebase unavailable - offline mode");
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+      console.log("✅ Firebase initialized");
     }
   </script>
 
-  <!-- 3. Socket.io (optional) -->
+  <!-- Socket.io for Real-time -->
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  
   <script>
-    // Socket.io disabled by default
-    window.socket = null;
+    // Real-time server connection
+    const socket = io('https://your-backend-url.onrender.com', {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      timeout: 10000
+    });
+
+    socket.on('connect', () => {
+      console.log('🔌 Connected to live server');
+      document.querySelectorAll('.live-dot').forEach(dot => dot.style.background = '#00ff88');
+      
+      if (window.currentUser && !window.currentUser.isGuest) {
+        socket.emit('user-online', {
+          userId: window.currentUser.id,
+          username: window.currentUser.username
+        });
+      }
+    });
+
+    socket.on('connect_error', (error) => {
+      console.log('⚠️ Live server connection failed - offline mode');
+    });
+
+    socket.on('online-count', (count) => {
+      document.getElementById('onlineCount').textContent = count + ' online';
+      document.getElementById('onlineCountGame').innerHTML = `<span class="live-dot" style="width:6px;height:6px;"></span> ${count} online`;
+      document.getElementById('lobbyOnlineCount').textContent = count + ' online';
+      document.getElementById('liveOnlineCount').textContent = count;
+    });
+
+    socket.on('user-joined', (data) => {
+      if (window.showLiveNotification) showLiveNotification(`👋 ${data.username} joined the game!`);
+      if (window.updateLivePlayersList) updateLivePlayersList();
+    });
+
+    socket.on('user-left', (data) => {
+      if (window.showLiveNotification) showLiveNotification(`👋 ${data.username} left`);
+      if (window.updateLivePlayersList) updateLivePlayersList();
+    });
+
+    socket.on('game-result', (data) => {
+      if (window.addToLiveFeed) addToLiveFeed(`${data.username} won ${data.amount} coins!`, 'win');
+      if (data.amount > 1000 && window.showLiveNotification) {
+        showLiveNotification(`🏆 ${data.username} won BIG!`);
+      }
+    });
+
+    socket.on('live-players', (players) => {
+      if (window.updateLivePlayersList) updateLivePlayersList(players);
+    });
+
+    socket.on('recent-winners', (winners) => {
+      if (window.updateRecentWinners) updateRecentWinners(winners);
+    });
+
+    window.socket = socket;
   </script>
 
-  <!-- 4. Your game script -->
+  <!-- Main Game Script -->
   <script src="script.js"></script>
-
-  <!-- 5. Splash screen timeout -->
+  
+  <!-- Splash screen timeout -->
   <script>
     setTimeout(() => {
       const splash = document.getElementById('splashScreen');
@@ -634,7 +811,7 @@
           if (app) app.classList.add('visible');
         }, 700);
       }
-    }, 10000);
+    }, 8000);
   </script>
 </body>
 </html>
