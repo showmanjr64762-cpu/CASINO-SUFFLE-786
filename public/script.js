@@ -1688,6 +1688,7 @@ function handleLoginSubmit(form) {
   }, 800);
 }
 
+
 function handleRegisterSubmit(form) {
   const username = form.username.value.trim();
   const email = form.email.value.trim();
@@ -1696,10 +1697,10 @@ function handleRegisterSubmit(form) {
   const errorContainer = document.getElementById('registerErrors');
   const successContainer = document.getElementById('registerSuccess');
 
-  if (errorContainer) errorContainer.classList.remove('active');
-  if (successContainer) successContainer.classList.remove('active');
-  if (errorContainer) errorContainer.innerHTML = '';
-  if (successContainer) successContainer.innerHTML = '';
+  errorContainer.classList.remove('active');
+  successContainer.classList.remove('active');
+  errorContainer.innerHTML = '';
+  successContainer.innerHTML = '';
 
   const errors = [];
   if (!username) errors.push('Username is required');
@@ -1709,32 +1710,66 @@ function handleRegisterSubmit(form) {
   if (password1 !== password2) errors.push('Passwords do not match');
 
   if (errors.length) {
-    if (errorContainer) {
-      errorContainer.innerHTML = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-      errorContainer.classList.add('active');
-    }
+    errorContainer.innerHTML = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+    errorContainer.classList.add('active');
     return;
   }
 
-  // Fake successful registration
-  currentUser = {
-    username,
-    avatar: '👤',
-    isGuest: false,
-    id: 'USER' + Math.floor(Math.random() * 99999),
-    stats: { games: 0, wins: 0, winRate: 0 }
-  };
+  // ===== NEW CODE: Save to Firebase =====
+  try {
+    // Create user in Firebase Auth
+    firebase.auth().createUserWithEmailAndPassword(email, password1)
+      .then((userCredential) => {
+        // User created successfully
+        const user = userCredential.user;
+        
+        // Save user data to Realtime Database
+        return firebase.database().ref('users/' + user.uid).set({
+          username: username,
+          email: email,
+          coins: 1000,
+          level: 1,
+          xp: 0,
+          totalWins: 0,
+          totalLosses: 0,
+          gamesPlayed: 0,
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      })
+      .then(() => {
+        // Data saved successfully
+        console.log("✅ User saved to database");
+        
+        // Set current user
+        currentUser = {
+          username: username,
+          avatar: '👤',
+          isGuest: false,
+          id: firebase.auth().currentUser.uid,
+          stats: { games: 0, wins: 0, winRate: 0 }
+        };
 
-  updateHeaderForUser();
-  if (successContainer) {
-    successContainer.textContent = 'Registration successful!';
-    successContainer.classList.add('active');
+        updateHeaderForUser();
+        successContainer.textContent = 'Registration successful!';
+        successContainer.classList.add('active');
+
+        setTimeout(() => {
+          switchAuthTab('login');
+          closeAuth();
+        }, 800);
+      })
+      .catch((error) => {
+        // Handle errors
+        console.error("❌ Firebase error:", error);
+        errorContainer.innerHTML = '<ul><li>' + error.message + '</li></ul>';
+        errorContainer.classList.add('active');
+      });
+      
+  } catch (error) {
+    console.error("❌ Registration error:", error);
+    errorContainer.innerHTML = '<ul><li>' + error.message + '</li></ul>';
+    errorContainer.classList.add('active');
   }
-
-  setTimeout(() => {
-    switchAuthTab('login');
-    closeAuth();
-  }, 800);
 }
 
 // ===== INITIALIZATION =====
