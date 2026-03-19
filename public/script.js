@@ -1829,7 +1829,86 @@ window.purchaseCoins = purchaseCoins;
 window.enterGame = enterGame;
 window.exitGame = exitGame;
 window.handleLoginSubmit = handleLoginSubmit;
-window.handleRegisterSubmit = handleRegisterSubmit;
+function handleRegisterSubmit(form) {
+  const username = form.username.value.trim();
+  const email = form.email.value.trim();
+  const password1 = form.password_1.value.trim();
+  const password2 = form.password_2.value.trim();
+  const errorContainer = document.getElementById('registerErrors');
+  const successContainer = document.getElementById('registerSuccess');
+
+  errorContainer.classList.remove('active');
+  successContainer.classList.remove('active');
+  errorContainer.innerHTML = '';
+  successContainer.innerHTML = '';
+
+  const errors = [];
+  if (!username) errors.push('Username is required');
+  if (!email) errors.push('Email is required');
+  if (!password1) errors.push('Password is required');
+  if (password1 && password1.length < 6) errors.push('Password must be at least 6 characters');
+  if (password1 !== password2) errors.push('Passwords do not match');
+
+  if (errors.length) {
+    errorContainer.innerHTML = '<ul>' + errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+    errorContainer.classList.add('active');
+    return;
+  }
+
+  // Show loading message
+  successContainer.textContent = 'Creating account...';
+  successContainer.classList.add('active');
+
+  // Create user in Firebase Auth
+  firebase.auth().createUserWithEmailAndPassword(email, password1)
+    .then((userCredential) => {
+      // User created successfully
+      const user = userCredential.user;
+      console.log("✅ User created in Auth:", user.uid);
+      
+      // Save user data to Realtime Database
+      return firebase.database().ref('users/' + user.uid).set({
+        username: username,
+        email: email,
+        coins: 1000,
+        level: 1,
+        xp: 0,
+        totalWins: 0,
+        totalLosses: 0,
+        gamesPlayed: 0,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      });
+    })
+    .then(() => {
+      console.log("✅ User data saved to Realtime Database");
+      
+      // Set current user
+      currentUser = {
+        username: username,
+        avatar: '👤',
+        isGuest: false,
+        id: firebase.auth().currentUser.uid,
+        stats: { games: 0, wins: 0, winRate: 0 }
+      };
+
+      updateHeaderForUser();
+      
+      // Show success message
+      successContainer.textContent = 'Registration successful!';
+      
+      setTimeout(() => {
+        switchAuthTab('login');
+        closeAuth();
+      }, 1500);
+    })
+    .catch((error) => {
+      console.error("❌ Firebase error:", error);
+      errorContainer.innerHTML = '<ul><li>' + error.message + '</li></ul>';
+      errorContainer.classList.add('active');
+      successContainer.classList.remove('active');
+    });
+}
+
 window.closePopup = closePopup;
 
 console.log("✅ Royal Match fully loaded!");
