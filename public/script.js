@@ -1,4 +1,4 @@
-// ===== ROYAL MATCH - COMPLETE MULTIPLAYER VERSION =====
+// ===== ROYAL MATCH - COMPLETE MULTIPLAYER WITH FIREBASE LIVE ACTIVITY =====
 console.log("🎮 Royal Match Live - Loading...");
 
 // ===== GLOBAL VARIABLES =====
@@ -300,6 +300,227 @@ function loadUserDataFromFirebase(userId) {
     });
 }
 
+// ===== NEW: FIREBASE LIVE ACTIVITY FUNCTIONS =====
+
+// Save live activity to Firebase
+function saveLiveActivityToFirebase(activityType, data) {
+  if (!currentUser || currentUser.isGuest) return;
+  
+  const activityRef = firebase.database().ref('live-activity').push();
+  
+  const activityData = {
+    type: activityType,
+    username: currentUser.username,
+    userId: currentUser.id,
+    timestamp: new Date().toISOString(),
+    time: new Date().toLocaleTimeString(),
+    ...data
+  };
+  
+  activityRef.set(activityData)
+    .then(() => {
+      console.log(`✅ Live activity saved: ${activityType}`);
+      
+      // Keep only last 50 activities
+      firebase.database().ref('live-activity').limitToFirst(-51).once('value', snapshot => {
+        const activities = snapshot.val();
+        if (activities) {
+          const keys = Object.keys(activities);
+          if (keys.length > 50) {
+            const keysToRemove = keys.slice(0, keys.length - 50);
+            keysToRemove.forEach(key => {
+              firebase.database().ref('live-activity/' + key).remove();
+            });
+          }
+        }
+      });
+    })
+    .catch(error => console.error("❌ Error saving live activity:", error));
+}
+
+// Save online player to Firebase
+function updateOnlinePlayersInFirebase() {
+  if (!currentUser || currentUser.isGuest) return;
+  
+  const onlineRef = firebase.database().ref('online-players/' + currentUser.id);
+  
+  onlineRef.set({
+    username: currentUser.username,
+    lastSeen: new Date().toISOString(),
+    status: 'online'
+  });
+  
+  // Remove after disconnect
+  window.addEventListener('beforeunload', () => {
+    onlineRef.remove();
+  });
+}
+
+// Get live activities from Firebase
+function loadLiveActivitiesFromFirebase() {
+  firebase.database().ref('live-activity').limitToLast(20).once('value', snapshot => {
+    const activities = snapshot.val();
+    if (activities) {
+      const activitiesList = Object.values(activities).reverse();
+      updateLiveFeedFromFirebase(activitiesList);
+    }
+  });
+  
+  // Listen for new activities
+  firebase.database().ref('live-activity').limitToLast(1).on('child_added', snapshot => {
+    const activity = snapshot.val();
+    addToLiveFeedFromFirebase(activity);
+  });
+}
+
+// Update live feed from Firebase
+function updateLiveFeedFromFirebase(activities) {
+  const feed = document.getElementById('liveActivityFeed');
+  const gameFeed = document.getElementById('gameActivityFeed');
+  if (!feed && !gameFeed) return;
+  
+  let feedHtml = '';
+  activities.forEach(activity => {
+    let message = '';
+    let typeClass = 'normal';
+    
+    switch(activity.type) {
+      case 'game-start':
+        message = `🎮 ${activity.username} started playing`;
+        break;
+      case 'game-win':
+        message = `🏆 ${activity.username} won ${activity.amount} coins!`;
+        typeClass = 'win';
+        break;
+      case 'game-loss':
+        message = `💥 ${activity.username} lost ${activity.amount} coins`;
+        typeClass = 'loss';
+        break;
+      case 'game-maxwin':
+        message = `🔥 ${activity.username} hit MAX WIN ${activity.amount}!`;
+        typeClass = 'win';
+        break;
+      case 'user-join':
+        message = `👋 ${activity.username} joined the game`;
+        break;
+      case 'user-left':
+        message = `👋 ${activity.username} left`;
+        break;
+      case 'purchase':
+        message = `🛒 ${activity.username} bought ${activity.amount} coins`;
+        break;
+      case 'vip-unlock':
+        message = `👑 ${activity.username} unlocked VIP!`;
+        typeClass = 'win';
+        break;
+    }
+    
+    feedHtml += `<div class="activity-item ${typeClass}">
+      <span>${message}</span>
+      <span class="activity-time">${activity.time}</span>
+    </div>`;
+  });
+  
+  if (feed) feed.innerHTML = feedHtml;
+  if (gameFeed) gameFeed.innerHTML = feedHtml.slice(0, 5);
+}
+
+// Add single activity to feed
+function addToLiveFeedFromFirebase(activity) {
+  const feed = document.getElementById('liveActivityFeed');
+  const gameFeed = document.getElementById('gameActivityFeed');
+  if (!feed && !gameFeed) return;
+  
+  let message = '';
+  let typeClass = 'normal';
+  
+  switch(activity.type) {
+    case 'game-start':
+      message = `🎮 ${activity.username} started playing`;
+      break;
+    case 'game-win':
+      message = `🏆 ${activity.username} won ${activity.amount} coins!`;
+      typeClass = 'win';
+      break;
+    case 'game-loss':
+      message = `💥 ${activity.username} lost ${activity.amount} coins`;
+      typeClass = 'loss';
+      break;
+    case 'game-maxwin':
+      message = `🔥 ${activity.username} hit MAX WIN ${activity.amount}!`;
+      typeClass = 'win';
+      break;
+    case 'user-join':
+      message = `👋 ${activity.username} joined the game`;
+      break;
+    case 'user-left':
+      message = `👋 ${activity.username} left`;
+      break;
+    case 'purchase':
+      message = `🛒 ${activity.username} bought ${activity.amount} coins`;
+      break;
+    case 'vip-unlock':
+      message = `👑 ${activity.username} unlocked VIP!`;
+      typeClass = 'win';
+      break;
+  }
+  
+  const item = document.createElement('div');
+  item.className = `activity-item ${typeClass}`;
+  item.innerHTML = `
+    <span>${message}</span>
+    <span class="activity-time">${activity.time}</span>
+  `;
+  
+  if (feed) {
+    feed.insertBefore(item, feed.firstChild);
+    if (feed.children.length > 20) feed.removeChild(feed.lastChild);
+  }
+  
+  if (gameFeed) {
+    gameFeed.insertBefore(item.cloneNode(true), gameFeed.firstChild);
+    if (gameFeed.children.length > 10) gameFeed.removeChild(gameFeed.lastChild);
+  }
+}
+
+// Get online players from Firebase
+function loadOnlinePlayersFromFirebase() {
+  firebase.database().ref('online-players').on('value', snapshot => {
+    const players = snapshot.val();
+    const list = document.getElementById('livePlayersList');
+    const onlineCount = document.getElementById('liveOnlineCount');
+    const lobbyOnlineCount = document.getElementById('lobbyOnlineCount');
+    const onlineCountDisplay = document.getElementById('onlineCount');
+    const onlineCountGame = document.getElementById('onlineCountGame');
+    
+    if (players) {
+      const playerList = Object.values(players);
+      const count = playerList.length;
+      
+      if (onlineCount) onlineCount.textContent = count;
+      if (lobbyOnlineCount) lobbyOnlineCount.textContent = count + ' online';
+      if (onlineCountDisplay) onlineCountDisplay.textContent = count + ' online';
+      if (onlineCountGame) onlineCountGame.innerHTML = `<span class="live-dot" style="width:6px;height:6px;"></span> ${count} online`;
+      
+      if (list) {
+        list.innerHTML = playerList.slice(0, 10).map(p => `
+          <div class="activity-item">
+            <span class="live-dot" style="width: 8px; height: 8px; background: #00ff88;"></span>
+            <span>${p.username}</span>
+            <span class="activity-time">online</span>
+          </div>
+        `).join('');
+      }
+    } else {
+      if (onlineCount) onlineCount.textContent = '0';
+      if (lobbyOnlineCount) lobbyOnlineCount.textContent = '0 online';
+      if (onlineCountDisplay) onlineCountDisplay.textContent = '0 online';
+      if (onlineCountGame) onlineCountGame.innerHTML = `<span class="live-dot"></span> 0 online`;
+      if (list) list.innerHTML = '<div class="activity-item">No players online</div>';
+    }
+  });
+}
+
 // ===== REAL-TIME MULTIPLAYER FEATURES =====
 
 // Toggle notifications
@@ -323,69 +544,6 @@ function showLiveNotification(message, icon = '🔔') {
     notification.classList.remove('show');
     setTimeout(() => notification.remove(), 500);
   }, 3000);
-}
-
-// Add to live feed
-function addToLiveFeed(message, type = 'normal') {
-  const feed = document.getElementById('liveActivityFeed');
-  const gameFeed = document.getElementById('gameActivityFeed');
-  if (!feed && !gameFeed) return;
-  
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const item = document.createElement('div');
-  item.className = `activity-item ${type}`;
-  item.innerHTML = `
-    <span>${message}</span>
-    <span class="activity-time">${time}</span>
-  `;
-  
-  if (feed) {
-    feed.insertBefore(item, feed.firstChild);
-    if (feed.children.length > 10) feed.removeChild(feed.lastChild);
-  }
-  
-  if (gameFeed) {
-    gameFeed.insertBefore(item.cloneNode(true), gameFeed.firstChild);
-    if (gameFeed.children.length > 5) gameFeed.removeChild(gameFeed.lastChild);
-  }
-}
-
-// Update live players list
-function updateLivePlayersList(players) {
-  const list = document.getElementById('livePlayersList');
-  if (!list) return;
-  
-  if (!players || players.length === 0) {
-    list.innerHTML = '<div class="activity-item">No players online</div>';
-    return;
-  }
-  
-  list.innerHTML = players.slice(0, 10).map(p => `
-    <div class="activity-item">
-      <span class="live-dot" style="width: 8px; height: 8px;"></span>
-      <span>${p.username}</span>
-      <span class="activity-time">${p.status || 'playing'}</span>
-    </div>
-  `).join('');
-}
-
-// Update recent winners
-function updateRecentWinners(winners) {
-  const list = document.getElementById('recentWinners');
-  if (!list) return;
-  
-  if (!winners || winners.length === 0) {
-    list.innerHTML = '<div class="activity-item">No winners yet</div>';
-    return;
-  }
-  
-  list.innerHTML = winners.slice(0, 5).map(w => `
-    <div class="activity-item win">
-      <span>🏆 ${w.username}</span>
-      <span>+${w.amount}</span>
-      <span class="activity-time">${w.time}</span>
-    </div>
-  `).join('');
 }
 
 // ===== UI FUNCTIONS =====
@@ -443,10 +601,10 @@ function updateHeaderForUser() {
     if (headerUsername) headerUsername.textContent = currentUser.username;
     if (headerAvatar) headerAvatar.textContent = currentUser.avatar;
     if (userStatus) {
-      if (!currentUser.isGuest && window.socket && window.socket.connected) {
+      if (!currentUser.isGuest) {
         userStatus.innerHTML = '<span class="live-dot" style="width:8px;height:8px;background:#00ff88;"></span> Live';
       } else {
-        userStatus.innerHTML = '<span class="live-dot" style="width:8px;height:8px;"></span> Offline';
+        userStatus.innerHTML = '<span class="live-dot"></span> Guest';
       }
     }
   }
@@ -482,10 +640,10 @@ function openProfile() {
   if (winRateDisplay) winRateDisplay.textContent = winRate + '%';
   
   if (liveStatus) {
-    if (!currentUser.isGuest && window.socket && window.socket.connected) {
+    if (!currentUser.isGuest) {
       liveStatus.innerHTML = '<span class="live-dot" style="background:#00ff88;"></span> <span>Live Mode</span>';
     } else {
-      liveStatus.innerHTML = '<span class="live-dot"></span> <span>Offline Mode</span>';
+      liveStatus.innerHTML = '<span class="live-dot"></span> <span>Guest Mode</span>';
     }
   }
   
@@ -498,8 +656,10 @@ function closeProfile() {
 }
 
 function logout() {
-  if (window.socket && currentUser && !currentUser.isGuest) {
-    window.socket.emit('user-left', { username: currentUser.username });
+  if (currentUser && !currentUser.isGuest) {
+    // Save to Firebase
+    saveLiveActivityToFirebase('user-left', {});
+    firebase.database().ref('online-players/' + currentUser.id).remove();
   }
   
   currentUser = null;
@@ -566,6 +726,12 @@ function unlockVIP() {
   updateUI();
   closeVIPPopup();
   showPopup('VIP Unlocked!', '🎉 Welcome to the VIP room!');
+  
+  // Save to Firebase
+  if (currentUser && !currentUser.isGuest) {
+    saveLiveActivityToFirebase('vip-unlock', {});
+  }
+  
   if (audio) audio.playWin();
 }
 
@@ -870,19 +1036,23 @@ function updateEventLeaderboard() {
   const list = document.getElementById('eventLeaderboard');
   if (!list) return;
   
-  // Mock data - replace with real data from server
-  const leaders = [
-    { name: 'Player1', score: '15000' },
-    { name: 'Player2', score: '12000' },
-    { name: 'Player3', score: '9000' }
-  ];
-  
-  list.innerHTML = leaders.map(l => `
-    <div class="activity-item">
-      <span>👤 ${l.name}</span>
-      <span>${l.score}</span>
-    </div>
-  `).join('');
+  // Get from Firebase or use mock
+  firebase.database().ref('users').orderByChild('totalWins').limitToLast(5).once('value', snapshot => {
+    const users = snapshot.val();
+    if (users) {
+      const leaders = Object.values(users).map(u => ({
+        name: u.username,
+        score: u.totalWins || 0
+      })).reverse();
+      
+      list.innerHTML = leaders.map(l => `
+        <div class="activity-item">
+          <span>👤 ${l.name}</span>
+          <span>${l.score} wins</span>
+        </div>
+      `).join('');
+    }
+  });
 }
 
 function startEventTimers() {
@@ -917,9 +1087,6 @@ function openLivePlayers() {
 }
 
 function refreshLeaderboard() {
-  if (window.socket) {
-    window.socket.emit('request-leaderboard');
-  }
   renderLeaderboard();
   showLiveNotification('Leaderboard updated', '🔄');
 }
@@ -1014,6 +1181,9 @@ function purchaseCoins(coins) {
   
   // Save to Firebase
   saveCoinsToFirebase(gameState.balance);
+  if (currentUser && !currentUser.isGuest) {
+    saveLiveActivityToFirebase('purchase', { amount: coins });
+  }
   
   closeShop();
   showPopup('Purchase Successful!', `You received ${formatNumber(coins)} coins!`);
@@ -1050,30 +1220,55 @@ function renderLeaderboard() {
   const list = document.getElementById('leaderboardList');
   if (!list) return;
   
-  const champions = getRandomChampions();
-  
-  list.innerHTML = champions.map((champion, index) => {
-    let rankClass = '';
-    
-    if (index === 0) {
-      rankClass = 'gold';
-    } else if (index === 1) {
-      rankClass = 'silver';
-    } else if (index === 2) {
-      rankClass = 'bronze';
+  // Try to get from Firebase first
+  firebase.database().ref('users').orderByChild('totalWins').limitToLast(7).once('value', snapshot => {
+    const users = snapshot.val();
+    if (users) {
+      const leaders = Object.values(users).map(u => ({
+        name: u.username,
+        win: u.totalWins || 0,
+        avatar: '👤'
+      })).reverse();
+      
+      list.innerHTML = leaders.map((champion, index) => {
+        let rankClass = '';
+        if (index === 0) rankClass = 'gold';
+        else if (index === 1) rankClass = 'silver';
+        else if (index === 2) rankClass = 'bronze';
+        
+        return `
+          <div class="leaderboard-item">
+            <div class="rank-number ${rankClass}">${index + 1}</div>
+            <div class="leader-avatar">${champion.avatar}</div>
+            <div class="leader-info">
+              <div class="leader-name">${champion.name}</div>
+              <div class="leader-win">${champion.win} wins</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      // Fallback to random
+      const champions = getRandomChampions();
+      list.innerHTML = champions.map((champion, index) => {
+        let rankClass = '';
+        if (index === 0) rankClass = 'gold';
+        else if (index === 1) rankClass = 'silver';
+        else if (index === 2) rankClass = 'bronze';
+        
+        return `
+          <div class="leaderboard-item">
+            <div class="rank-number ${rankClass}">${champion.rank}</div>
+            <div class="leader-avatar">${champion.avatar}</div>
+            <div class="leader-info">
+              <div class="leader-name">${champion.name}</div>
+              <div class="leader-win">${champion.win}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
-
-    return `
-      <div class="leaderboard-item">
-        <div class="rank-number ${rankClass}">${champion.rank}</div>
-        <div class="leader-avatar">${champion.avatar}</div>
-        <div class="leader-info">
-          <div class="leader-name">${champion.name}</div>
-          <div class="leader-win">${champion.win} won</div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  });
 }
 
 function startLeaderboardRotation() {
@@ -1081,11 +1276,7 @@ function startLeaderboardRotation() {
   if (leaderboardInterval) clearInterval(leaderboardInterval);
   leaderboardInterval = setInterval(() => {
     renderLeaderboard();
-  }, 5000);
-}
-
-function updateOnlineCount() {
-  // This is now handled by socket.io
+  }, 10000);
 }
 
 // ===== GAME FUNCTIONS =====
@@ -1117,7 +1308,10 @@ function enterGame() {
     const messageText = document.getElementById('messageText');
     if (messageText) messageText.textContent = currentUser ? 'Select your bet and tap START' : 'Login to play live!';
     
-    addToLiveFeed(`${currentUser?.username || 'Guest'} started playing`, 'normal');
+    // Save to Firebase
+    if (currentUser && !currentUser.isGuest) {
+      saveLiveActivityToFirebase('game-start', {});
+    }
   }, 3000);
 }
 
@@ -1134,6 +1328,12 @@ function initApp() {
   createParticles();
   startLeaderboardRotation();
   MissionSystem.checkLoginStreak();
+  
+  // Load live data from Firebase
+  if (typeof firebase !== 'undefined') {
+    loadOnlinePlayersFromFirebase();
+    loadLiveActivitiesFromFirebase();
+  }
   
   console.log("✅ App initialized");
 }
@@ -1399,8 +1599,6 @@ async function startGame() {
   gameState.canFlip = true;
   setMessage('Find matching pairs! Avoid the bombs!');
   if (audio) audio.playClick();
-  
-  addToLiveFeed(`${currentUser?.username} started a game`, 'normal');
 }
 
 function renderCards() {
@@ -1548,6 +1746,11 @@ function cashout() {
   // Save to Firebase
   saveGameResultToFirebase(true, gameState.currentWin);
   
+  // Save live activity to Firebase
+  if (currentUser && !currentUser.isGuest) {
+    saveLiveActivityToFirebase('game-win', { amount: gameState.currentWin, multiplier: gameState.multiplier });
+  }
+  
   // Notify live server
   if (window.socket && currentUser && !currentUser.isGuest) {
     window.socket.emit('game-won', {
@@ -1556,12 +1759,10 @@ function cashout() {
       amount: gameState.currentWin,
       multiplier: gameState.multiplier
     });
-    
-    addToLiveFeed(`${currentUser.username} won ${formatNumber(gameState.currentWin)}!`, 'win');
-    
-    if (gameState.currentWin > 1000) {
-      showLiveNotification(`🏆 ${currentUser.username} won BIG!`);
-    }
+  }
+  
+  if (gameState.currentWin > 1000) {
+    showLiveNotification(`🏆 ${currentUser?.username} won BIG!`);
   }
   
   if (audio) audio.playCashout();
@@ -1585,14 +1786,17 @@ function handleBomb() {
   // Save to Firebase
   saveGameResultToFirebase(false, 0);
   
+  // Save live activity to Firebase
+  if (currentUser && !currentUser.isGuest) {
+    saveLiveActivityToFirebase('game-loss', { amount: gameState.currentBet });
+  }
+  
   if (window.socket && currentUser && !currentUser.isGuest) {
     window.socket.emit('game-lost', {
       userId: currentUser.id,
       username: currentUser.username,
       amount: gameState.currentBet
     });
-    
-    addToLiveFeed(`${currentUser.username} lost ${formatNumber(gameState.currentBet)}`, 'loss');
   }
   
   if (audio) audio.playBomb();
@@ -1616,6 +1820,11 @@ function handleMaxWin() {
   // Save to Firebase
   saveGameResultToFirebase(true, gameState.currentWin);
   
+  // Save live activity to Firebase
+  if (currentUser && !currentUser.isGuest) {
+    saveLiveActivityToFirebase('game-maxwin', { amount: gameState.currentWin, multiplier: CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1] });
+  }
+  
   if (window.socket && currentUser && !currentUser.isGuest) {
     window.socket.emit('game-maxwin', {
       userId: currentUser.id,
@@ -1623,10 +1832,9 @@ function handleMaxWin() {
       amount: gameState.currentWin,
       multiplier: CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1]
     });
-    
-    addToLiveFeed(`🔥 ${currentUser.username} hit MAX WIN!`, 'win');
-    showLiveNotification(`🔥 ${currentUser.username} won BIG!`, '🏆');
   }
+  
+  showLiveNotification(`🔥 ${currentUser?.username} won BIG!`, '🏆');
   
   if (audio) audio.playWin();
   if (elements.winAmountDisplay) elements.winAmountDisplay.textContent = formatNumber(gameState.currentWin);
@@ -1755,6 +1963,12 @@ function handleLoginSubmit(form) {
 
   updateHeaderForUser();
   
+  // Save to Firebase
+  if (typeof firebase !== 'undefined') {
+    updateOnlinePlayersInFirebase();
+    saveLiveActivityToFirebase('user-join', {});
+  }
+  
   // Tell server user is online
   if (window.socket) {
     window.socket.emit('user-online', {
@@ -1837,6 +2051,10 @@ function handleRegisterSubmit(form) {
         stats: { games: 0, wins: 0, winRate: 0 }
       };
 
+      // Save to Firebase
+      updateOnlinePlayersInFirebase();
+      saveLiveActivityToFirebase('user-join', {});
+
       // Tell server user is online
       if (window.socket) {
         window.socket.emit('user-online', {
@@ -1882,9 +2100,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Make functions globally available
   window.showLiveNotification = showLiveNotification;
-  window.addToLiveFeed = addToLiveFeed;
-  window.updateLivePlayersList = updateLivePlayersList;
-  window.updateRecentWinners = updateRecentWinners;
   window.toggleNotifications = toggleNotifications;
   window.openLiveEvents = openLiveEvents;
   window.closeLiveEvents = closeLiveEvents;
