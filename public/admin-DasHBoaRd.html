@@ -539,6 +539,11 @@
       z-index: 6000;
       display: none;
       animation: slideIn 0.3s ease;
+      max-width: 90%;
+    }
+
+    .toast.error {
+      background: #ef4444;
     }
 
     @keyframes slideIn {
@@ -550,6 +555,37 @@
         transform: translateX(0);
         opacity: 1;
       }
+    }
+
+    .debug-panel {
+      background: #1a1f2e;
+      border: 1px solid #ffd700;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-family: monospace;
+      font-size: 0.7rem;
+    }
+
+    .debug-panel h3 {
+      color: #ffd700;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .debug-panel pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+      margin-top: 0.5rem;
+      color: #00ff88;
+      font-size: 0.7rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .debug-status {
+      color: #ffd700;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -578,7 +614,7 @@
       </div>
       <div class="live-badge">
         <span class="live-dot"></span>
-        <span>LIVE CONNECTION</span>
+        <span id="connectionStatus">CHECKING CONNECTION...</span>
         <button class="refresh-btn" onclick="refreshAllData()" style="margin-left: 10px;">⟳ Refresh</button>
       </div>
     </div>
@@ -592,6 +628,7 @@
       <button class="nav-tab" data-section="support">🎧 Support</button>
       <button class="nav-tab" data-section="notifications">🔔 Notify</button>
       <button class="nav-tab" data-section="settings">⚙️ Settings</button>
+      <button class="nav-tab" data-section="debug">🐛 Debug</button>
     </div>
 
     <div class="main-content">
@@ -634,8 +671,12 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th></tr></thead>
-              <tbody id="recentActivityBody"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
+              <thead>
+                <tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th></tr>
+              </thead>
+              <tbody id="recentActivityBody">
+                <tr><td colspan="4" class="loading">Loading...</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -650,8 +691,12 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Player</th><th>Coins</th><th>Bets</th><th>Wins</th><th>Referrals</th><th>Earnings</th><th>Actions</th></tr></thead>
-              <tbody id="playersTableBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+              <thead>
+                <tr><th>Player</th><th>Coins</th><th>Bets</th><th>Wins</th><th>Referrals</th><th>Earnings</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="playersTableBody">
+                <tr><td colspan="7" class="loading">Loading...</td></tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -803,6 +848,25 @@
           <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveMilestoneSettings()">Save Rewards</button>
         </div>
       </div>
+
+      <!-- Debug Section -->
+      <div id="debugSection" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-bug"></i> Debug Information</h2>
+            <button class="refresh-btn" onclick="testFirebaseConnection()">Test Connection</button>
+          </div>
+          <div class="debug-panel">
+            <h3>Firebase Connection Status:</h3>
+            <div id="debugConnectionStatus">Not tested</div>
+            <pre id="debugOutput">Click "Test Connection" to check Firebase connection...</pre>
+          </div>
+          <div class="debug-panel">
+            <h3>Database Structure:</h3>
+            <pre id="debugDatabaseStructure">Loading...</pre>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -877,10 +941,35 @@
     };
 
     // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    let db = null;
+    let firebaseInitialized = false;
 
-    console.log("🔥 Admin Dashboard Connected to Firebase");
+    function initFirebase() {
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.database();
+        firebaseInitialized = true;
+        console.log("🔥 Firebase initialized successfully");
+        updateConnectionStatus(true, "Connected");
+        return true;
+      } catch (error) {
+        console.error("❌ Firebase initialization error:", error);
+        updateConnectionStatus(false, "Error: " + error.message);
+        return false;
+      }
+    }
+
+    function updateConnectionStatus(connected, message) {
+      const statusEl = document.getElementById('connectionStatus');
+      if (statusEl) {
+        statusEl.textContent = connected ? "LIVE CONNECTION" : message;
+        if (!connected) {
+          statusEl.style.color = "#ff6b6b";
+        }
+      }
+    }
 
     // ===== GLOBAL VARIABLES =====
     let allUsers = {};
@@ -894,7 +983,6 @@
     let currentCoinAction = null;
     let currentMissionId = null;
 
-    // Mission rewards configuration
     let missionRewards = {
       login: { min: 10, max: 25, title: "Daily Login Reward", desc: "Login daily to claim your reward!" },
       firstDeposit: { min: 15, max: 30, title: "First Deposit Bonus", desc: "Make your first deposit of 100+ coins" },
@@ -907,7 +995,7 @@
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
-      toast.style.background = isError ? '#ef4444' : '#10b981';
+      toast.className = 'toast' + (isError ? ' error' : '');
       toast.style.display = 'block';
       setTimeout(() => {
         toast.style.display = 'none';
@@ -915,7 +1003,7 @@
     }
 
     function formatNumber(num) {
-      if (!num && num !== 0) return '0';
+      if (num === undefined || num === null) return '0';
       if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
       if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
       return num.toLocaleString();
@@ -928,21 +1016,62 @@
       return div.innerHTML;
     }
 
-    // ===== ADMIN AUTHENTICATION =====
-    function verifyAdmin() {
-      const password = document.getElementById('adminPassword').value;
-      if (password === 'admin123') {
-        document.getElementById('adminLogin').classList.add('hidden');
-        document.getElementById('dashboardContent').style.display = 'block';
+    // ===== TEST FIREBASE CONNECTION =====
+    async function testFirebaseConnection() {
+      const outputEl = document.getElementById('debugOutput');
+      outputEl.textContent = "Testing connection...";
+      
+      try {
+        if (!firebaseInitialized) {
+          initFirebase();
+        }
+        
+        // Test reading from root
+        const rootRef = db.ref('/');
+        const snapshot = await rootRef.once('value');
+        const data = snapshot.val();
+        
+        outputEl.textContent = "✅ Firebase Connection Successful!\n\n";
+        outputEl.textContent += "Database Structure:\n";
+        outputEl.textContent += JSON.stringify(data, null, 2);
+        
+        // Update database structure display
+        const structureEl = document.getElementById('debugDatabaseStructure');
+        if (data) {
+          const keys = Object.keys(data);
+          structureEl.textContent = "Available paths:\n" + keys.map(k => `  /${k}`).join('\n') + "\n\nFull data:\n" + JSON.stringify(data, null, 2);
+        } else {
+          structureEl.textContent = "No data found in database. The database might be empty.";
+        }
+        
+        showToast("Connection successful! Data loaded.");
+        
+        // Now load all data
         loadAllData();
-        showToast('Admin access granted');
-      } else {
-        showToast('Invalid password', true);
+        
+      } catch (error) {
+        console.error("Connection test failed:", error);
+        outputEl.textContent = "❌ Connection Failed!\n\n";
+        outputEl.textContent += "Error: " + error.message + "\n\n";
+        outputEl.textContent += "Possible issues:\n";
+        outputEl.textContent += "1. Firebase database URL might be incorrect\n";
+        outputEl.textContent += "2. Database rules might be blocking read access\n";
+        outputEl.textContent += "3. Network connectivity issue\n";
+        outputEl.textContent += "4. CORS issue (if running locally)\n\n";
+        outputEl.textContent += "Try opening in a new tab or checking Firebase console.";
+        
+        showToast("Connection failed: " + error.message, true);
+        updateConnectionStatus(false, "Disconnected");
       }
     }
 
     // ===== LOAD ALL DATA FROM FIREBASE =====
     function loadAllData() {
+      if (!db) {
+        showToast("Firebase not initialized", true);
+        return;
+      }
+      
       console.log("Loading data from Firebase...");
       
       db.ref('users').on('value', (snapshot) => {
@@ -951,50 +1080,49 @@
         updateStats();
         updatePlayersTable();
         updateTopReferrers();
-        updateRecentActivity();
+      }, (error) => {
+        console.error("Error loading users:", error);
+        showToast("Error loading users: " + error.message, true);
       });
 
       db.ref('withdrawals').on('value', (snapshot) => {
         allWithdrawals = snapshot.val() || {};
         console.log("✅ Withdrawals loaded:", Object.keys(allWithdrawals).length);
         updateWithdrawalsTables();
+      }, (error) => {
+        console.error("Error loading withdrawals:", error);
       });
 
       db.ref('support-tickets').on('value', (snapshot) => {
         allTickets = snapshot.val() || {};
         console.log("✅ Tickets loaded:", Object.keys(allTickets).length);
         updateTicketsTable();
+      }, (error) => {
+        console.error("Error loading tickets:", error);
       });
 
       db.ref('referrals').on('value', (snapshot) => {
         allReferrals = snapshot.val() || {};
         console.log("✅ Referrals loaded:", Object.keys(allReferrals).length);
         updateAllReferralsTable();
+        updateTopReferrers();
+      }, (error) => {
+        console.error("Error loading referrals:", error);
       });
 
       db.ref('game-history').limitToLast(50).on('value', (snapshot) => {
         allGameHistory = snapshot.val() || {};
         updateRecentActivity();
+      }, (error) => {
+        console.error("Error loading game history:", error);
       });
 
-      db.ref('settings/missions').once('value', (snapshot) => {
-        const saved = snapshot.val();
-        if (saved) {
-          Object.keys(saved).forEach(key => {
-            if (missionRewards[key]) {
-              missionRewards[key].min = saved[key].min;
-              missionRewards[key].max = saved[key].max;
-            }
-          });
-        }
-        loadMissionsList();
-      });
-
+      loadMissionsList();
       loadSettings();
     }
 
     function refreshAllData() {
-      showToast('Refreshing data...');
+      showToast("Refreshing data...");
       loadAllData();
     }
 
@@ -1028,9 +1156,14 @@
       if (allGameHistory) {
         Object.values(allGameHistory).forEach(game => {
           if (game.username) {
+            let action = '🎮 Played Game';
+            if (game.result === 'win') action = '🎮 Won Game';
+            else if (game.result === 'maxwin') action = '🏆 Max Win!';
+            else if (game.result === 'loss') action = '💣 Lost Game';
+            
             activities.push({
               player: game.username,
-              action: game.result === 'win' ? '🎮 Won Game' : (game.result === 'maxwin' ? '🏆 Max Win!' : '💣 Lost Game'),
+              action: action,
               amount: game.winAmount || game.bet || 0,
               time: game.timestamp
             });
@@ -1067,7 +1200,7 @@
       Object.entries(allUsers).forEach(([id, user]) => {
         html += `
           <tr>
-            <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div></td>
+            <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div></td>
             <td class="positive">${formatNumber(user.coins || 0)}</td>
             <td>${user.totalBets || 0}</td>
             <td class="positive">${user.totalWins || 0}</td>
@@ -1407,10 +1540,12 @@
         missionRewards[currentMissionId].min = minReward;
         missionRewards[currentMissionId].max = maxReward;
         
-        db.ref('settings/missions/' + currentMissionId).set({
-          min: minReward,
-          max: maxReward
-        });
+        if (db) {
+          db.ref('settings/missions/' + currentMissionId).set({
+            min: minReward,
+            max: maxReward
+          });
+        }
 
         showToast('Mission reward updated!');
         loadMissionsList();
@@ -1420,6 +1555,7 @@
 
     // ===== NOTIFICATIONS =====
     function sendNotificationToPlayer(userId, title, message, icon) {
+      if (!db) return;
       const notifRef = db.ref('notifications/' + userId).push();
       notifRef.set({
         title: title,
@@ -1473,6 +1609,11 @@
         return;
       }
 
+      if (!db) {
+        showToast('Firebase not initialized', true);
+        return;
+      }
+
       const userRef = db.ref('users/' + currentUserId);
       const snapshot = await userRef.once('value');
       const userData = snapshot.val();
@@ -1480,6 +1621,17 @@
       if (currentCoinAction === 'add') {
         await userRef.update({ coins: (userData.coins || 0) + amount });
         showToast(`Added ${amount} coins to ${userData.username}`);
+        
+        // Record transaction
+        const transRef = db.ref('transactions').push();
+        transRef.set({
+          userId: currentUserId,
+          username: userData.username,
+          amount: amount,
+          coins: amount,
+          type: 'admin_add',
+          timestamp: new Date().toISOString()
+        });
       } else {
         const newBalance = (userData.coins || 0) - amount;
         if (newBalance < 0) {
@@ -1488,6 +1640,16 @@
         }
         await userRef.update({ coins: newBalance });
         showToast(`Removed ${amount} coins from ${userData.username}`);
+        
+        const transRef = db.ref('transactions').push();
+        transRef.set({
+          userId: currentUserId,
+          username: userData.username,
+          amount: amount,
+          coins: -amount,
+          type: 'admin_remove',
+          timestamp: new Date().toISOString()
+        });
       }
 
       closeCoinModal();
@@ -1495,6 +1657,8 @@
 
     // ===== SETTINGS =====
     function loadSettings() {
+      if (!db) return;
+      
       db.ref('settings/commission').once('value', snapshot => {
         const data = snapshot.val();
         if (data) {
@@ -1517,6 +1681,7 @@
     }
 
     function saveCommissionSettings() {
+      if (!db) return;
       const settings = {
         level1: parseFloat(document.getElementById('commission1').value),
         level2: parseFloat(document.getElementById('commission2').value),
@@ -1528,6 +1693,7 @@
     }
 
     function saveMilestoneSettings() {
+      if (!db) return;
       const milestones = {
         5: parseInt(document.getElementById('milestone5').value),
         10: parseInt(document.getElementById('milestone10').value),
@@ -1553,7 +1719,31 @@
       });
     }
 
+    // ===== ADMIN VERIFICATION =====
+    function verifyAdmin() {
+      const password = document.getElementById('adminPassword').value;
+      if (password === 'admin123') {
+        document.getElementById('adminLogin').classList.add('hidden');
+        document.getElementById('dashboardContent').style.display = 'block';
+        
+        // Initialize Firebase
+        initFirebase();
+        
+        // Test connection
+        setTimeout(() => {
+          testFirebaseConnection();
+        }, 500);
+        
+        showToast('Admin access granted - Connected to Royal Match Database');
+      } else {
+        showToast('Invalid password', true);
+      }
+    }
+
     // ===== MAKE FUNCTIONS GLOBAL =====
+    window.verifyAdmin = verifyAdmin;
+    window.testFirebaseConnection = testFirebaseConnection;
+    window.refreshAllData = refreshAllData;
     window.openCoinModal = openCoinModal;
     window.closeCoinModal = closeCoinModal;
     window.processCoinAction = processCoinAction;
@@ -1571,8 +1761,6 @@
     window.editMission = editMission;
     window.saveMissionReward = saveMissionReward;
     window.closeMissionModal = closeMissionModal;
-    window.refreshAllData = refreshAllData;
-    window.verifyAdmin = verifyAdmin;
 
     // ===== INITIALIZATION =====
     document.addEventListener('DOMContentLoaded', () => {

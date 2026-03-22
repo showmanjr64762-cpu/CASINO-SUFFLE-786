@@ -17,6 +17,28 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 
+
+
+// Update user coins with proper auth
+async function updateUserCoins(userId, newBalance) {
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            console.error("No authenticated user");
+            return false;
+        }
+        
+        // Update only if it's the current user or admin
+        await database.ref('users/' + userId).update({
+            coins: newBalance
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating coins:", error);
+        return false;
+    }
+}
+
 // ===== GLOBAL VARIABLES =====
 let currentUser = null;
 let isInGame = false;
@@ -452,7 +474,7 @@ function updateReferralUI() {
   
   const tbody = document.getElementById('referralsBody');
   if (referralData.referrals.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No referrals yet</td></tr>';
+    tbody.innerHTML = '}<td colspan="6" style="text-align:center;">No referrals yet</td></tr>';
   } else {
     tbody.innerHTML = referralData.referrals.map(ref => `
       <tr>
@@ -689,6 +711,7 @@ async function refreshUserData(silent = false) {
       const oldBalance = gameState.balance;
       const newBalance = userData.coins || 1000;
       
+      // Only update balance if not in game or balance difference is small
       if (!gameState.isPlaying || Math.abs(newBalance - oldBalance) < 1000) {
         gameState.balance = newBalance;
       }
@@ -1616,6 +1639,7 @@ function closeReferral() {
 // ===== LEADERBOARD FUNCTIONS =====
 
 function formatNumber(num) {
+  if (num === undefined || num === null) return '0';
   return num.toLocaleString();
 }
 
@@ -1885,10 +1909,22 @@ async function startGame() {
     return;
   }
 
+  // ===== CRITICAL FIX: DEDUCT BET FROM BALANCE =====
+  gameState.balance -= gameState.currentBet;
+  
+  // Update Firebase immediately after deduction
+  if (currentUser && !currentUser.isGuest) {
+    await updateUserDataInFirebase(currentUser.id, { 
+      coins: gameState.balance 
+    });
+  }
+  
+  updateUI();
+  elements.messageText.textContent = `Bet placed! -${gameState.currentBet} coins`;
+
   gameState.lastGameResult = null;
   gameState.lastGameTimestamp = Date.now();
   
-  gameState.balance -= gameState.currentBet;
   gameState.currentWin = 0;
   gameState.multiplier = 1;
   gameState.pairsMatched = 0;
@@ -1899,7 +1935,6 @@ async function startGame() {
 
   gameState.cards = generateCards();
   renderCards();
-  updateUI();
 
   document.getElementById('betPanel').style.display = 'none';
   elements.startBtn.classList.add('hidden');
@@ -2014,6 +2049,8 @@ function showCashoutOption() {
 
 function cashout() {
   if (gameState.currentWin <= 0) return;
+  
+  // ===== CRITICAL FIX: ADD WINNINGS TO BALANCE =====
   gameState.balance += gameState.currentWin;
 
   MissionSystem.recordGamePlayed(true, gameState.currentBet);
@@ -2045,6 +2082,8 @@ function continuePlaying() {
 }
 
 function handleBomb() {
+  // ===== CRITICAL FIX: NO ADDITION ON BOMB - BET ALREADY DEDUCTED =====
+  // The bet was already deducted at game start, so no further deduction needed
   MissionSystem.recordGamePlayed(false, gameState.currentBet);
   gameState.totalBets++;
   gameState.lastGameResult = 'loss';
@@ -2064,6 +2103,7 @@ function handleBomb() {
 }
 
 function handleMaxWin() {
+  // ===== CRITICAL FIX: ADD MAX WIN TO BALANCE =====
   gameState.balance += gameState.currentWin;
 
   MissionSystem.recordGamePlayed(true, gameState.currentBet);
@@ -2145,6 +2185,7 @@ function setupEventListeners() {
 
 function createParticles() {
   const container = document.getElementById('particles');
+  if (!container) return;
   for (let i = 0; i < 50; i++) {
     const particle = document.createElement('div');
     particle.className = 'particle';

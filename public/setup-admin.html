@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Admin</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+    <h2>Setup Admin User</h2>
+    <input type="email" id="email" placeholder="Admin Email">
+    <input type="password" id="password" placeholder="Admin Password">
+    <button onclick="createAdmin()">Create Admin</button>
+    <div id="result"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDgxEgtvrugTxXL5l10hvzQBILmqUzWBLA",
+            authDomain: "nj777-2756c.firebaseapp.com",
+            databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com",
+            projectId: "nj777-2756c",
+            storageBucket: "nj777-2756c.firebasestorage.app",
+            messagingSenderId: "388549837175",
+            appId: "1:388549837175:web:6c831e431443d8227c2172"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        async function createAdmin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                // Create user
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const uid = userCredential.user.uid;
+
+                // Set admin flag in database
+                await db.ref('admins/' + uid).set(true);
+
+                // Also set custom claims (optional - requires Firebase Admin SDK)
+                resultDiv.innerHTML = `✅ Admin created! UID: ${uid}<br>You can now log in as admin.`;
+                resultDiv.style.color = 'green';
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+                resultDiv.style.color = 'red';
+            }
+        }
+    </script>
+</body>
+</html>
