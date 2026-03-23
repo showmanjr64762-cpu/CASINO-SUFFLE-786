@@ -1,4 +1,4 @@
-// ===== ROYAL MATCH - COMPLETE WORKING GAME =====
+// ===== ROYAL MATCH - COMPLETE WITH VIP AND DAILY REWARDS =====
 console.log("🎮 Royal Match - Loading...");
 
 // ===== FIREBASE CONFIG =====
@@ -25,6 +25,24 @@ let currentWithdrawalId = null;
 let countdownInterval = null;
 let notifications = [];
 
+// ===== VIP SYSTEM CONFIGURATION =====
+const VIP_CONFIG = {
+  // VIP levels with required spend (cumulative)
+  levels: [
+    { level: 0, requiredSpend: 0, dailyReward: 5, weeklyReward: 35, monthlyReward: 60 },
+    { level: 1, requiredSpend: 40000, dailyReward: 10, weeklyReward: 70, monthlyReward: 120 },
+    { level: 2, requiredSpend: 80000, dailyReward: 20, weeklyReward: 140, monthlyReward: 240 },
+    { level: 3, requiredSpend: 160000, dailyReward: 40, weeklyReward: 280, monthlyReward: 480 },
+    { level: 4, requiredSpend: 320000, dailyReward: 80, weeklyReward: 560, monthlyReward: 960 },
+    { level: 5, requiredSpend: 640000, dailyReward: 160, weeklyReward: 1120, monthlyReward: 1920 },
+    { level: 6, requiredSpend: 1280000, dailyReward: 320, weeklyReward: 2240, monthlyReward: 3840 },
+    { level: 7, requiredSpend: 2560000, dailyReward: 640, weeklyReward: 4480, monthlyReward: 7680 },
+    { level: 8, requiredSpend: 5120000, dailyReward: 1280, weeklyReward: 8960, monthlyReward: 15360 },
+    { level: 9, requiredSpend: 10240000, dailyReward: 2560, weeklyReward: 17920, monthlyReward: 30720 },
+    { level: 10, requiredSpend: 20480000, dailyReward: 5120, weeklyReward: 35840, monthlyReward: 61440 }
+  ]
+};
+
 // ===== REFERRAL CONSTANTS =====
 const REFERRAL_CONFIG = {
   SIGNUP_BONUS: 50,
@@ -49,8 +67,20 @@ const gameState = {
   matchedCards: new Set(),
   totalBets: 0,
   totalWins: 0,
+  totalSpent: 0,
+  vipLevel: 0,
   lastGameResult: null,
   lastGameTimestamp: 0
+};
+
+// ===== REWARD TRACKING =====
+let rewardState = {
+  lastDailyClaim: null,
+  lastWeeklyClaim: null,
+  lastMonthlyClaim: null,
+  weeklyStreak: 0,
+  lastWeeklyClaimDate: null,
+  dailyStreak: 0
 };
 
 // ===== REFERRAL DATA =====
@@ -128,6 +158,323 @@ function showPopup(title, text) {
 function closePopup() {
   const successPopup = document.getElementById('successPopup');
   if (successPopup) successPopup.classList.remove('active');
+}
+
+// ===== VIP FUNCTIONS =====
+function calculateVIPLevel(totalSpent) {
+  let level = 0;
+  for (let i = VIP_CONFIG.levels.length - 1; i >= 0; i--) {
+    if (totalSpent >= VIP_CONFIG.levels[i].requiredSpend) {
+      level = VIP_CONFIG.levels[i].level;
+      break;
+    }
+  }
+  return level;
+}
+
+function getVIPRewards(level) {
+  const vipData = VIP_CONFIG.levels.find(v => v.level === level);
+  return vipData || VIP_CONFIG.levels[0];
+}
+
+function getNextVIPRequirement(currentLevel) {
+  const nextLevel = VIP_CONFIG.levels.find(v => v.level === currentLevel + 1);
+  return nextLevel ? nextLevel.requiredSpend : null;
+}
+
+async function updateVIPLevel(userId, totalSpent) {
+  const newLevel = calculateVIPLevel(totalSpent);
+  const currentVIP = gameState.vipLevel;
+  
+  if (newLevel > currentVIP) {
+    // VIP level increased - send notification
+    const rewards = getVIPRewards(newLevel);
+    sendNotificationToPlayer(userId, '👑 VIP Level Up!', `Congratulations! You've reached VIP Level ${newLevel}! Your rewards have increased!`, '👑');
+    showPopup('VIP Level Up!', `Congratulations! You've reached VIP Level ${newLevel}! Daily rewards increased to ${rewards.dailyReward} coins!`);
+  }
+  
+  gameState.vipLevel = newLevel;
+  await updateUserDataInFirebase(userId, { 
+    vipLevel: newLevel,
+    totalSpent: totalSpent
+  });
+  
+  return newLevel;
+}
+
+// ===== DAILY REWARDS FUNCTIONS =====
+async function loadRewardState() {
+  if (!currentUser || currentUser.isGuest) return;
+  
+  const userRef = database.ref('users/' + currentUser.id + '/rewards');
+  const snapshot = await userRef.once('value');
+  const data = snapshot.val();
+  
+  if (data) {
+    rewardState = { ...rewardState, ...data };
+  }
+  
+  updateRewardUI();
+}
+
+async function saveRewardState() {
+  if (!currentUser || currentUser.isGuest) return;
+  await database.ref('users/' + currentUser.id + '/rewards').set(rewardState);
+}
+
+function canClaimDaily() {
+  if (!rewardState.lastDailyClaim) return true;
+  const lastClaim = new Date(rewardState.lastDailyClaim);
+  const today = new Date();
+  return lastClaim.getDate() !== today.getDate() || 
+         lastClaim.getMonth() !== today.getMonth() || 
+         lastClaim.getFullYear() !== today.getFullYear();
+}
+
+function canClaimWeekly() {
+  if (!rewardState.lastWeeklyClaim) return true;
+  const lastClaim = new Date(rewardState.lastWeeklyClaim);
+  const today = new Date();
+  const daysDiff = Math.floor((today - lastClaim) / (1000 * 60 * 60 * 24));
+  return daysDiff >= 7;
+}
+
+function canClaimMonthly() {
+  if (!rewardState.lastMonthlyClaim) return true;
+  const lastClaim = new Date(rewardState.lastMonthlyClaim);
+  const today = new Date();
+  return lastClaim.getMonth() !== today.getMonth() || 
+         lastClaim.getFullYear() !== today.getFullYear();
+}
+
+async function claimDailyReward() {
+  if (!currentUser || currentUser.isGuest) {
+    showPopup('Login Required', 'Please login to claim rewards');
+    return;
+  }
+  
+  if (!canClaimDaily()) {
+    const nextClaim = new Date(rewardState.lastDailyClaim);
+    nextClaim.setDate(nextClaim.getDate() + 1);
+    showPopup('Already Claimed', `Next daily reward available on ${nextClaim.toLocaleDateString()}`);
+    return;
+  }
+  
+  const vipRewards = getVIPRewards(gameState.vipLevel);
+  const reward = vipRewards.dailyReward;
+  
+  gameState.balance += reward;
+  rewardState.lastDailyClaim = new Date().toISOString();
+  
+  await updateUserDataInFirebase(currentUser.id, { coins: gameState.balance });
+  await saveRewardState();
+  updateUI();
+  updateRewardUI();
+  
+  showPopup('Daily Reward Claimed!', `You received ${reward} coins for VIP Level ${gameState.vipLevel}!`);
+  if (audio) audio.playWin();
+  
+  // Update daily streak
+  const today = new Date().toDateString();
+  if (rewardState.lastDailyClaimDate !== today) {
+    rewardState.dailyStreak = (rewardState.dailyStreak || 0) + 1;
+    rewardState.lastDailyClaimDate = today;
+    await saveRewardState();
+  }
+}
+
+async function claimWeeklyReward() {
+  if (!currentUser || currentUser.isGuest) {
+    showPopup('Login Required', 'Please login to claim rewards');
+    return;
+  }
+  
+  if (!canClaimWeekly()) {
+    const nextClaim = new Date(rewardState.lastWeeklyClaim);
+    nextClaim.setDate(nextClaim.getDate() + 7);
+    showPopup('Already Claimed', `Next weekly reward available on ${nextClaim.toLocaleDateString()}`);
+    return;
+  }
+  
+  const vipRewards = getVIPRewards(gameState.vipLevel);
+  const reward = vipRewards.weeklyReward;
+  
+  gameState.balance += reward;
+  rewardState.lastWeeklyClaim = new Date().toISOString();
+  
+  await updateUserDataInFirebase(currentUser.id, { coins: gameState.balance });
+  await saveRewardState();
+  updateUI();
+  updateRewardUI();
+  
+  showPopup('Weekly Reward Claimed!', `You received ${reward} coins for VIP Level ${gameState.vipLevel}!`);
+  if (audio) audio.playWin();
+}
+
+async function claimMonthlyReward() {
+  if (!currentUser || currentUser.isGuest) {
+    showPopup('Login Required', 'Please login to claim rewards');
+    return;
+  }
+  
+  if (!canClaimMonthly()) {
+    showPopup('Already Claimed', 'Monthly reward can be claimed once per month');
+    return;
+  }
+  
+  const vipRewards = getVIPRewards(gameState.vipLevel);
+  const reward = vipRewards.monthlyReward;
+  
+  gameState.balance += reward;
+  rewardState.lastMonthlyClaim = new Date().toISOString();
+  
+  await updateUserDataInFirebase(currentUser.id, { coins: gameState.balance });
+  await saveRewardState();
+  updateUI();
+  updateRewardUI();
+  
+  showPopup('Monthly Reward Claimed!', `You received ${reward} coins for VIP Level ${gameState.vipLevel}!`);
+  if (audio) audio.playWin();
+}
+
+function updateRewardUI() {
+  const vipRewards = getVIPRewards(gameState.vipLevel);
+  
+  const dailyBtn = document.getElementById('claimDailyBtn');
+  const weeklyBtn = document.getElementById('claimWeeklyBtn');
+  const monthlyBtn = document.getElementById('claimMonthlyBtn');
+  const dailyCooldown = document.getElementById('dailyCooldown');
+  const weeklyCooldown = document.getElementById('weeklyCooldown');
+  const monthlyCooldown = document.getElementById('monthlyCooldown');
+  
+  // Update reward amounts
+  const dailyAmount = document.getElementById('dailyRewardAmount');
+  const weeklyAmount = document.getElementById('weeklyRewardAmount');
+  const monthlyAmount = document.getElementById('monthlyRewardAmount');
+  
+  if (dailyAmount) dailyAmount.textContent = vipRewards.dailyReward;
+  if (weeklyAmount) weeklyAmount.textContent = vipRewards.weeklyReward;
+  if (monthlyAmount) monthlyAmount.textContent = vipRewards.monthlyReward;
+  
+  // Update button states and cooldowns
+  if (dailyBtn) {
+    if (canClaimDaily()) {
+      dailyBtn.disabled = false;
+      dailyBtn.style.opacity = '1';
+      if (dailyCooldown) dailyCooldown.textContent = 'Ready to claim!';
+    } else {
+      dailyBtn.disabled = true;
+      dailyBtn.style.opacity = '0.5';
+      if (dailyCooldown && rewardState.lastDailyClaim) {
+        const next = new Date(rewardState.lastDailyClaim);
+        next.setDate(next.getDate() + 1);
+        dailyCooldown.textContent = `Available: ${next.toLocaleDateString()}`;
+      }
+    }
+  }
+  
+  if (weeklyBtn) {
+    if (canClaimWeekly()) {
+      weeklyBtn.disabled = false;
+      weeklyBtn.style.opacity = '1';
+      if (weeklyCooldown) weeklyCooldown.textContent = 'Ready to claim!';
+    } else {
+      weeklyBtn.disabled = true;
+      weeklyBtn.style.opacity = '0.5';
+      if (weeklyCooldown && rewardState.lastWeeklyClaim) {
+        const next = new Date(rewardState.lastWeeklyClaim);
+        next.setDate(next.getDate() + 7);
+        weeklyCooldown.textContent = `Available: ${next.toLocaleDateString()}`;
+      }
+    }
+  }
+  
+  if (monthlyBtn) {
+    if (canClaimMonthly()) {
+      monthlyBtn.disabled = false;
+      monthlyBtn.style.opacity = '1';
+      if (monthlyCooldown) monthlyCooldown.textContent = 'Ready to claim!';
+    } else {
+      monthlyBtn.disabled = true;
+      monthlyBtn.style.opacity = '0.5';
+      if (monthlyCooldown && rewardState.lastMonthlyClaim) {
+        const next = new Date(rewardState.lastMonthlyClaim);
+        next.setMonth(next.getMonth() + 1);
+        monthlyCooldown.textContent = `Available: ${next.toLocaleDateString()}`;
+      }
+    }
+  }
+}
+
+function updateVIPUI() {
+  const vipLevelDisplay = document.getElementById('vipLevelDisplay');
+  const nextVipAmount = document.getElementById('nextVipAmount');
+  const totalSpentDisplay = document.getElementById('totalSpentDisplay');
+  const vipProgressBar = document.getElementById('vipProgressBar');
+  const profileVipBadge = document.getElementById('profileVipBadge');
+  const profileVipLevel = document.getElementById('profileVipLevel');
+  const profileTotalSpent = document.getElementById('profileTotalSpent');
+  const profileNextVip = document.getElementById('profileNextVip');
+  
+  if (vipLevelDisplay) vipLevelDisplay.textContent = gameState.vipLevel;
+  if (totalSpentDisplay) totalSpentDisplay.textContent = formatNumber(gameState.totalSpent);
+  if (profileVipBadge) profileVipBadge.textContent = `VIP ${gameState.vipLevel}`;
+  if (profileVipLevel) profileVipLevel.textContent = gameState.vipLevel;
+  if (profileTotalSpent) profileTotalSpent.textContent = formatNumber(gameState.totalSpent);
+  
+  const nextVIP = getNextVIPRequirement(gameState.vipLevel);
+  if (nextVIP) {
+    if (nextVipAmount) nextVipAmount.textContent = formatNumber(nextVIP);
+    if (profileNextVip) profileNextVip.textContent = formatNumber(nextVIP - gameState.totalSpent);
+    
+    // Calculate progress percentage
+    const previousRequired = gameState.vipLevel > 0 ? VIP_CONFIG.levels[gameState.vipLevel].requiredSpend : 0;
+    const currentRequired = nextVIP;
+    const progress = ((gameState.totalSpent - previousRequired) / (currentRequired - previousRequired)) * 100;
+    if (vipProgressBar) vipProgressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+  } else {
+    if (nextVipAmount) nextVipAmount.textContent = 'MAX';
+    if (vipProgressBar) vipProgressBar.style.width = '100%';
+  }
+}
+
+function renderVIPTable() {
+  const container = document.getElementById('vipTable');
+  if (!container) return;
+  
+  let html = `<div class="vip-row header"><span>VIP Level</span><span>Daily</span><span>7-Day</span><span>Monthly</span><span>Required Spend</span></div>`;
+  
+  VIP_CONFIG.levels.forEach(vip => {
+    const isCurrent = vip.level === gameState.vipLevel;
+    html += `
+      <div class="vip-row ${isCurrent ? 'current' : ''}">
+        <span>VIP ${vip.level}</span>
+        <span>${vip.dailyReward} coins</span>
+        <span>${vip.weeklyReward} coins</span>
+        <span>${vip.monthlyReward} coins</span>
+        <span>${formatNumber(vip.requiredSpend)} coins</span>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// ===== DAILY REWARDS SECTION FUNCTIONS =====
+function openDailyRewards() {
+  const section = document.getElementById('dailyRewardsSection');
+  if (section) section.classList.add('active');
+  updateRewardUI();
+  updateVIPUI();
+  renderVIPTable();
+  closeOffers();
+  if (audio) audio.playClick();
+}
+
+function closeDailyRewards() {
+  const section = document.getElementById('dailyRewardsSection');
+  if (section) section.classList.remove('active');
+  openOffers();
 }
 
 // ===== FIREBASE FUNCTIONS =====
@@ -330,16 +677,16 @@ function updateReferralUI() {
   const tbody = document.getElementById('referralsBody');
   if (tbody) {
     if (referralData.referrals.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals yet</td></tr>';
+      tbody.innerHTML = '<td colspan="5" style="text-align:center;">No referrals yet<\/td>';
     } else {
       tbody.innerHTML = referralData.referrals.map(r => `
         <tr>
-          <td>${escapeHtml(r.username)}</td>
-          <td><span class="status-badge ${r.status === 'active' ? 'approved' : 'pending'}">${r.status === 'active' ? 'Active' : 'Pending'}</span></td>
-          <td class="amount-positive">${formatNumber(r.depositAmount)}</td>
-          <td class="amount-positive">${formatNumber(r.commissionEarned)}</td>
-          <td>${new Date(r.joined).toLocaleDateString()}</td>
-        </tr>
+          <td>${escapeHtml(r.username)}<\/td>
+          <td><span class="status-badge ${r.status === 'active' ? 'approved' : 'pending'}">${r.status === 'active' ? 'Active' : 'Pending'}<\/span><\/td>
+          <td class="amount-positive">${formatNumber(r.depositAmount)}<\/td>
+          <td class="amount-positive">${formatNumber(r.commissionEarned)}<\/td>
+          <td>${new Date(r.joined).toLocaleDateString()}<\/td>
+        <\/tr>
       `).join('');
     }
   }
@@ -367,16 +714,16 @@ function filterReferrals(filter) {
   if (filter === 'pending') filtered = referralData.referrals.filter(r => r.status !== 'active');
   
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals found</td></tr>';
+    tbody.innerHTML = '<td colspan="5" style="text-align:center;">No referrals found<\/td>';
   } else {
     tbody.innerHTML = filtered.map(r => `
       <tr>
-        <td>${escapeHtml(r.username)}</td>
-        <td><span class="status-badge ${r.status === 'active' ? 'approved' : 'pending'}">${r.status === 'active' ? 'Active' : 'Pending'}</span></td>
-        <td class="amount-positive">${formatNumber(r.depositAmount)}</td>
-        <td class="amount-positive">${formatNumber(r.commissionEarned)}</td>
-        <td>${new Date(r.joined).toLocaleDateString()}</td>
-      </tr>
+        <td>${escapeHtml(r.username)}<\/td>
+        <td><span class="status-badge ${r.status === 'active' ? 'approved' : 'pending'}">${r.status === 'active' ? 'Active' : 'Pending'}<\/span><\/td>
+        <td class="amount-positive">${formatNumber(r.depositAmount)}<\/td>
+        <td class="amount-positive">${formatNumber(r.commissionEarned)}<\/td>
+        <td>${new Date(r.joined).toLocaleDateString()}<\/td>
+      <\/tr>
     `).join('');
   }
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
@@ -416,7 +763,11 @@ function purchaseCoins(amount, coins) {
   const totalCoins = coins + bonusCoins;
   
   gameState.balance += totalCoins;
+  gameState.totalSpent += coins;
   updateUI();
+  
+  // Update VIP level based on total spent
+  updateVIPLevel(currentUser.id, gameState.totalSpent);
   
   database.ref('transactions').push().set({
     userId: currentUser.id,
@@ -429,7 +780,12 @@ function purchaseCoins(amount, coins) {
     timestamp: new Date().toISOString()
   });
   
-  updateUserDataInFirebase(currentUser.id, { coins: gameState.balance });
+  updateUserDataInFirebase(currentUser.id, { 
+    coins: gameState.balance,
+    totalSpent: gameState.totalSpent,
+    vipLevel: gameState.vipLevel
+  });
+  
   showPopup('Purchase Successful!', `+${formatNumber(totalCoins)} coins (Including 2.5% bonus: +${formatNumber(bonusCoins)})`);
   
   if (totalCoins >= REFERRAL_CONFIG.MIN_DEPOSIT_FOR_COMMISSION) {
@@ -825,9 +1181,13 @@ function guestLogin() {
     isGuest: true,
     id: 'GUEST' + Math.floor(Math.random() * 999),
     totalBets: 0,
-    totalWins: 0
+    totalWins: 0,
+    totalSpent: 0,
+    vipLevel: 0
   };
   gameState.balance = 0;
+  gameState.totalSpent = 0;
+  gameState.vipLevel = 0;
   closeAuth();
   updateHeaderForUser();
   updateUI();
@@ -860,6 +1220,7 @@ function openProfile() {
   if (profileWins) profileWins.textContent = gameState.totalWins || 0;
   if (editUsernameBtn) editUsernameBtn.style.display = currentUser.isGuest ? 'none' : 'block';
   
+  updateVIPUI();
   loadWithdrawalAccounts();
   if (audio) audio.playClick();
 }
@@ -937,6 +1298,8 @@ async function logout() {
   stopAutoRefresh();
   updateHeaderForUser();
   gameState.balance = 0;
+  gameState.totalSpent = 0;
+  gameState.vipLevel = 0;
   updateUI();
   showAuthButtons();
   openAuthModal('login');
@@ -968,7 +1331,10 @@ async function refreshUserData(silent = false) {
       }
       gameState.totalBets = userData.totalBets || 0;
       gameState.totalWins = userData.totalWins || 0;
+      gameState.totalSpent = userData.totalSpent || 0;
+      gameState.vipLevel = userData.vipLevel || 0;
       updateUI();
+      updateVIPUI();
     }
   } catch (error) {
     if (!silent) console.error("Refresh error:", error);
@@ -1014,8 +1380,18 @@ async function handleLoginSubmit(form) {
       gameState.balance = userData.coins || 0;
       gameState.totalBets = userData.totalBets || 0;
       gameState.totalWins = userData.totalWins || 0;
+      gameState.totalSpent = userData.totalSpent || 0;
+      gameState.vipLevel = userData.vipLevel || 0;
+      
+      // Load reward state
+      const rewardSnap = await database.ref('users/' + currentUser.id + '/rewards').once('value');
+      if (rewardSnap.val()) {
+        rewardState = { ...rewardState, ...rewardSnap.val() };
+      }
+      
       updateHeaderForUser();
       updateUI();
+      updateVIPUI();
       hideAuthButtons();
       closeAuth();
       startAutoRefresh();
@@ -1087,13 +1463,21 @@ async function handleRegisterSubmit(form) {
       coins: 0,
       totalBets: 0,
       totalWins: 0,
+      totalSpent: 0,
+      vipLevel: 0,
       createdAt: new Date().toISOString(),
       referredBy: null,
       referralCode: null,
       referralCount: 0,
       referralEarnings: 0,
       activeReferrals: 0,
-      referralMilestones: { 5: false, 10: false, 25: false, 50: false }
+      referralMilestones: { 5: false, 10: false, 25: false, 50: false },
+      rewards: {
+        lastDailyClaim: null,
+        lastWeeklyClaim: null,
+        lastMonthlyClaim: null,
+        dailyStreak: 0
+      }
     };
     
     await database.ref('users/' + userCred.user.uid).set(userData);
@@ -1114,6 +1498,9 @@ async function handleRegisterSubmit(form) {
     };
     
     gameState.balance = 0;
+    gameState.totalSpent = 0;
+    gameState.vipLevel = 0;
+    
     updateHeaderForUser();
     updateUI();
     hideAuthButtons();
@@ -1308,8 +1695,16 @@ async function startGame() {
   }
   
   gameState.balance -= gameState.currentBet;
-  await updateUserDataInFirebase(currentUser.id, { coins: gameState.balance });
+  gameState.totalSpent += gameState.currentBet;
+  await updateUserDataInFirebase(currentUser.id, { 
+    coins: gameState.balance,
+    totalSpent: gameState.totalSpent
+  });
+  
+  // Update VIP level based on total spent
+  await updateVIPLevel(currentUser.id, gameState.totalSpent);
   updateUI();
+  updateVIPUI();
   
   gameState.currentWin = 0;
   gameState.multiplier = 1;
@@ -1457,7 +1852,8 @@ function cashout() {
   updateUserDataInFirebase(currentUser.id, {
     coins: gameState.balance,
     totalBets: gameState.totalBets,
-    totalWins: gameState.totalWins
+    totalWins: gameState.totalWins,
+    totalSpent: gameState.totalSpent
   });
   
   saveGameToHistory(true, gameState.currentBet, gameState.currentWin, gameState.multiplier);
@@ -1489,7 +1885,8 @@ function handleBomb() {
   gameState.totalBets++;
   updateUserDataInFirebase(currentUser.id, {
     coins: gameState.balance,
-    totalBets: gameState.totalBets
+    totalBets: gameState.totalBets,
+    totalSpent: gameState.totalSpent
   });
   saveGameToHistory(false, gameState.currentBet, 0, 1);
   if (audio) audio.playBomb();
@@ -1510,7 +1907,8 @@ function handleMaxWin() {
   updateUserDataInFirebase(currentUser.id, {
     coins: gameState.balance,
     totalBets: gameState.totalBets,
-    totalWins: gameState.totalWins
+    totalWins: gameState.totalWins,
+    totalSpent: gameState.totalSpent
   });
   saveGameToHistory(true, gameState.currentBet, gameState.currentWin, CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1]);
   if (audio) audio.playWin();
@@ -1597,6 +1995,7 @@ function closeOffers() {
 function openMissions() { 
   const missionsSection = document.getElementById('missionsSection');
   if (missionsSection) missionsSection.classList.add('active');
+  renderMissions();
   closeOffers(); 
   if (audio) audio.playClick(); 
 }
@@ -1605,6 +2004,27 @@ function closeMissions() {
   const missionsSection = document.getElementById('missionsSection');
   if (missionsSection) missionsSection.classList.remove('active');
   openOffers(); 
+}
+
+function renderMissions() {
+  const container = document.getElementById('missionsContent');
+  if (!container) return;
+  
+  const missions = [
+    { id: 'dailyLogin', icon: '🎁', title: 'Daily Login', desc: 'Login daily to claim reward', reward: '10-25 Coins', status: 'available' },
+    { id: 'firstDeposit', icon: '💰', title: 'First Deposit', desc: 'Make your first deposit', reward: '15-30 Coins', status: 'locked' },
+    { id: 'gamesPlayed', icon: '🎮', title: 'Betting Enthusiast', desc: 'Place 10 bets', reward: '25-40 Coins', status: 'locked' },
+    { id: 'bigWin', icon: '🏆', title: 'Winner\'s Circle', desc: 'Win 5 games', reward: '30-50 Coins', status: 'locked' }
+  ];
+  
+  container.innerHTML = missions.map(mission => `
+    <div class="mission-card">
+      <div class="mission-header"><span class="mission-title">${mission.title}</span></div>
+      <div class="mission-desc">${mission.desc}</div>
+      <div class="mission-reward">🎁 ${mission.reward}</div>
+      <button class="mission-btn" onclick="showPopup('Coming Soon', 'This mission will be available soon')">Claim</button>
+    </div>
+  `).join('');
 }
 
 function openEvents() { 
@@ -1633,7 +2053,20 @@ function closeSupport() {
   openOffers(); 
 }
 
-function openVIPPopup() { 
+function openVIPPopup() {
+  const content = document.getElementById('vipPopupContent');
+  if (content) {
+    let html = '<h3>VIP Benefits</h3>';
+    VIP_CONFIG.levels.slice(0, 6).forEach(vip => {
+      html += `
+        <div style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 8px;">
+          <strong>VIP ${vip.level}</strong> - Daily: ${vip.dailyReward} | Weekly: ${vip.weeklyReward} | Monthly: ${vip.monthlyReward}<br>
+          <small>Requires ${formatNumber(vip.requiredSpend)} coins spent</small>
+        </div>
+      `;
+    });
+    content.innerHTML = html;
+  }
   const vipPopup = document.getElementById('vipPopup');
   if (vipPopup) vipPopup.classList.add('active'); 
   if (audio) audio.playClick(); 
@@ -1646,16 +2079,8 @@ function closeVIPPopup() {
 }
 
 function unlockVIP() {
-  if (gameState.balance < 100000) {
-    showPopup('Insufficient Balance', 'Need 100,000 coins');
-    return;
-  }
-  gameState.balance -= 100000;
-  updateUI();
-  updateUserDataInFirebase(currentUser.id, { coins: gameState.balance });
+  showPopup('VIP Info', 'Your VIP level increases automatically based on total coins spent in the game!');
   closeVIPPopup();
-  showPopup('VIP Unlocked!', 'Welcome to VIP club!');
-  if (audio) audio.playWin();
 }
 
 // ===== MODAL FUNCTIONS =====
@@ -1821,7 +2246,7 @@ function initApp() {
     }, 1000);
   }
   
-  console.log("✅ Royal Match ready!");
+  console.log("✅ Royal Match ready with VIP and Daily Rewards!");
 }
 
 // Make all functions globally available
@@ -1882,6 +2307,11 @@ window.openSupportBot = openSupportBot;
 window.openAdditionalSupport = openAdditionalSupport;
 window.closeAdditionalSupport = closeAdditionalSupport;
 window.sendSupportMessage = sendSupportMessage;
+window.openDailyRewards = openDailyRewards;
+window.closeDailyRewards = closeDailyRewards;
+window.claimDailyReward = claimDailyReward;
+window.claimWeeklyReward = claimWeeklyReward;
+window.claimMonthlyReward = claimMonthlyReward;
 
 document.addEventListener('DOMContentLoaded', () => {
   initApp();

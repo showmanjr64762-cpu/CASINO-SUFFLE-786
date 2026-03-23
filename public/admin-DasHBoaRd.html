@@ -376,7 +376,7 @@
       border: 2px solid #d4af37;
       border-radius: 12px;
       padding: 1.5rem;
-      max-width: 400px;
+      max-width: 500px;
       width: 90%;
     }
 
@@ -444,30 +444,30 @@
       text-align: center;
     }
 
-    .mission-item {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 0.8rem;
-      border-left: 3px solid #ffd700;
-    }
-
-    .mission-header {
+    .vip-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 0.8rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
       margin-bottom: 0.5rem;
     }
 
-    .mission-title {
+    .vip-row.header {
+      background: rgba(212, 175, 55, 0.2);
       font-weight: bold;
       color: #ffd700;
     }
 
-    .mission-desc {
-      color: #aaa;
-      font-size: 0.8rem;
-      margin-bottom: 0.5rem;
+    .vip-row input {
+      width: 80px;
+      padding: 0.3rem;
+      background: #1a1f2e;
+      border: 1px solid #2a2f3e;
+      border-radius: 4px;
+      color: #fff;
+      text-align: center;
     }
 
     .loading {
@@ -539,7 +539,6 @@
       z-index: 6000;
       display: none;
       animation: slideIn 0.3s ease;
-      max-width: 90%;
     }
 
     .toast.error {
@@ -555,37 +554,6 @@
         transform: translateX(0);
         opacity: 1;
       }
-    }
-
-    .debug-panel {
-      background: #1a1f2e;
-      border: 1px solid #ffd700;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      font-family: monospace;
-      font-size: 0.7rem;
-    }
-
-    .debug-panel h3 {
-      color: #ffd700;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-    }
-
-    .debug-panel pre {
-      white-space: pre-wrap;
-      word-break: break-all;
-      margin-top: 0.5rem;
-      color: #00ff88;
-      font-size: 0.7rem;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .debug-status {
-      color: #ffd700;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -614,7 +582,7 @@
       </div>
       <div class="live-badge">
         <span class="live-dot"></span>
-        <span id="connectionStatus">CHECKING CONNECTION...</span>
+        <span id="connectionStatus">LIVE CONNECTION</span>
         <button class="refresh-btn" onclick="refreshAllData()" style="margin-left: 10px;">⟳ Refresh</button>
       </div>
     </div>
@@ -622,13 +590,13 @@
     <div class="nav-tabs">
       <button class="nav-tab active" data-section="dashboard">📊 Dashboard</button>
       <button class="nav-tab" data-section="players">👥 Players</button>
+      <button class="nav-tab" data-section="vip">👑 VIP Management</button>
+      <button class="nav-tab" data-section="rewards">🎁 Rewards Control</button>
       <button class="nav-tab" data-section="referrals">🔗 Referrals</button>
       <button class="nav-tab" data-section="withdrawals">💰 Withdrawals</button>
-      <button class="nav-tab" data-section="missions">🎯 Missions</button>
       <button class="nav-tab" data-section="support">🎧 Support</button>
       <button class="nav-tab" data-section="notifications">🔔 Notify</button>
       <button class="nav-tab" data-section="settings">⚙️ Settings</button>
-      <button class="nav-tab" data-section="debug">🐛 Debug</button>
     </div>
 
     <div class="main-content">
@@ -651,10 +619,10 @@
           </div>
           <div class="stat-card">
             <div class="stat-header">
-              <span class="stat-title">Total Referrals</span>
-              <div class="stat-icon"><i class="fas fa-link"></i></div>
+              <span class="stat-title">Total Spent</span>
+              <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
             </div>
-            <div class="stat-value" id="totalReferrals">0</div>
+            <div class="stat-value" id="totalSpent">0</div>
           </div>
           <div class="stat-card">
             <div class="stat-header">
@@ -664,6 +632,36 @@
             <div class="stat-value" id="pendingWithdrawals">0</div>
           </div>
         </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">VIP 0 Players</span>
+              <div class="stat-icon"><i class="fas fa-star"></i></div>
+            </div>
+            <div class="stat-value" id="vip0Count">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">VIP 5+ Players</span>
+              <div class="stat-icon"><i class="fas fa-crown"></i></div>
+            </div>
+            <div class="stat-value" id="vip5Count">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">VIP 10 Players</span>
+              <div class="stat-icon"><i class="fas fa-gem"></i></div>
+            </div>
+            <div class="stat-value" id="vip10Count">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Total Referrals</span>
+              <div class="stat-icon"><i class="fas fa-link"></i></div>
+            </div>
+            <div class="stat-value" id="totalReferrals">0</div>
+          </div>
+        </div>
 
         <div class="card">
           <div class="card-header">
@@ -671,12 +669,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead>
-                <tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th></tr>
-              </thead>
-              <tbody id="recentActivityBody">
-                <tr><td colspan="4" class="loading">Loading...</td></tr>
-              </tbody>
+              <thead><tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th> </thead>
+              <tbody id="recentActivityBody"><tr><td colspan="4" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
         </div>
@@ -691,12 +685,74 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead>
-                <tr><th>Player</th><th>Coins</th><th>Bets</th><th>Wins</th><th>Referrals</th><th>Earnings</th><th>Actions</th></tr>
-              </thead>
-              <tbody id="playersTableBody">
-                <tr><td colspan="7" class="loading">Loading...</td></tr>
-              </tbody>
+              <thead> <th>Player</th><th>Coins</th><th>Spent</th><th>VIP</th><th>Bets</th><th>Wins</th><th>Referrals</th><th>Actions</th> </thead>
+              <tbody id="playersTableBody"><tr><td colspan="8" class="loading">Loading...<\/td><\/tr><\/tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIP Management Section -->
+      <div id="vipSection" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-crown"></i> VIP Level Configuration</h2>
+            <button class="refresh-btn" onclick="loadVIPConfig()">Load Config</button>
+          </div>
+          <div id="vipConfigList"></div>
+          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveVIPConfig()">Save VIP Configuration</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-chart-simple"></i> Player VIP Distribution</h2>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead> <th>VIP Level</th><th>Count</th><th>Total Spent</th><th>Average Spent</th> </thead>
+              <tbody id="vipDistributionBody"><tr><td colspan="4" class="loading">Loading...<\/td><\/tr><\/tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rewards Control Section -->
+      <div id="rewardsSection" class="section">
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-gift"></i> Daily Rewards Configuration</h2>
+          </div>
+          <div id="rewardsConfigList"></div>
+          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveRewardsConfig()">Save Rewards Configuration</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-calendar-check"></i> Manual Reward Claims</h2>
+          </div>
+          <div class="commission-row">
+            <span>Select Player</span>
+            <select id="manualRewardPlayer" class="commission-input" style="width: 200px;"></select>
+          </div>
+          <div class="commission-row">
+            <span>Reward Type</span>
+            <select id="manualRewardType" class="commission-input" style="width: 150px;">
+              <option value="daily">Daily Reward</option>
+              <option value="weekly">Weekly Reward</option>
+              <option value="monthly">Monthly Reward</option>
+            </select>
+          </div>
+          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="grantManualReward()">Grant Reward to Player</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2><i class="fas fa-chart-line"></i> Reward Claim History</h2>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead> <th>Player</th><th>Reward Type</th><th>Amount</th><th>Claim Date</th> </thead>
+              <tbody id="rewardHistoryBody"><tr><td colspan="4" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
         </div>
@@ -710,8 +766,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Rank</th><th>Player</th><th>Referrals</th><th>Active</th><th>Earnings</th></tr></thead>
-              <tbody id="topReferrersTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+              <thead> <th>Rank</th><th>Player</th><th>Referrals</th><th>Active</th><th>Earnings</th> </thead>
+              <tbody id="topReferrersTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
         </div>
@@ -722,8 +778,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Referrer</th><th>Referred User</th><th>Level</th><th>Commission</th><th>Date</th></tr></thead>
-              <tbody id="allReferralsTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+              <thead> <th>Referrer</th><th>Referred User</th><th>Level</th><th>Commission</th><th>Date</th> </thead>
+              <tbody id="allReferralsTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
         </div>
@@ -737,8 +793,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Player</th><th>Amount</th><th>Method</th><th>Account</th><th>Requested</th><th>Actions</th></tr></thead>
-              <tbody id="pendingWithdrawalsTableBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody>
+              <thead> <th>Player</th><th>Amount</th><th>Method</th><th>Account</th><th>Requested</th><th>Actions</th> </thead>
+              <tbody id="pendingWithdrawalsTableBody"><tr><td colspan="6" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
         </div>
@@ -749,20 +805,10 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Player</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
-              <tbody id="historyTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+              <thead> <th>Player</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th> </thead>
+              <tbody id="historyTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <!-- Missions Section -->
-      <div id="missionsSection" class="section">
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-tasks"></i> Manage Missions</h2>
-          </div>
-          <div id="missionsList"></div>
         </div>
       </div>
 
@@ -774,8 +820,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Player</th><th>Message</th><th>Sent</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="ticketsTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+              <thead> <th>Player</th><th>Message</th><th>Sent</th><th>Status</th><th>Actions</th> </thead>
+              <tbody id="ticketsTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
             </table>
           </div>
         </div>
@@ -795,6 +841,7 @@
             <option value="💰">💰 Reward</option>
             <option value="⚠️">⚠️ Warning</option>
             <option value="✅">✅ Success</option>
+            <option value="👑">👑 VIP</option>
           </select>
           <button class="btn-add" style="width:100%; padding:0.8rem;" onclick="sendBroadcastNotification()">Send to All Players</button>
         </div>
@@ -807,27 +854,27 @@
             <h2><i class="fas fa-percent"></i> Commission Rates</h2>
           </div>
           <div class="commission-row">
-            <span>Level 1 (Direct Referral)</span>
-            <div><input type="number" id="commission1" class="commission-input" value="5" step="0.5"> <span>%</span></div>
+            <span>Referral Commission Rate</span>
+            <div><input type="number" id="commissionRate" class="commission-input" value="10" step="0.5"> <span>%</span></div>
           </div>
           <div class="commission-row">
-            <span>Level 2 Commission</span>
-            <div><input type="number" id="commission2" class="commission-input" value="2" step="0.5"> <span>%</span></div>
-          </div>
-          <div class="commission-row">
-            <span>Level 3 Commission</span>
-            <div><input type="number" id="commission3" class="commission-input" value="1" step="0.5"> <span>%</span></div>
+            <span>Deposit Bonus Rate</span>
+            <div><input type="number" id="depositBonusRate" class="commission-input" value="2.5" step="0.5"> <span>%</span></div>
           </div>
           <div class="commission-row">
             <span>Sign-up Bonus</span>
             <div><input type="number" id="signupBonus" class="commission-input" value="50"> <span>Coins</span></div>
           </div>
-          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveCommissionSettings()">Save Settings</button>
+          <div class="commission-row">
+            <span>Minimum Deposit for Referral Commission</span>
+            <div><input type="number" id="minDepositCommission" class="commission-input" value="3000"> <span>Coins</span></div>
+          </div>
+          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveGeneralSettings()">Save Settings</button>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <h2><i class="fas fa-gift"></i> Milestone Rewards</h2>
+            <h2><i class="fas fa-gift"></i> Referral Milestone Rewards</h2>
           </div>
           <div class="commission-row">
             <span>5 Referrals Bonus</span>
@@ -846,25 +893,6 @@
             <div><input type="number" id="milestone50" class="commission-input" value="15000"> <span>Coins</span></div>
           </div>
           <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveMilestoneSettings()">Save Rewards</button>
-        </div>
-      </div>
-
-      <!-- Debug Section -->
-      <div id="debugSection" class="section">
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-bug"></i> Debug Information</h2>
-            <button class="refresh-btn" onclick="testFirebaseConnection()">Test Connection</button>
-          </div>
-          <div class="debug-panel">
-            <h3>Firebase Connection Status:</h3>
-            <div id="debugConnectionStatus">Not tested</div>
-            <pre id="debugOutput">Click "Test Connection" to check Firebase connection...</pre>
-          </div>
-          <div class="debug-panel">
-            <h3>Database Structure:</h3>
-            <pre id="debugDatabaseStructure">Loading...</pre>
-          </div>
         </div>
       </div>
     </div>
@@ -906,24 +934,6 @@
     </div>
   </div>
 
-  <div id="missionModal" class="modal">
-    <div class="modal-content">
-      <h3 id="missionModalTitle">Edit Mission Reward</h3>
-      <div class="commission-row">
-        <span>Min Reward</span>
-        <input type="number" id="missionMinReward" class="commission-input" value="10">
-      </div>
-      <div class="commission-row">
-        <span>Max Reward</span>
-        <input type="number" id="missionMaxReward" class="commission-input" value="25">
-      </div>
-      <div class="modal-buttons">
-        <button class="modal-btn confirm" onclick="saveMissionReward()">Save</button>
-        <button class="modal-btn cancel" onclick="closeMissionModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -936,40 +946,14 @@
       projectId: "nj777-2756c",
       storageBucket: "nj777-2756c.firebasestorage.app",
       messagingSenderId: "388549837175",
-      appId: "1:388549837175:web:6c831e431443d8227c2172",
-      measurementId: "G-901N0SPK1T"
+      appId: "1:388549837175:web:6c831e431443d8227c2172"
     };
 
     // Initialize Firebase
-    let db = null;
-    let firebaseInitialized = false;
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    function initFirebase() {
-      try {
-        if (!firebase.apps.length) {
-          firebase.initializeApp(firebaseConfig);
-        }
-        db = firebase.database();
-        firebaseInitialized = true;
-        console.log("🔥 Firebase initialized successfully");
-        updateConnectionStatus(true, "Connected");
-        return true;
-      } catch (error) {
-        console.error("❌ Firebase initialization error:", error);
-        updateConnectionStatus(false, "Error: " + error.message);
-        return false;
-      }
-    }
-
-    function updateConnectionStatus(connected, message) {
-      const statusEl = document.getElementById('connectionStatus');
-      if (statusEl) {
-        statusEl.textContent = connected ? "LIVE CONNECTION" : message;
-        if (!connected) {
-          statusEl.style.color = "#ff6b6b";
-        }
-      }
-    }
+    console.log("🔥 Admin Dashboard Connected to Firebase");
 
     // ===== GLOBAL VARIABLES =====
     let allUsers = {};
@@ -981,15 +965,21 @@
     let currentWithdrawId = null;
     let currentTicketId = null;
     let currentCoinAction = null;
-    let currentMissionId = null;
 
-    let missionRewards = {
-      login: { min: 10, max: 25, title: "Daily Login Reward", desc: "Login daily to claim your reward!" },
-      firstDeposit: { min: 15, max: 30, title: "First Deposit Bonus", desc: "Make your first deposit of 100+ coins" },
-      sevenDay: { min: 20, max: 40, title: "7-Day Login Streak", desc: "Login for 7 consecutive days" },
-      gamesPlayed: { min: 25, max: 40, title: "Betting Enthusiast", desc: "Place 10 bets" },
-      bigWin: { min: 30, max: 50, title: "Winner's Circle", desc: "Win 5 games" }
-    };
+    // VIP Configuration
+    let vipConfig = [
+      { level: 0, requiredSpend: 0, dailyReward: 5, weeklyReward: 35, monthlyReward: 60 },
+      { level: 1, requiredSpend: 40000, dailyReward: 10, weeklyReward: 70, monthlyReward: 120 },
+      { level: 2, requiredSpend: 80000, dailyReward: 20, weeklyReward: 140, monthlyReward: 240 },
+      { level: 3, requiredSpend: 160000, dailyReward: 40, weeklyReward: 280, monthlyReward: 480 },
+      { level: 4, requiredSpend: 320000, dailyReward: 80, weeklyReward: 560, monthlyReward: 960 },
+      { level: 5, requiredSpend: 640000, dailyReward: 160, weeklyReward: 1120, monthlyReward: 1920 },
+      { level: 6, requiredSpend: 1280000, dailyReward: 320, weeklyReward: 2240, monthlyReward: 3840 },
+      { level: 7, requiredSpend: 2560000, dailyReward: 640, weeklyReward: 4480, monthlyReward: 7680 },
+      { level: 8, requiredSpend: 5120000, dailyReward: 1280, weeklyReward: 8960, monthlyReward: 15360 },
+      { level: 9, requiredSpend: 10240000, dailyReward: 2560, weeklyReward: 17920, monthlyReward: 30720 },
+      { level: 10, requiredSpend: 20480000, dailyReward: 5120, weeklyReward: 35840, monthlyReward: 61440 }
+    ];
 
     // ===== HELPER FUNCTIONS =====
     function showToast(message, isError = false) {
@@ -1016,62 +1006,23 @@
       return div.innerHTML;
     }
 
-    // ===== TEST FIREBASE CONNECTION =====
-    async function testFirebaseConnection() {
-      const outputEl = document.getElementById('debugOutput');
-      outputEl.textContent = "Testing connection...";
-      
-      try {
-        if (!firebaseInitialized) {
-          initFirebase();
-        }
-        
-        // Test reading from root
-        const rootRef = db.ref('/');
-        const snapshot = await rootRef.once('value');
-        const data = snapshot.val();
-        
-        outputEl.textContent = "✅ Firebase Connection Successful!\n\n";
-        outputEl.textContent += "Database Structure:\n";
-        outputEl.textContent += JSON.stringify(data, null, 2);
-        
-        // Update database structure display
-        const structureEl = document.getElementById('debugDatabaseStructure');
-        if (data) {
-          const keys = Object.keys(data);
-          structureEl.textContent = "Available paths:\n" + keys.map(k => `  /${k}`).join('\n') + "\n\nFull data:\n" + JSON.stringify(data, null, 2);
-        } else {
-          structureEl.textContent = "No data found in database. The database might be empty.";
-        }
-        
-        showToast("Connection successful! Data loaded.");
-        
-        // Now load all data
+    // ===== ADMIN AUTHENTICATION =====
+    function verifyAdmin() {
+      const password = document.getElementById('adminPassword').value;
+      if (password === 'admin123') {
+        document.getElementById('adminLogin').classList.add('hidden');
+        document.getElementById('dashboardContent').style.display = 'block';
         loadAllData();
-        
-      } catch (error) {
-        console.error("Connection test failed:", error);
-        outputEl.textContent = "❌ Connection Failed!\n\n";
-        outputEl.textContent += "Error: " + error.message + "\n\n";
-        outputEl.textContent += "Possible issues:\n";
-        outputEl.textContent += "1. Firebase database URL might be incorrect\n";
-        outputEl.textContent += "2. Database rules might be blocking read access\n";
-        outputEl.textContent += "3. Network connectivity issue\n";
-        outputEl.textContent += "4. CORS issue (if running locally)\n\n";
-        outputEl.textContent += "Try opening in a new tab or checking Firebase console.";
-        
-        showToast("Connection failed: " + error.message, true);
-        updateConnectionStatus(false, "Disconnected");
+        loadVIPConfig();
+        loadRewardsConfig();
+        showToast('Admin access granted - Connected to Royal Match Database');
+      } else {
+        showToast('Invalid password', true);
       }
     }
 
-    // ===== LOAD ALL DATA FROM FIREBASE =====
+    // ===== LOAD ALL DATA =====
     function loadAllData() {
-      if (!db) {
-        showToast("Firebase not initialized", true);
-        return;
-      }
-      
       console.log("Loading data from Firebase...");
       
       db.ref('users').on('value', (snapshot) => {
@@ -1080,45 +1031,31 @@
         updateStats();
         updatePlayersTable();
         updateTopReferrers();
-      }, (error) => {
-        console.error("Error loading users:", error);
-        showToast("Error loading users: " + error.message, true);
+        updateVIPDistribution();
+        updateRewardHistory();
+        populatePlayerSelect();
       });
 
       db.ref('withdrawals').on('value', (snapshot) => {
         allWithdrawals = snapshot.val() || {};
-        console.log("✅ Withdrawals loaded:", Object.keys(allWithdrawals).length);
         updateWithdrawalsTables();
-      }, (error) => {
-        console.error("Error loading withdrawals:", error);
       });
 
       db.ref('support-tickets').on('value', (snapshot) => {
         allTickets = snapshot.val() || {};
-        console.log("✅ Tickets loaded:", Object.keys(allTickets).length);
         updateTicketsTable();
-      }, (error) => {
-        console.error("Error loading tickets:", error);
       });
 
       db.ref('referrals').on('value', (snapshot) => {
         allReferrals = snapshot.val() || {};
-        console.log("✅ Referrals loaded:", Object.keys(allReferrals).length);
         updateAllReferralsTable();
         updateTopReferrers();
-      }, (error) => {
-        console.error("Error loading referrals:", error);
       });
 
       db.ref('game-history').limitToLast(50).on('value', (snapshot) => {
         allGameHistory = snapshot.val() || {};
         updateRecentActivity();
-      }, (error) => {
-        console.error("Error loading game history:", error);
       });
-
-      loadMissionsList();
-      loadSettings();
     }
 
     function refreshAllData() {
@@ -1130,12 +1067,22 @@
     function updateStats() {
       const userCount = Object.keys(allUsers).length;
       let totalCoins = 0;
+      let totalSpent = 0;
       let totalReferrals = 0;
       let pendingWithdrawals = 0;
+      let vip0Count = 0;
+      let vip5Count = 0;
+      let vip10Count = 0;
 
       Object.values(allUsers).forEach(user => {
         totalCoins += user.coins || 0;
+        totalSpent += user.totalSpent || 0;
         totalReferrals += user.referralCount || 0;
+        
+        const vipLevel = user.vipLevel || 0;
+        if (vipLevel === 0) vip0Count++;
+        if (vipLevel >= 5) vip5Count++;
+        if (vipLevel >= 10) vip10Count++;
       });
 
       Object.values(allWithdrawals).forEach(w => {
@@ -1144,8 +1091,12 @@
 
       document.getElementById('totalPlayers').textContent = userCount;
       document.getElementById('totalCoins').textContent = formatNumber(totalCoins);
-      document.getElementById('totalReferrals').textContent = totalReferrals;
+      document.getElementById('totalSpent').textContent = formatNumber(totalSpent);
       document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
+      document.getElementById('totalReferrals').textContent = totalReferrals;
+      document.getElementById('vip0Count').textContent = vip0Count;
+      document.getElementById('vip5Count').textContent = vip5Count;
+      document.getElementById('vip10Count').textContent = vip10Count;
     }
 
     // ===== RECENT ACTIVITY =====
@@ -1156,11 +1107,7 @@
       if (allGameHistory) {
         Object.values(allGameHistory).forEach(game => {
           if (game.username) {
-            let action = '🎮 Played Game';
-            if (game.result === 'win') action = '🎮 Won Game';
-            else if (game.result === 'maxwin') action = '🏆 Max Win!';
-            else if (game.result === 'loss') action = '💣 Lost Game';
-            
+            let action = game.result === 'win' ? '🎮 Won Game' : (game.result === 'maxwin' ? '🏆 Max Win!' : '💣 Lost Game');
             activities.push({
               player: game.username,
               action: action,
@@ -1192,7 +1139,7 @@
     function updatePlayersTable() {
       const tbody = document.getElementById('playersTableBody');
       if (Object.keys(allUsers).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="loading">No players found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="loading">No players found</td></tr>';
         return;
       }
 
@@ -1202,14 +1149,16 @@
           <tr>
             <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div></td>
             <td class="positive">${formatNumber(user.coins || 0)}</td>
+            <td class="positive">${formatNumber(user.totalSpent || 0)}</td>
+            <td><span class="status approved">VIP ${user.vipLevel || 0}</span></td>
             <td>${user.totalBets || 0}</td>
             <td class="positive">${user.totalWins || 0}</td>
             <td>${user.referralCount || 0}</td>
-            <td class="positive">${formatNumber(user.referralEarnings || 0)}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button>
                 <button class="btn-remove" onclick="openCoinModal('remove', '${id}')">- Coins</button>
+                <button class="btn-add" onclick="resetPlayerRewards('${id}')">Reset Rewards</button>
               </div>
             </td>
           </tr>
@@ -1229,10 +1178,11 @@
             <tr>
               <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div></td>
               <td class="positive">${formatNumber(user.coins || 0)}</td>
+              <td class="positive">${formatNumber(user.totalSpent || 0)}</td>
+              <td><span class="status approved">VIP ${user.vipLevel || 0}</span></td>
               <td>${user.totalBets || 0}</td>
               <td class="positive">${user.totalWins || 0}</td>
               <td>${user.referralCount || 0}</td>
-              <td class="positive">${formatNumber(user.referralEarnings || 0)}</td>
               <td>
                 <div class="action-buttons">
                   <button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button>
@@ -1244,7 +1194,202 @@
         }
       });
 
-      tbody.innerHTML = html || '<tr><td colspan="7" class="loading">No players found</td></tr>';
+      tbody.innerHTML = html || '<tr><td colspan="8" class="loading">No players found</td></tr>';
+    }
+
+    // ===== VIP MANAGEMENT =====
+    function loadVIPConfig() {
+      db.ref('settings/vip').once('value', (snapshot) => {
+        const saved = snapshot.val();
+        if (saved) {
+          vipConfig = saved;
+        }
+        renderVIPConfig();
+      });
+    }
+
+    function renderVIPConfig() {
+      const container = document.getElementById('vipConfigList');
+      let html = '<div class="vip-row header"><span>VIP Level</span><span>Required Spend</span><span>Daily</span><span>Weekly</span><span>Monthly</span></div>';
+      
+      vipConfig.forEach((vip, index) => {
+        html += `
+          <div class="vip-row">
+            <span>VIP ${vip.level}</span>
+            <div><input type="number" id="req_${index}" class="commission-input" value="${vip.requiredSpend}"></div>
+            <div><input type="number" id="daily_${index}" class="commission-input" value="${vip.dailyReward}"></div>
+            <div><input type="number" id="weekly_${index}" class="commission-input" value="${vip.weeklyReward}"></div>
+            <div><input type="number" id="monthly_${index}" class="commission-input" value="${vip.monthlyReward}"></div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    function saveVIPConfig() {
+      const newConfig = [];
+      for (let i = 0; i < vipConfig.length; i++) {
+        newConfig.push({
+          level: vipConfig[i].level,
+          requiredSpend: parseInt(document.getElementById(`req_${i}`).value),
+          dailyReward: parseInt(document.getElementById(`daily_${i}`).value),
+          weeklyReward: parseInt(document.getElementById(`weekly_${i}`).value),
+          monthlyReward: parseInt(document.getElementById(`monthly_${i}`).value)
+        });
+      }
+      vipConfig = newConfig;
+      db.ref('settings/vip').set(vipConfig);
+      showToast('VIP configuration saved successfully');
+    }
+
+    function updateVIPDistribution() {
+      const distribution = {};
+      Object.values(allUsers).forEach(user => {
+        const vip = user.vipLevel || 0;
+        distribution[vip] = (distribution[vip] || 0) + 1;
+      });
+      
+      const tbody = document.getElementById('vipDistributionBody');
+      let html = '';
+      for (let i = 0; i <= 10; i++) {
+        const count = distribution[i] || 0;
+        const totalSpent = Object.values(allUsers)
+          .filter(u => (u.vipLevel || 0) === i)
+          .reduce((sum, u) => sum + (u.totalSpent || 0), 0);
+        const avg = count > 0 ? Math.floor(totalSpent / count) : 0;
+        html += `<tr><td>VIP ${i}</td><td>${count}</td><td>${formatNumber(totalSpent)}</td><td>${formatNumber(avg)}</td></tr>`;
+      }
+      tbody.innerHTML = html;
+    }
+
+    // ===== REWARDS CONTROL =====
+    function loadRewardsConfig() {
+      db.ref('settings/rewards').once('value', (snapshot) => {
+        const saved = snapshot.val();
+        if (saved) {
+          renderRewardsConfig(saved);
+        } else {
+          renderRewardsConfig(vipConfig);
+        }
+      });
+    }
+
+    function renderRewardsConfig(config) {
+      const container = document.getElementById('rewardsConfigList');
+      let html = '<div class="vip-row header"><span>VIP Level</span><span>Daily</span><span>Weekly</span><span>Monthly</span></div>';
+      
+      config.forEach((vip, index) => {
+        html += `
+          <div class="vip-row">
+            <span>VIP ${vip.level}</span>
+            <div><input type="number" id="rdaily_${index}" class="commission-input" value="${vip.dailyReward}"></div>
+            <div><input type="number" id="rweekly_${index}" class="commission-input" value="${vip.weeklyReward}"></div>
+            <div><input type="number" id="rmonthly_${index}" class="commission-input" value="${vip.monthlyReward}"></div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
+    }
+
+    function saveRewardsConfig() {
+      const newConfig = [];
+      for (let i = 0; i < vipConfig.length; i++) {
+        newConfig.push({
+          level: vipConfig[i].level,
+          requiredSpend: vipConfig[i].requiredSpend,
+          dailyReward: parseInt(document.getElementById(`rdaily_${i}`).value),
+          weeklyReward: parseInt(document.getElementById(`rweekly_${i}`).value),
+          monthlyReward: parseInt(document.getElementById(`rmonthly_${i}`).value)
+        });
+      }
+      db.ref('settings/rewards').set(newConfig);
+      showToast('Rewards configuration saved successfully');
+    }
+
+    function populatePlayerSelect() {
+      const select = document.getElementById('manualRewardPlayer');
+      if (!select) return;
+      select.innerHTML = '<option value="">Select Player</option>';
+      Object.entries(allUsers).forEach(([id, user]) => {
+        select.innerHTML += `<option value="${id}">${escapeHtml(user.username)} (VIP ${user.vipLevel || 0})</option>`;
+      });
+    }
+
+    async function grantManualReward() {
+      const userId = document.getElementById('manualRewardPlayer').value;
+      const rewardType = document.getElementById('manualRewardType').value;
+      
+      if (!userId) {
+        showToast('Please select a player', true);
+        return;
+      }
+      
+      const user = allUsers[userId];
+      const vipRewards = vipConfig.find(v => v.level === (user.vipLevel || 0));
+      
+      let amount = 0;
+      if (rewardType === 'daily') amount = vipRewards.dailyReward;
+      else if (rewardType === 'weekly') amount = vipRewards.weeklyReward;
+      else if (rewardType === 'monthly') amount = vipRewards.monthlyReward;
+      
+      if (amount === 0) {
+        showToast('Invalid reward type', true);
+        return;
+      }
+      
+      // Add coins to player
+      const newBalance = (user.coins || 0) + amount;
+      await db.ref('users/' + userId).update({ coins: newBalance });
+      
+      // Record reward claim
+      await db.ref('reward-claims').push().set({
+        userId: userId,
+        username: user.username,
+        rewardType: rewardType,
+        amount: amount,
+        adminGranted: true,
+        timestamp: new Date().toISOString()
+      });
+      
+      showToast(`Granted ${amount} coins to ${user.username} as ${rewardType} reward`);
+      refreshAllData();
+    }
+
+    function updateRewardHistory() {
+      db.ref('reward-claims').limitToLast(50).on('value', (snapshot) => {
+        const claims = snapshot.val();
+        const tbody = document.getElementById('rewardHistoryBody');
+        if (!claims) {
+          tbody.innerHTML = '<tr><td colspan="4" class="loading">No reward claims yet</td></tr>';
+          return;
+        }
+        
+        let html = '';
+        Object.values(claims).reverse().forEach(claim => {
+          html += `
+            <tr>
+              <td>${escapeHtml(claim.username)}</td>
+              <td><span class="status approved">${claim.rewardType}</span></td>
+              <td class="positive">${formatNumber(claim.amount)}</td>
+              <td>${new Date(claim.timestamp).toLocaleString()}</td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html;
+      });
+    }
+
+    async function resetPlayerRewards(userId) {
+      if (confirm('Reset all reward claims for this player?')) {
+        await db.ref('users/' + userId + '/rewards').set({
+          lastDailyClaim: null,
+          lastWeeklyClaim: null,
+          lastMonthlyClaim: null
+        });
+        showToast('Player rewards reset successfully');
+      }
     }
 
     // ===== TOP REFERRERS =====
@@ -1291,7 +1436,7 @@
         Object.entries(allReferrals).forEach(([id, ref]) => {
           const referrer = allUsers[ref.referrerId] || { username: 'Unknown' };
           const referred = allUsers[ref.referredUserId] || { username: 'Unknown' };
-          const commission = Math.floor((ref.depositAmount || 0) * 0.05);
+          const commission = Math.floor((ref.depositAmount || 0) * 0.1);
 
           html += `
             <tr>
@@ -1490,72 +1635,8 @@
       closeReplyModal();
     }
 
-    // ===== MISSIONS MANAGEMENT =====
-    function loadMissionsList() {
-      const container = document.getElementById('missionsList');
-      let html = '';
-
-      Object.entries(missionRewards).forEach(([id, mission]) => {
-        html += `
-          <div class="mission-item">
-            <div class="mission-header">
-              <span class="mission-title">${mission.title}</span>
-              <span class="mission-reward">${mission.min}-${mission.max} Coins</span>
-            </div>
-            <div class="mission-desc">${mission.desc}</div>
-            <button class="btn-add" style="margin-top: 0.5rem;" onclick="editMission('${id}')">Edit Reward</button>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
-    }
-
-    function editMission(missionId) {
-      currentMissionId = missionId;
-      const mission = missionRewards[missionId];
-      if (mission) {
-        document.getElementById('missionModalTitle').textContent = `Edit ${mission.title}`;
-        document.getElementById('missionMinReward').value = mission.min;
-        document.getElementById('missionMaxReward').value = mission.max;
-        document.getElementById('missionModal').classList.add('active');
-      }
-    }
-
-    function closeMissionModal() {
-      document.getElementById('missionModal').classList.remove('active');
-      currentMissionId = null;
-    }
-
-    function saveMissionReward() {
-      const minReward = parseInt(document.getElementById('missionMinReward').value);
-      const maxReward = parseInt(document.getElementById('missionMaxReward').value);
-
-      if (minReward >= maxReward) {
-        showToast('Min reward must be less than max reward', true);
-        return;
-      }
-
-      if (currentMissionId && missionRewards[currentMissionId]) {
-        missionRewards[currentMissionId].min = minReward;
-        missionRewards[currentMissionId].max = maxReward;
-        
-        if (db) {
-          db.ref('settings/missions/' + currentMissionId).set({
-            min: minReward,
-            max: maxReward
-          });
-        }
-
-        showToast('Mission reward updated!');
-        loadMissionsList();
-        closeMissionModal();
-      }
-    }
-
     // ===== NOTIFICATIONS =====
     function sendNotificationToPlayer(userId, title, message, icon) {
-      if (!db) return;
       const notifRef = db.ref('notifications/' + userId).push();
       notifRef.set({
         title: title,
@@ -1609,11 +1690,6 @@
         return;
       }
 
-      if (!db) {
-        showToast('Firebase not initialized', true);
-        return;
-      }
-
       const userRef = db.ref('users/' + currentUserId);
       const snapshot = await userRef.once('value');
       const userData = snapshot.val();
@@ -1622,9 +1698,7 @@
         await userRef.update({ coins: (userData.coins || 0) + amount });
         showToast(`Added ${amount} coins to ${userData.username}`);
         
-        // Record transaction
-        const transRef = db.ref('transactions').push();
-        transRef.set({
+        db.ref('transactions').push().set({
           userId: currentUserId,
           username: userData.username,
           amount: amount,
@@ -1641,8 +1715,7 @@
         await userRef.update({ coins: newBalance });
         showToast(`Removed ${amount} coins from ${userData.username}`);
         
-        const transRef = db.ref('transactions').push();
-        transRef.set({
+        db.ref('transactions').push().set({
           userId: currentUserId,
           username: userData.username,
           amount: amount,
@@ -1655,20 +1728,42 @@
       closeCoinModal();
     }
 
-    // ===== SETTINGS =====
-    function loadSettings() {
-      if (!db) return;
-      
-      db.ref('settings/commission').once('value', snapshot => {
+    // ===== GENERAL SETTINGS =====
+    function loadGeneralSettings() {
+      db.ref('settings/general').once('value', snapshot => {
         const data = snapshot.val();
         if (data) {
-          document.getElementById('commission1').value = data.level1 || 5;
-          document.getElementById('commission2').value = data.level2 || 2;
-          document.getElementById('commission3').value = data.level3 || 1;
+          document.getElementById('commissionRate').value = data.commissionRate || 10;
+          document.getElementById('depositBonusRate').value = data.depositBonusRate || 2.5;
           document.getElementById('signupBonus').value = data.signupBonus || 50;
+          document.getElementById('minDepositCommission').value = data.minDepositCommission || 3000;
         }
       });
+    }
 
+    function saveGeneralSettings() {
+      const settings = {
+        commissionRate: parseFloat(document.getElementById('commissionRate').value),
+        depositBonusRate: parseFloat(document.getElementById('depositBonusRate').value),
+        signupBonus: parseInt(document.getElementById('signupBonus').value),
+        minDepositCommission: parseInt(document.getElementById('minDepositCommission').value)
+      };
+      db.ref('settings/general').set(settings);
+      showToast('General settings saved');
+    }
+
+    function saveMilestoneSettings() {
+      const milestones = {
+        5: parseInt(document.getElementById('milestone5').value),
+        10: parseInt(document.getElementById('milestone10').value),
+        25: parseInt(document.getElementById('milestone25').value),
+        50: parseInt(document.getElementById('milestone50').value)
+      };
+      db.ref('settings/milestones').set(milestones);
+      showToast('Milestone rewards saved');
+    }
+
+    function loadMilestoneSettings() {
       db.ref('settings/milestones').once('value', snapshot => {
         const data = snapshot.val();
         if (data) {
@@ -1678,30 +1773,6 @@
           document.getElementById('milestone50').value = data[50] || 15000;
         }
       });
-    }
-
-    function saveCommissionSettings() {
-      if (!db) return;
-      const settings = {
-        level1: parseFloat(document.getElementById('commission1').value),
-        level2: parseFloat(document.getElementById('commission2').value),
-        level3: parseFloat(document.getElementById('commission3').value),
-        signupBonus: parseInt(document.getElementById('signupBonus').value)
-      };
-      db.ref('settings/commission').set(settings);
-      showToast('Commission settings saved');
-    }
-
-    function saveMilestoneSettings() {
-      if (!db) return;
-      const milestones = {
-        5: parseInt(document.getElementById('milestone5').value),
-        10: parseInt(document.getElementById('milestone10').value),
-        25: parseInt(document.getElementById('milestone25').value),
-        50: parseInt(document.getElementById('milestone50').value)
-      };
-      db.ref('settings/milestones').set(milestones);
-      showToast('Milestone rewards saved');
     }
 
     // ===== TAB NAVIGATION =====
@@ -1719,30 +1790,8 @@
       });
     }
 
-    // ===== ADMIN VERIFICATION =====
-    function verifyAdmin() {
-      const password = document.getElementById('adminPassword').value;
-      if (password === 'admin123') {
-        document.getElementById('adminLogin').classList.add('hidden');
-        document.getElementById('dashboardContent').style.display = 'block';
-        
-        // Initialize Firebase
-        initFirebase();
-        
-        // Test connection
-        setTimeout(() => {
-          testFirebaseConnection();
-        }, 500);
-        
-        showToast('Admin access granted - Connected to Royal Match Database');
-      } else {
-        showToast('Invalid password', true);
-      }
-    }
-
     // ===== MAKE FUNCTIONS GLOBAL =====
     window.verifyAdmin = verifyAdmin;
-    window.testFirebaseConnection = testFirebaseConnection;
     window.refreshAllData = refreshAllData;
     window.openCoinModal = openCoinModal;
     window.closeCoinModal = closeCoinModal;
@@ -1756,15 +1805,20 @@
     window.sendTicketReply = sendTicketReply;
     window.sendBroadcastNotification = sendBroadcastNotification;
     window.searchPlayers = searchPlayers;
-    window.saveCommissionSettings = saveCommissionSettings;
+    window.saveVIPConfig = saveVIPConfig;
+    window.saveRewardsConfig = saveRewardsConfig;
+    window.grantManualReward = grantManualReward;
+    window.resetPlayerRewards = resetPlayerRewards;
+    window.saveGeneralSettings = saveGeneralSettings;
     window.saveMilestoneSettings = saveMilestoneSettings;
-    window.editMission = editMission;
-    window.saveMissionReward = saveMissionReward;
-    window.closeMissionModal = closeMissionModal;
+    window.loadVIPConfig = loadVIPConfig;
+    window.loadRewardsConfig = loadRewardsConfig;
 
     // ===== INITIALIZATION =====
     document.addEventListener('DOMContentLoaded', () => {
       setupTabs();
+      loadGeneralSettings();
+      loadMilestoneSettings();
       console.log("✅ Admin Dashboard Ready");
     });
   </script>
