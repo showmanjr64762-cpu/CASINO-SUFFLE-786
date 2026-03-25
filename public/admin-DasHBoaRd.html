@@ -31,8 +31,6 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      flex-wrap: wrap;
-      gap: 1rem;
     }
 
     .logo {
@@ -87,6 +85,73 @@
       50% { opacity: 0.5; transform: scale(1.2); }
     }
 
+    /* Login Screen */
+    .login-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #0a0f1e 0%, #0e1a2b 100%);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      background: rgba(15, 20, 36, 0.95);
+      border: 2px solid #d4af37;
+      border-radius: 24px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      color: #ffd700;
+      margin-bottom: 1.5rem;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      background: #1a1f2e;
+      border: 1px solid #2a2f3e;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .login-box input:focus {
+      outline: none;
+      border-color: #ffd700;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(145deg, #d4af37, #ffd700);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .login-box button:hover {
+      transform: scale(1.02);
+    }
+
+    .error-message {
+      color: #ff6b6b;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+    }
+
     .nav-tabs {
       display: flex;
       gap: 0.5rem;
@@ -126,9 +191,15 @@
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
       margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .stat-card {
@@ -194,7 +265,7 @@
 
     .table-wrapper {
       overflow-x: auto;
-      max-height: 500px;
+      max-height: 400px;
       overflow-y: auto;
     }
 
@@ -361,7 +432,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.8);
       align-items: center;
       justify-content: center;
       z-index: 1000;
@@ -376,7 +447,7 @@
       border: 2px solid #d4af37;
       border-radius: 12px;
       padding: 1.5rem;
-      max-width: 500px;
+      max-width: 400px;
       width: 90%;
     }
 
@@ -444,30 +515,39 @@
       text-align: center;
     }
 
-    .vip-row {
+    .mission-item {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+      border-left: 3px solid #ffd700;
+    }
+
+    .mission-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.8rem;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
       margin-bottom: 0.5rem;
     }
 
-    .vip-row.header {
-      background: rgba(212, 175, 55, 0.2);
+    .mission-title {
       font-weight: bold;
       color: #ffd700;
     }
 
-    .vip-row input {
-      width: 80px;
-      padding: 0.3rem;
-      background: #1a1f2e;
-      border: 1px solid #2a2f3e;
-      border-radius: 4px;
-      color: #fff;
-      text-align: center;
+    .mission-desc {
+      color: #aaa;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .mission-reward {
+      display: inline-block;
+      background: rgba(212, 175, 55, 0.2);
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      color: #ffd700;
     }
 
     .loading {
@@ -476,101 +556,36 @@
       color: #888;
     }
 
-    .refresh-btn {
-      background: rgba(212, 175, 55, 0.1);
-      border: 1px solid #d4af37;
-      color: #ffd700;
+    .logout-btn {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #ef4444;
       padding: 0.3rem 0.8rem;
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.7rem;
     }
 
-    .refresh-btn:hover {
-      background: rgba(212, 175, 55, 0.3);
-    }
-
-    .admin-login {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: #0a0f1e;
-      z-index: 5000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .admin-login.hidden {
-      display: none;
-    }
-
-    .admin-login input {
-      width: 280px;
-      padding: 0.8rem;
-      background: #1a1f2e;
-      border: 1px solid #d4af37;
-      border-radius: 8px;
-      color: #fff;
-    }
-
-    .admin-login button {
-      padding: 0.8rem 2rem;
-      background: linear-gradient(145deg, #d4af37, #ffd700);
-      border: none;
-      border-radius: 8px;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #10b981;
-      color: white;
-      padding: 0.8rem 1.2rem;
-      border-radius: 8px;
-      z-index: 6000;
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
-
-    .toast.error {
+    .logout-btn:hover {
       background: #ef4444;
-    }
-
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <div class="admin-login" id="adminLogin">
-    <div class="logo" style="margin-bottom: 2rem;">
-      <div class="logo-icon">♛</div>
-      <div>
-        <h1>ROYAL MATCH ADMIN</h1>
-        <p>Secure Admin Panel</p>
-      </div>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-box">
+      <div class="logo-icon" style="margin: 0 auto 1rem;">♛</div>
+      <h2>Admin Login</h2>
+      <input type="email" id="adminEmail" placeholder="Admin Email" autocomplete="email">
+      <input type="password" id="adminPassword" placeholder="Password" autocomplete="current-password">
+      <button onclick="adminLogin()">Login to Dashboard</button>
+      <div id="loginError" class="error-message"></div>
     </div>
-    <input type="password" id="adminPassword" placeholder="Enter Admin Password" autocomplete="off">
-    <button onclick="verifyAdmin()">Access Dashboard</button>
-    <p style="color: #888; font-size: 0.8rem; margin-top: 1rem;">Default: admin123</p>
   </div>
 
+  <!-- Main Dashboard (Hidden until login) -->
   <div id="dashboardContent" style="display: none;">
     <div class="header">
       <div class="logo">
@@ -580,20 +595,22 @@
           <p>Management Dashboard</p>
         </div>
       </div>
-      <div class="live-badge">
-        <span class="live-dot"></span>
-        <span id="connectionStatus">LIVE CONNECTION</span>
-        <button class="refresh-btn" onclick="refreshAllData()" style="margin-left: 10px;">⟳ Refresh</button>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <span id="adminEmailDisplay" style="color: #ffd700; font-size: 0.8rem;"></span>
+        <button class="logout-btn" onclick="adminLogout()">Logout</button>
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          <span>LIVE CONNECTION</span>
+        </div>
       </div>
     </div>
 
     <div class="nav-tabs">
       <button class="nav-tab active" data-section="dashboard">📊 Dashboard</button>
       <button class="nav-tab" data-section="players">👥 Players</button>
-      <button class="nav-tab" data-section="vip">👑 VIP Management</button>
-      <button class="nav-tab" data-section="rewards">🎁 Rewards Control</button>
       <button class="nav-tab" data-section="referrals">🔗 Referrals</button>
       <button class="nav-tab" data-section="withdrawals">💰 Withdrawals</button>
+      <button class="nav-tab" data-section="missions">🎯 Missions</button>
       <button class="nav-tab" data-section="support">🎧 Support</button>
       <button class="nav-tab" data-section="notifications">🔔 Notify</button>
       <button class="nav-tab" data-section="settings">⚙️ Settings</button>
@@ -619,10 +636,10 @@
           </div>
           <div class="stat-card">
             <div class="stat-header">
-              <span class="stat-title">Total Spent</span>
-              <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+              <span class="stat-title">Total Referrals</span>
+              <div class="stat-icon"><i class="fas fa-link"></i></div>
             </div>
-            <div class="stat-value" id="totalSpent">0</div>
+            <div class="stat-value" id="totalReferrals">0</div>
           </div>
           <div class="stat-card">
             <div class="stat-header">
@@ -632,36 +649,6 @@
             <div class="stat-value" id="pendingWithdrawals">0</div>
           </div>
         </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-header">
-              <span class="stat-title">VIP 0 Players</span>
-              <div class="stat-icon"><i class="fas fa-star"></i></div>
-            </div>
-            <div class="stat-value" id="vip0Count">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <span class="stat-title">VIP 5+ Players</span>
-              <div class="stat-icon"><i class="fas fa-crown"></i></div>
-            </div>
-            <div class="stat-value" id="vip5Count">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <span class="stat-title">VIP 10 Players</span>
-              <div class="stat-icon"><i class="fas fa-gem"></i></div>
-            </div>
-            <div class="stat-value" id="vip10Count">0</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-header">
-              <span class="stat-title">Total Referrals</span>
-              <div class="stat-icon"><i class="fas fa-link"></i></div>
-            </div>
-            <div class="stat-value" id="totalReferrals">0</div>
-          </div>
-        </div>
 
         <div class="card">
           <div class="card-header">
@@ -669,8 +656,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead><tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th> </thead>
-              <tbody id="recentActivityBody"><tr><td colspan="4" class="loading">Loading...<\/td><\/tr><\/tbody>
+              <thead><tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th></tr></thead>
+              <tbody id="recentActivityBody"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -685,74 +672,8 @@
           </div>
           <div class="table-wrapper">
             <table>
-              <thead> <th>Player</th><th>Coins</th><th>Spent</th><th>VIP</th><th>Bets</th><th>Wins</th><th>Referrals</th><th>Actions</th> </thead>
-              <tbody id="playersTableBody"><tr><td colspan="8" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIP Management Section -->
-      <div id="vipSection" class="section">
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-crown"></i> VIP Level Configuration</h2>
-            <button class="refresh-btn" onclick="loadVIPConfig()">Load Config</button>
-          </div>
-          <div id="vipConfigList"></div>
-          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveVIPConfig()">Save VIP Configuration</button>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-chart-simple"></i> Player VIP Distribution</h2>
-          </div>
-          <div class="table-wrapper">
-            <table>
-              <thead> <th>VIP Level</th><th>Count</th><th>Total Spent</th><th>Average Spent</th> </thead>
-              <tbody id="vipDistributionBody"><tr><td colspan="4" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Rewards Control Section -->
-      <div id="rewardsSection" class="section">
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-gift"></i> Daily Rewards Configuration</h2>
-          </div>
-          <div id="rewardsConfigList"></div>
-          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveRewardsConfig()">Save Rewards Configuration</button>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-calendar-check"></i> Manual Reward Claims</h2>
-          </div>
-          <div class="commission-row">
-            <span>Select Player</span>
-            <select id="manualRewardPlayer" class="commission-input" style="width: 200px;"></select>
-          </div>
-          <div class="commission-row">
-            <span>Reward Type</span>
-            <select id="manualRewardType" class="commission-input" style="width: 150px;">
-              <option value="daily">Daily Reward</option>
-              <option value="weekly">Weekly Reward</option>
-              <option value="monthly">Monthly Reward</option>
-            </select>
-          </div>
-          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="grantManualReward()">Grant Reward to Player</button>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-chart-line"></i> Reward Claim History</h2>
-          </div>
-          <div class="table-wrapper">
-            <table>
-              <thead> <th>Player</th><th>Reward Type</th><th>Amount</th><th>Claim Date</th> </thead>
-              <tbody id="rewardHistoryBody"><tr><td colspan="4" class="loading">Loading...<\/td><\/tr><\/tbody>
+              <thead><tr><th>Player</th><th>Coins</th><th>Bets</th><th>Wins</th><th>Referrals</th><th>Earnings</th><th>Actions</th></tr></thead>
+              <tbody id="playersTableBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -761,26 +682,20 @@
       <!-- Referrals Section -->
       <div id="referralsSection" class="section">
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-trophy"></i> Top Referrers</h2>
-          </div>
+          <div class="card-header"><h2><i class="fas fa-trophy"></i> Top Referrers</h2></div>
           <div class="table-wrapper">
-            <table>
-              <thead> <th>Rank</th><th>Player</th><th>Referrals</th><th>Active</th><th>Earnings</th> </thead>
-              <tbody id="topReferrersTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
+            <table><thead><tr><th>Rank</th><th>Player</th><th>Referrals</th><th>Active</th><th>Earnings</th></tr></thead>
+            <tbody id="topReferrersTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table>
           </div>
         </div>
-
         <div class="card">
           <div class="card-header">
             <h2><i class="fas fa-list"></i> All Referrals</h2>
+            <input type="text" id="referralSearch" class="search-input" placeholder="Search by referrer..." onkeyup="searchReferrals()">
           </div>
           <div class="table-wrapper">
-            <table>
-              <thead> <th>Referrer</th><th>Referred User</th><th>Level</th><th>Commission</th><th>Date</th> </thead>
-              <tbody id="allReferralsTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
+            <table><thead><tr><th>Referrer</th><th>Referred User</th><th>Level</th><th>Commission</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="allReferralsTableBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table>
           </div>
         </div>
       </div>
@@ -788,41 +703,36 @@
       <!-- Withdrawals Section -->
       <div id="withdrawalsSection" class="section">
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-clock"></i> Pending Withdrawals</h2>
-          </div>
+          <div class="card-header"><h2><i class="fas fa-clock"></i> Pending Withdrawals</h2><span class="live-badge">Auto Refresh</span></div>
           <div class="table-wrapper">
-            <table>
-              <thead> <th>Player</th><th>Amount</th><th>Method</th><th>Account</th><th>Requested</th><th>Actions</th> </thead>
-              <tbody id="pendingWithdrawalsTableBody"><tr><td colspan="6" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
+            <table><thead><tr><th>Player</th><th>Amount</th><th>Method</th><th>Account</th><th>Requested</th><th>Actions</th></tr></thead>
+            <tbody id="pendingWithdrawalsTableBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table>
           </div>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-history"></i> Withdrawal History</h2>
-          </div>
+          <div class="card-header"><h2><i class="fas fa-history"></i> Withdrawal History</h2></div>
           <div class="table-wrapper">
-            <table>
-              <thead> <th>Player</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th> </thead>
-              <tbody id="historyTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
+            <table><thead><tr><th>Player</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="historyTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table>
           </div>
+        </div>
+      </div>
+
+      <!-- Missions Section -->
+      <div id="missionsSection" class="section">
+        <div class="card">
+          <div class="card-header"><h2><i class="fas fa-tasks"></i> Manage Missions</h2></div>
+          <div id="missionsList"></div>
         </div>
       </div>
 
       <!-- Support Section -->
       <div id="supportSection" class="section">
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-headset"></i> Support Tickets</h2>
-          </div>
+          <div class="card-header"><h2><i class="fas fa-headset"></i> Support Tickets</h2></div>
           <div class="table-wrapper">
-            <table>
-              <thead> <th>Player</th><th>Message</th><th>Sent</th><th>Status</th><th>Actions</th> </thead>
-              <tbody id="ticketsTableBody"><tr><td colspan="5" class="loading">Loading...<\/td><\/tr><\/tbody>
-            </table>
+            <table><thead><tr><th>Player</th><th>Message</th><th>Sent</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="ticketsTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table>
           </div>
         </div>
       </div>
@@ -830,9 +740,7 @@
       <!-- Notifications Section -->
       <div id="notificationsSection" class="section">
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-bell"></i> Send Notification</h2>
-          </div>
+          <div class="card-header"><h2><i class="fas fa-bell"></i> Send Notification</h2></div>
           <input type="text" id="notifyTitle" class="input" placeholder="Notification Title">
           <textarea id="notifyMessage" class="input" rows="3" placeholder="Notification Message"></textarea>
           <select id="notifyIcon" class="input">
@@ -841,7 +749,6 @@
             <option value="💰">💰 Reward</option>
             <option value="⚠️">⚠️ Warning</option>
             <option value="✅">✅ Success</option>
-            <option value="👑">👑 VIP</option>
           </select>
           <button class="btn-add" style="width:100%; padding:0.8rem;" onclick="sendBroadcastNotification()">Send to All Players</button>
         </div>
@@ -850,150 +757,74 @@
       <!-- Settings Section -->
       <div id="settingsSection" class="section">
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-percent"></i> Commission Rates</h2>
-          </div>
-          <div class="commission-row">
-            <span>Referral Commission Rate</span>
-            <div><input type="number" id="commissionRate" class="commission-input" value="10" step="0.5"> <span>%</span></div>
-          </div>
-          <div class="commission-row">
-            <span>Deposit Bonus Rate</span>
-            <div><input type="number" id="depositBonusRate" class="commission-input" value="2.5" step="0.5"> <span>%</span></div>
-          </div>
-          <div class="commission-row">
-            <span>Sign-up Bonus</span>
-            <div><input type="number" id="signupBonus" class="commission-input" value="50"> <span>Coins</span></div>
-          </div>
-          <div class="commission-row">
-            <span>Minimum Deposit for Referral Commission</span>
-            <div><input type="number" id="minDepositCommission" class="commission-input" value="3000"> <span>Coins</span></div>
-          </div>
-          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveGeneralSettings()">Save Settings</button>
+          <div class="card-header"><h2><i class="fas fa-percent"></i> Commission Rates</h2></div>
+          <div class="commission-row"><span>Level 1 (Direct Referral)</span><div><input type="number" id="commission1" class="commission-input" value="5" step="0.5"> <span>%</span></div></div>
+          <div class="commission-row"><span>Level 2 Commission</span><div><input type="number" id="commission2" class="commission-input" value="2" step="0.5"> <span>%</span></div></div>
+          <div class="commission-row"><span>Level 3 Commission</span><div><input type="number" id="commission3" class="commission-input" value="1" step="0.5"> <span>%</span></div></div>
+          <div class="commission-row"><span>Sign-up Bonus</span><div><input type="number" id="signupBonus" class="commission-input" value="50"> <span>Coins</span></div></div>
+          <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveCommissionSettings()">Save Settings</button>
         </div>
-
         <div class="card">
-          <div class="card-header">
-            <h2><i class="fas fa-gift"></i> Referral Milestone Rewards</h2>
-          </div>
-          <div class="commission-row">
-            <span>5 Referrals Bonus</span>
-            <div><input type="number" id="milestone5" class="commission-input" value="500"> <span>Coins</span></div>
-          </div>
-          <div class="commission-row">
-            <span>10 Referrals Bonus</span>
-            <div><input type="number" id="milestone10" class="commission-input" value="1500"> <span>Coins</span></div>
-          </div>
-          <div class="commission-row">
-            <span>25 Referrals Bonus</span>
-            <div><input type="number" id="milestone25" class="commission-input" value="5000"> <span>Coins</span></div>
-          </div>
-          <div class="commission-row">
-            <span>50 Referrals Bonus</span>
-            <div><input type="number" id="milestone50" class="commission-input" value="15000"> <span>Coins</span></div>
-          </div>
+          <div class="card-header"><h2><i class="fas fa-gift"></i> Milestone Rewards</h2></div>
+          <div class="commission-row"><span>5 Referrals Bonus</span><div><input type="number" id="milestone5" class="commission-input" value="500"> <span>Coins</span></div></div>
+          <div class="commission-row"><span>10 Referrals Bonus</span><div><input type="number" id="milestone10" class="commission-input" value="1500"> <span>Coins</span></div></div>
+          <div class="commission-row"><span>25 Referrals Bonus</span><div><input type="number" id="milestone25" class="commission-input" value="5000"> <span>Coins</span></div></div>
+          <div class="commission-row"><span>50 Referrals Bonus</span><div><input type="number" id="milestone50" class="commission-input" value="15000"> <span>Coins</span></div></div>
           <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveMilestoneSettings()">Save Rewards</button>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="toast"></div>
-
   <!-- Modals -->
-  <div id="coinModal" class="modal">
-    <div class="modal-content">
-      <h3 id="coinModalTitle">Add Coins</h3>
-      <input type="number" id="coinAmount" class="input" placeholder="Enter amount">
-      <div class="modal-buttons">
-        <button class="modal-btn confirm" onclick="processCoinAction()">Confirm</button>
-        <button class="modal-btn cancel" onclick="closeCoinModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="rejectModal" class="modal">
-    <div class="modal-content">
-      <h3>Reject Withdrawal</h3>
-      <textarea id="rejectReasonText" class="input" rows="3" placeholder="Reason for rejection..."></textarea>
-      <div class="modal-buttons">
-        <button class="modal-btn confirm" onclick="confirmRejectWithdrawal()">Reject</button>
-        <button class="modal-btn cancel" onclick="closeRejectModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="replyModal" class="modal">
-    <div class="modal-content">
-      <h3>Reply to Ticket</h3>
-      <textarea id="replyMessageText" class="input" rows="3" placeholder="Your reply..."></textarea>
-      <div class="modal-buttons">
-        <button class="modal-btn confirm" onclick="sendTicketReply()">Send</button>
-        <button class="modal-btn cancel" onclick="closeReplyModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
+  <div id="coinModal" class="modal"><div class="modal-content"><h3 id="coinModalTitle">Add Coins</h3><input type="number" id="coinAmount" class="input" placeholder="Enter amount"><div class="modal-buttons"><button class="modal-btn confirm" onclick="processCoinAction()">Confirm</button><button class="modal-btn cancel" onclick="closeCoinModal()">Cancel</button></div></div></div>
+  <div id="rejectModal" class="modal"><div class="modal-content"><h3>Reject Withdrawal</h3><textarea id="rejectReasonText" class="input" rows="3" placeholder="Reason for rejection..."></textarea><div class="modal-buttons"><button class="modal-btn confirm" onclick="confirmRejectWithdrawal()">Reject</button><button class="modal-btn cancel" onclick="closeRejectModal()">Cancel</button></div></div></div>
+  <div id="replyModal" class="modal"><div class="modal-content"><h3>Reply to Ticket</h3><textarea id="replyMessageText" class="input" rows="3" placeholder="Your reply..."></textarea><div class="modal-buttons"><button class="modal-btn confirm" onclick="sendTicketReply()">Send</button><button class="modal-btn cancel" onclick="closeReplyModal()">Cancel</button></div></div></div>
+  <div id="missionModal" class="modal"><div class="modal-content"><h3 id="missionModalTitle">Edit Mission Reward</h3><div class="commission-row"><span>Min Reward</span><input type="number" id="missionMinReward" class="commission-input" value="10"></div><div class="commission-row"><span>Max Reward</span><input type="number" id="missionMaxReward" class="commission-input" value="25"></div><div class="modal-buttons"><button class="modal-btn confirm" onclick="saveMissionReward()">Save</button><button class="modal-btn cancel" onclick="closeMissionModal()">Cancel</button></div></div></div>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
-    // ===== FIREBASE CONFIGURATION =====
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyDgxEgtvrugTxXL5l10hvzQBILmqUzWBLA",
       authDomain: "nj777-2756c.firebaseapp.com",
       databaseURL: "https://nj777-2756c-default-rtdb.firebaseio.com",
       projectId: "nj777-2756c",
-      storageBucket: "nj777-2756c.firebasestorage.app",
+      storageBucket: "nj777-2756c.appspot.com",
       messagingSenderId: "388549837175",
       appId: "1:388549837175:web:6c831e431443d8227c2172"
     };
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
 
-    console.log("🔥 Admin Dashboard Connected to Firebase");
-
-    // ===== GLOBAL VARIABLES =====
+    // Global Variables
     let allUsers = {};
     let allWithdrawals = {};
     let allTickets = {};
     let allReferrals = {};
-    let allGameHistory = {};
     let currentUserId = null;
     let currentWithdrawId = null;
     let currentTicketId = null;
     let currentCoinAction = null;
+    let currentMissionId = null;
 
-    // VIP Configuration
-    let vipConfig = [
-      { level: 0, requiredSpend: 0, dailyReward: 5, weeklyReward: 35, monthlyReward: 60 },
-      { level: 1, requiredSpend: 40000, dailyReward: 10, weeklyReward: 70, monthlyReward: 120 },
-      { level: 2, requiredSpend: 80000, dailyReward: 20, weeklyReward: 140, monthlyReward: 240 },
-      { level: 3, requiredSpend: 160000, dailyReward: 40, weeklyReward: 280, monthlyReward: 480 },
-      { level: 4, requiredSpend: 320000, dailyReward: 80, weeklyReward: 560, monthlyReward: 960 },
-      { level: 5, requiredSpend: 640000, dailyReward: 160, weeklyReward: 1120, monthlyReward: 1920 },
-      { level: 6, requiredSpend: 1280000, dailyReward: 320, weeklyReward: 2240, monthlyReward: 3840 },
-      { level: 7, requiredSpend: 2560000, dailyReward: 640, weeklyReward: 4480, monthlyReward: 7680 },
-      { level: 8, requiredSpend: 5120000, dailyReward: 1280, weeklyReward: 8960, monthlyReward: 15360 },
-      { level: 9, requiredSpend: 10240000, dailyReward: 2560, weeklyReward: 17920, monthlyReward: 30720 },
-      { level: 10, requiredSpend: 20480000, dailyReward: 5120, weeklyReward: 35840, monthlyReward: 61440 }
-    ];
+    let missionRewards = {
+      login: { min: 10, max: 25, title: "Daily Login Reward", desc: "Login daily to claim your reward!" },
+      firstDeposit: { min: 15, max: 30, title: "First Deposit Bonus", desc: "Make your first deposit of 100+ coins" },
+      sevenDay: { min: 20, max: 40, title: "7-Day Login Streak", desc: "Login for 7 consecutive days" },
+      gamesPlayed: { min: 25, max: 40, title: "Betting Enthusiast", desc: "Place 10 bets" },
+      bigWin: { min: 30, max: 50, title: "Winner's Circle", desc: "Win 5 games" }
+    };
 
-    // ===== HELPER FUNCTIONS =====
-    function showToast(message, isError = false) {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = 'toast' + (isError ? ' error' : '');
-      toast.style.display = 'block';
-      setTimeout(() => {
-        toast.style.display = 'none';
-      }, 3000);
-    }
-
+    // Helper Functions
     function formatNumber(num) {
-      if (num === undefined || num === null) return '0';
+      if (!num && num !== 0) return '0';
       if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
       if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
       return num.toLocaleString();
@@ -1006,83 +837,103 @@
       return div.innerHTML;
     }
 
-    // ===== ADMIN AUTHENTICATION =====
-    function verifyAdmin() {
+    // Admin Login
+    async function adminLogin() {
+      const email = document.getElementById('adminEmail').value.trim();
       const password = document.getElementById('adminPassword').value;
-      if (password === 'admin123') {
-        document.getElementById('adminLogin').classList.add('hidden');
-        document.getElementById('dashboardContent').style.display = 'block';
-        loadAllData();
-        loadVIPConfig();
-        loadRewardsConfig();
-        showToast('Admin access granted - Connected to Royal Match Database');
-      } else {
-        showToast('Invalid password', true);
+      const errorDiv = document.getElementById('loginError');
+
+      if (!email || !password) {
+        errorDiv.textContent = 'Please enter email and password';
+        return;
+      }
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Check if user is admin (has entry in admins node)
+        const adminRef = db.ref('admins/' + user.uid);
+        const snapshot = await adminRef.once('value');
+        
+        if (snapshot.val() === true) {
+          // Admin access granted
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboardContent').style.display = 'block';
+          document.getElementById('adminEmailDisplay').textContent = user.email;
+          loadAllData();
+          setupTabs();
+          startAutoRefresh();
+        } else {
+          errorDiv.textContent = 'You do not have admin access. Contact the system administrator.';
+          await auth.signOut();
+        }
+      } catch (error) {
+        errorDiv.textContent = 'Login failed: ' + error.message;
       }
     }
 
-    // ===== LOAD ALL DATA =====
+    function adminLogout() {
+      auth.signOut();
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('dashboardContent').style.display = 'none';
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+    }
+
+    // Load All Data
     function loadAllData() {
-      console.log("Loading data from Firebase...");
+      console.log("Loading admin data...");
       
       db.ref('users').on('value', (snapshot) => {
         allUsers = snapshot.val() || {};
-        console.log("✅ Users loaded:", Object.keys(allUsers).length);
+        console.log("Users loaded:", Object.keys(allUsers).length);
         updateStats();
         updatePlayersTable();
         updateTopReferrers();
-        updateVIPDistribution();
-        updateRewardHistory();
-        populatePlayerSelect();
+        updateRecentActivity();
       });
 
       db.ref('withdrawals').on('value', (snapshot) => {
         allWithdrawals = snapshot.val() || {};
+        console.log("Withdrawals loaded:", Object.keys(allWithdrawals).length);
         updateWithdrawalsTables();
       });
 
       db.ref('support-tickets').on('value', (snapshot) => {
         allTickets = snapshot.val() || {};
+        console.log("Tickets loaded:", Object.keys(allTickets).length);
         updateTicketsTable();
       });
 
       db.ref('referrals').on('value', (snapshot) => {
         allReferrals = snapshot.val() || {};
+        console.log("Referrals loaded:", Object.keys(allReferrals).length);
         updateAllReferralsTable();
-        updateTopReferrers();
       });
 
-      db.ref('game-history').limitToLast(50).on('value', (snapshot) => {
-        allGameHistory = snapshot.val() || {};
-        updateRecentActivity();
+      db.ref('settings/missions').once('value', (snapshot) => {
+        const saved = snapshot.val();
+        if (saved) {
+          Object.keys(saved).forEach(key => {
+            if (missionRewards[key]) {
+              missionRewards[key].min = saved[key].min;
+              missionRewards[key].max = saved[key].max;
+            }
+          });
+        }
+        loadMissionsList();
       });
     }
 
-    function refreshAllData() {
-      showToast("Refreshing data...");
-      loadAllData();
-    }
-
-    // ===== UPDATE STATS =====
     function updateStats() {
       const userCount = Object.keys(allUsers).length;
       let totalCoins = 0;
-      let totalSpent = 0;
       let totalReferrals = 0;
       let pendingWithdrawals = 0;
-      let vip0Count = 0;
-      let vip5Count = 0;
-      let vip10Count = 0;
 
       Object.values(allUsers).forEach(user => {
         totalCoins += user.coins || 0;
-        totalSpent += user.totalSpent || 0;
         totalReferrals += user.referralCount || 0;
-        
-        const vipLevel = user.vipLevel || 0;
-        if (vipLevel === 0) vip0Count++;
-        if (vipLevel >= 5) vip5Count++;
-        if (vipLevel >= 10) vip10Count++;
       });
 
       Object.values(allWithdrawals).forEach(w => {
@@ -1091,79 +942,91 @@
 
       document.getElementById('totalPlayers').textContent = userCount;
       document.getElementById('totalCoins').textContent = formatNumber(totalCoins);
-      document.getElementById('totalSpent').textContent = formatNumber(totalSpent);
-      document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
       document.getElementById('totalReferrals').textContent = totalReferrals;
-      document.getElementById('vip0Count').textContent = vip0Count;
-      document.getElementById('vip5Count').textContent = vip5Count;
-      document.getElementById('vip10Count').textContent = vip10Count;
+      document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
     }
 
-    // ===== RECENT ACTIVITY =====
     function updateRecentActivity() {
       const tbody = document.getElementById('recentActivityBody');
       let activities = [];
 
-      if (allGameHistory) {
-        Object.values(allGameHistory).forEach(game => {
-          if (game.username) {
-            let action = game.result === 'win' ? '🎮 Won Game' : (game.result === 'maxwin' ? '🏆 Max Win!' : '💣 Lost Game');
-            activities.push({
-              player: game.username,
-              action: action,
-              amount: game.winAmount || game.bet || 0,
-              time: game.timestamp
+      db.ref('game-history').limitToLast(20).once('value', (snapshot) => {
+        const games = snapshot.val();
+        if (games) {
+          Object.values(games).forEach(game => {
+            if (game.username) {
+              activities.push({
+                player: game.username,
+                action: game.result === 'win' ? '🎮 Won Game' : '💣 Lost Game',
+                amount: game.winAmount || game.bet || 0,
+                time: game.timestamp
+              });
+            }
+          });
+        }
+
+        db.ref('transactions').limitToLast(20).once('value', (snapshot) => {
+          const transactions = snapshot.val();
+          if (transactions) {
+            Object.values(transactions).forEach(t => {
+              if (t.type === 'purchase' && t.username) {
+                activities.push({
+                  player: t.username,
+                  action: '💰 Purchased Coins',
+                  amount: t.coins || 0,
+                  time: t.timestamp
+                });
+              }
             });
           }
+
+          activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+          activities = activities.slice(0, 15);
+
+          if (activities.length === 0) {
+            tbody.innerHTML = '}<td colspan="4" class="loading">No recent activity</td><\/tr>';
+          } else {
+            tbody.innerHTML = activities.map(a => `
+              <tr>
+                <td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(a.player)}</div></td>
+                <td>${a.action}</td>
+                <td class="positive">${formatNumber(a.amount)}</td>
+                <td>${a.time ? new Date(a.time).toLocaleString() : 'Just now'}</td>
+              </tr>
+            `).join('');
+          }
         });
-      }
-
-      activities.sort((a, b) => new Date(b.time) - new Date(a.time));
-      activities = activities.slice(0, 15);
-
-      if (activities.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="loading">No recent activity</td></tr>';
-      } else {
-        tbody.innerHTML = activities.map(a => `
-          <tr>
-            <td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(a.player)}</div></td>
-            <td>${a.action}</td>
-            <td class="positive">${formatNumber(a.amount)}</td>
-            <td>${a.time ? new Date(a.time).toLocaleString() : 'Just now'}</td>
-          </tr>
-        `).join('');
-      }
+      });
     }
 
-    // ===== PLAYERS TABLE =====
     function updatePlayersTable() {
       const tbody = document.getElementById('playersTableBody');
+      let html = '';
+
       if (Object.keys(allUsers).length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="loading">No players found</td></tr>';
+        tbody.innerHTML = '}<td colspan="7" class="loading">No players found</td><\/tr>';
         return;
       }
 
-      let html = '';
       Object.entries(allUsers).forEach(([id, user]) => {
         html += `
           <tr>
-            <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div></td>
-            <td class="positive">${formatNumber(user.coins || 0)}</td>
-            <td class="positive">${formatNumber(user.totalSpent || 0)}</td>
-            <td><span class="status approved">VIP ${user.vipLevel || 0}</span></td>
+            <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div></td>
+            <td class="positive">${formatNumber(user.coins)}</td>
             <td>${user.totalBets || 0}</td>
             <td class="positive">${user.totalWins || 0}</td>
             <td>${user.referralCount || 0}</td>
+            <td class="positive">${formatNumber(user.referralEarnings || 0)}</td>
             <td>
               <div class="action-buttons">
                 <button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button>
                 <button class="btn-remove" onclick="openCoinModal('remove', '${id}')">- Coins</button>
-                <button class="btn-add" onclick="resetPlayerRewards('${id}')">Reset Rewards</button>
               </div>
             </td>
           </tr>
         `;
       });
+
       tbody.innerHTML = html;
     }
 
@@ -1173,16 +1036,15 @@
       let html = '';
 
       Object.entries(allUsers).forEach(([id, user]) => {
-        if (user.username && user.username.toLowerCase().includes(term)) {
+        if (user.username.toLowerCase().includes(term)) {
           html += `
             <tr>
               <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div></td>
-              <td class="positive">${formatNumber(user.coins || 0)}</td>
-              <td class="positive">${formatNumber(user.totalSpent || 0)}</td>
-              <td><span class="status approved">VIP ${user.vipLevel || 0}</span></td>
+              <td class="positive">${formatNumber(user.coins)}</td>
               <td>${user.totalBets || 0}</td>
               <td class="positive">${user.totalWins || 0}</td>
               <td>${user.referralCount || 0}</td>
+              <td class="positive">${formatNumber(user.referralEarnings || 0)}</td>
               <td>
                 <div class="action-buttons">
                   <button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button>
@@ -1194,205 +1056,9 @@
         }
       });
 
-      tbody.innerHTML = html || '<tr><td colspan="8" class="loading">No players found</td></tr>';
+      tbody.innerHTML = html || '}<td colspan="7" class="loading">No players found</td><\/tr>';
     }
 
-    // ===== VIP MANAGEMENT =====
-    function loadVIPConfig() {
-      db.ref('settings/vip').once('value', (snapshot) => {
-        const saved = snapshot.val();
-        if (saved) {
-          vipConfig = saved;
-        }
-        renderVIPConfig();
-      });
-    }
-
-    function renderVIPConfig() {
-      const container = document.getElementById('vipConfigList');
-      let html = '<div class="vip-row header"><span>VIP Level</span><span>Required Spend</span><span>Daily</span><span>Weekly</span><span>Monthly</span></div>';
-      
-      vipConfig.forEach((vip, index) => {
-        html += `
-          <div class="vip-row">
-            <span>VIP ${vip.level}</span>
-            <div><input type="number" id="req_${index}" class="commission-input" value="${vip.requiredSpend}"></div>
-            <div><input type="number" id="daily_${index}" class="commission-input" value="${vip.dailyReward}"></div>
-            <div><input type="number" id="weekly_${index}" class="commission-input" value="${vip.weeklyReward}"></div>
-            <div><input type="number" id="monthly_${index}" class="commission-input" value="${vip.monthlyReward}"></div>
-          </div>
-        `;
-      });
-      
-      container.innerHTML = html;
-    }
-
-    function saveVIPConfig() {
-      const newConfig = [];
-      for (let i = 0; i < vipConfig.length; i++) {
-        newConfig.push({
-          level: vipConfig[i].level,
-          requiredSpend: parseInt(document.getElementById(`req_${i}`).value),
-          dailyReward: parseInt(document.getElementById(`daily_${i}`).value),
-          weeklyReward: parseInt(document.getElementById(`weekly_${i}`).value),
-          monthlyReward: parseInt(document.getElementById(`monthly_${i}`).value)
-        });
-      }
-      vipConfig = newConfig;
-      db.ref('settings/vip').set(vipConfig);
-      showToast('VIP configuration saved successfully');
-    }
-
-    function updateVIPDistribution() {
-      const distribution = {};
-      Object.values(allUsers).forEach(user => {
-        const vip = user.vipLevel || 0;
-        distribution[vip] = (distribution[vip] || 0) + 1;
-      });
-      
-      const tbody = document.getElementById('vipDistributionBody');
-      let html = '';
-      for (let i = 0; i <= 10; i++) {
-        const count = distribution[i] || 0;
-        const totalSpent = Object.values(allUsers)
-          .filter(u => (u.vipLevel || 0) === i)
-          .reduce((sum, u) => sum + (u.totalSpent || 0), 0);
-        const avg = count > 0 ? Math.floor(totalSpent / count) : 0;
-        html += `<tr><td>VIP ${i}</td><td>${count}</td><td>${formatNumber(totalSpent)}</td><td>${formatNumber(avg)}</td></tr>`;
-      }
-      tbody.innerHTML = html;
-    }
-
-    // ===== REWARDS CONTROL =====
-    function loadRewardsConfig() {
-      db.ref('settings/rewards').once('value', (snapshot) => {
-        const saved = snapshot.val();
-        if (saved) {
-          renderRewardsConfig(saved);
-        } else {
-          renderRewardsConfig(vipConfig);
-        }
-      });
-    }
-
-    function renderRewardsConfig(config) {
-      const container = document.getElementById('rewardsConfigList');
-      let html = '<div class="vip-row header"><span>VIP Level</span><span>Daily</span><span>Weekly</span><span>Monthly</span></div>';
-      
-      config.forEach((vip, index) => {
-        html += `
-          <div class="vip-row">
-            <span>VIP ${vip.level}</span>
-            <div><input type="number" id="rdaily_${index}" class="commission-input" value="${vip.dailyReward}"></div>
-            <div><input type="number" id="rweekly_${index}" class="commission-input" value="${vip.weeklyReward}"></div>
-            <div><input type="number" id="rmonthly_${index}" class="commission-input" value="${vip.monthlyReward}"></div>
-          </div>
-        `;
-      });
-      
-      container.innerHTML = html;
-    }
-
-    function saveRewardsConfig() {
-      const newConfig = [];
-      for (let i = 0; i < vipConfig.length; i++) {
-        newConfig.push({
-          level: vipConfig[i].level,
-          requiredSpend: vipConfig[i].requiredSpend,
-          dailyReward: parseInt(document.getElementById(`rdaily_${i}`).value),
-          weeklyReward: parseInt(document.getElementById(`rweekly_${i}`).value),
-          monthlyReward: parseInt(document.getElementById(`rmonthly_${i}`).value)
-        });
-      }
-      db.ref('settings/rewards').set(newConfig);
-      showToast('Rewards configuration saved successfully');
-    }
-
-    function populatePlayerSelect() {
-      const select = document.getElementById('manualRewardPlayer');
-      if (!select) return;
-      select.innerHTML = '<option value="">Select Player</option>';
-      Object.entries(allUsers).forEach(([id, user]) => {
-        select.innerHTML += `<option value="${id}">${escapeHtml(user.username)} (VIP ${user.vipLevel || 0})</option>`;
-      });
-    }
-
-    async function grantManualReward() {
-      const userId = document.getElementById('manualRewardPlayer').value;
-      const rewardType = document.getElementById('manualRewardType').value;
-      
-      if (!userId) {
-        showToast('Please select a player', true);
-        return;
-      }
-      
-      const user = allUsers[userId];
-      const vipRewards = vipConfig.find(v => v.level === (user.vipLevel || 0));
-      
-      let amount = 0;
-      if (rewardType === 'daily') amount = vipRewards.dailyReward;
-      else if (rewardType === 'weekly') amount = vipRewards.weeklyReward;
-      else if (rewardType === 'monthly') amount = vipRewards.monthlyReward;
-      
-      if (amount === 0) {
-        showToast('Invalid reward type', true);
-        return;
-      }
-      
-      // Add coins to player
-      const newBalance = (user.coins || 0) + amount;
-      await db.ref('users/' + userId).update({ coins: newBalance });
-      
-      // Record reward claim
-      await db.ref('reward-claims').push().set({
-        userId: userId,
-        username: user.username,
-        rewardType: rewardType,
-        amount: amount,
-        adminGranted: true,
-        timestamp: new Date().toISOString()
-      });
-      
-      showToast(`Granted ${amount} coins to ${user.username} as ${rewardType} reward`);
-      refreshAllData();
-    }
-
-    function updateRewardHistory() {
-      db.ref('reward-claims').limitToLast(50).on('value', (snapshot) => {
-        const claims = snapshot.val();
-        const tbody = document.getElementById('rewardHistoryBody');
-        if (!claims) {
-          tbody.innerHTML = '<tr><td colspan="4" class="loading">No reward claims yet</td></tr>';
-          return;
-        }
-        
-        let html = '';
-        Object.values(claims).reverse().forEach(claim => {
-          html += `
-            <tr>
-              <td>${escapeHtml(claim.username)}</td>
-              <td><span class="status approved">${claim.rewardType}</span></td>
-              <td class="positive">${formatNumber(claim.amount)}</td>
-              <td>${new Date(claim.timestamp).toLocaleString()}</td>
-            </tr>
-          `;
-        });
-        tbody.innerHTML = html;
-      });
-    }
-
-    async function resetPlayerRewards(userId) {
-      if (confirm('Reset all reward claims for this player?')) {
-        await db.ref('users/' + userId + '/rewards').set({
-          lastDailyClaim: null,
-          lastWeeklyClaim: null,
-          lastMonthlyClaim: null
-        });
-        showToast('Player rewards reset successfully');
-      }
-    }
-
-    // ===== TOP REFERRERS =====
     function updateTopReferrers() {
       const tbody = document.getElementById('topReferrersTableBody');
       const referrers = [];
@@ -1424,10 +1090,9 @@
         `;
       });
 
-      tbody.innerHTML = html || '<tr><td colspan="5" class="loading">No referrals yet</td></tr>';
+      tbody.innerHTML = html || '}<td colspan="5" class="loading">No referrals yet</td><\/tr>';
     }
 
-    // ===== ALL REFERRALS TABLE =====
     function updateAllReferralsTable() {
       const tbody = document.getElementById('allReferralsTableBody');
       let html = '';
@@ -1436,7 +1101,7 @@
         Object.entries(allReferrals).forEach(([id, ref]) => {
           const referrer = allUsers[ref.referrerId] || { username: 'Unknown' };
           const referred = allUsers[ref.referredUserId] || { username: 'Unknown' };
-          const commission = Math.floor((ref.depositAmount || 0) * 0.1);
+          const commission = Math.floor(ref.depositAmount ? ref.depositAmount * 0.05 : 0);
 
           html += `
             <tr>
@@ -1445,15 +1110,44 @@
               <td>Level ${ref.level || 1}</td>
               <td class="positive">${formatNumber(commission)}</td>
               <td>${ref.timestamp ? new Date(ref.timestamp).toLocaleDateString() : '-'}</td>
+              <td><span class="status ${ref.status === 'active' ? 'approved' : 'pending'}">${ref.status || 'active'}</span></td>
             </tr>
           `;
         });
       }
 
-      tbody.innerHTML = html || '<tr><td colspan="5" class="loading">No referrals found</td></tr>';
+      tbody.innerHTML = html || '}<td colspan="6" class="loading">No referrals found</td><\/tr>';
     }
 
-    // ===== WITHDRAWALS =====
+    function searchReferrals() {
+      const term = document.getElementById('referralSearch').value.toLowerCase();
+      const tbody = document.getElementById('allReferralsTableBody');
+      let html = '';
+
+      if (allReferrals) {
+        Object.entries(allReferrals).forEach(([id, ref]) => {
+          const referrer = allUsers[ref.referrerId] || { username: 'Unknown' };
+          const referred = allUsers[ref.referredUserId] || { username: 'Unknown' };
+
+          if (referrer.username.toLowerCase().includes(term) || referred.username.toLowerCase().includes(term)) {
+            const commission = Math.floor(ref.depositAmount ? ref.depositAmount * 0.05 : 0);
+            html += `
+              <tr>
+                <td>${escapeHtml(referrer.username)}</td>
+                <td>${escapeHtml(referred.username)}</td>
+                <td>Level ${ref.level || 1}</td>
+                <td class="positive">${formatNumber(commission)}</td>
+                <td>${ref.timestamp ? new Date(ref.timestamp).toLocaleDateString() : '-'}</td>
+                <td><span class="status ${ref.status === 'active' ? 'approved' : 'pending'}">${ref.status || 'active'}</span></td>
+              </tr>
+            `;
+          }
+        });
+      }
+
+      tbody.innerHTML = html || '}<td colspan="6" class="loading">No referrals found</td><\/tr>';
+    }
+
     function updateWithdrawalsTables() {
       const pendingBody = document.getElementById('pendingWithdrawalsTableBody');
       const historyBody = document.getElementById('historyTableBody');
@@ -1471,9 +1165,9 @@
               <tr>
                 <td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(user.username)}</div></td>
                 <td class="positive">${formatNumber(w.amount)}</td>
-                <td>${w.method || 'N/A'}</td>
+                <td>${w.method}</td>
                 <td>${escapeHtml(w.accountNumber || '-')}</td>
-                <td>${new Date(w.timestamp).toLocaleString()}</td>
+                <td>${new Date(w.timestamp).toLocaleTimeString()}</td>
                 <td>
                   <div class="action-buttons">
                     <button class="btn-approve" onclick="approveWithdrawal('${id}')">Approve</button>
@@ -1488,7 +1182,7 @@
               <tr>
                 <td>${escapeHtml(user.username)}</td>
                 <td class="${w.status === 'approved' ? 'positive' : ''}">${formatNumber(w.amount)}</td>
-                <td>${w.method || 'N/A'}</td>
+                <td>${w.method}</td>
                 <td><span class="status ${statusClass}">${w.status}</span></td>
                 <td>${new Date(w.timestamp).toLocaleString()}</td>
               </tr>
@@ -1497,8 +1191,8 @@
         });
       }
 
-      pendingBody.innerHTML = hasPending ? pendingHtml : '<tr><td colspan="6" class="loading">No pending withdrawals</td></tr>';
-      historyBody.innerHTML = historyHtml || '<tr><td colspan="5" class="loading">No withdrawal history</td></tr>';
+      pendingBody.innerHTML = hasPending ? pendingHtml : '}<td colspan="6" class="loading">No pending withdrawals</td><\/tr>';
+      historyBody.innerHTML = historyHtml || '}<td colspan="5" class="loading">No withdrawal history</td><\/tr>';
     }
 
     async function approveWithdrawal(withdrawId) {
@@ -1518,14 +1212,12 @@
           const userSnapshot = await userRef.once('value');
           const userData = userSnapshot.val();
 
-          if (userData && (userData.coins || 0) >= withdrawal.amount) {
-            await userRef.update({
-              coins: (userData.coins || 0) - withdrawal.amount
-            });
-          }
+          await userRef.update({
+            coins: (userData.coins || 0) - withdrawal.amount
+          });
 
           sendNotificationToPlayer(withdrawal.userId, 'Withdrawal Approved', `Your withdrawal of ${formatNumber(withdrawal.amount)} coins has been approved!`, '✅');
-          showToast('Withdrawal approved');
+          alert('Withdrawal approved');
         }
       }
     }
@@ -1544,7 +1236,7 @@
     async function confirmRejectWithdrawal() {
       const reason = document.getElementById('rejectReasonText').value.trim();
       if (!reason) {
-        showToast('Please enter a reason', true);
+        alert('Please enter a reason');
         return;
       }
 
@@ -1560,13 +1252,12 @@
         });
 
         sendNotificationToPlayer(withdrawal.userId, 'Withdrawal Rejected', `Your withdrawal was rejected. Reason: ${reason}`, '❌');
-        showToast('Withdrawal rejected');
+        alert('Withdrawal rejected');
       }
 
       closeRejectModal();
     }
 
-    // ===== SUPPORT TICKETS =====
     function updateTicketsTable() {
       const tbody = document.getElementById('ticketsTableBody');
       let html = '';
@@ -1582,15 +1273,13 @@
               <td style="max-width: 300px;">${escapeHtml(ticket.message.substring(0, 100))}${ticket.message.length > 100 ? '...' : ''}</td>
               <td>${new Date(ticket.timestamp).toLocaleString()}</td>
               <td><span class="status ${ticket.status === 'pending' ? 'pending' : 'approved'}">${ticket.status}</span></td>
-              <td>
-                <button class="btn-reply" onclick="openReplyModal('${id}')">Reply</button>
-              </td>
+              <td><button class="btn-reply" onclick="openReplyModal('${id}')">Reply</button></td>
             </tr>
           `;
         });
       }
 
-      tbody.innerHTML = html || '<tr><td colspan="5" class="loading">No support tickets</td></tr>';
+      tbody.innerHTML = html || '}<td colspan="5" class="loading">No support tickets</td><\/tr>';
     }
 
     function openReplyModal(ticketId) {
@@ -1607,7 +1296,7 @@
     async function sendTicketReply() {
       const reply = document.getElementById('replyMessageText').value.trim();
       if (!reply) {
-        showToast('Please enter a reply', true);
+        alert('Please enter a reply');
         return;
       }
 
@@ -1629,13 +1318,72 @@
         });
 
         sendNotificationToPlayer(ticket.userId, 'Support Reply', `Admin replied: "${reply.substring(0, 50)}..."`, '💬');
-        showToast('Reply sent');
+        alert('Reply sent');
       }
 
       closeReplyModal();
     }
 
-    // ===== NOTIFICATIONS =====
+    function loadMissionsList() {
+      const container = document.getElementById('missionsList');
+      let html = '';
+
+      Object.entries(missionRewards).forEach(([id, mission]) => {
+        html += `
+          <div class="mission-item">
+            <div class="mission-header">
+              <span class="mission-title">${mission.title}</span>
+              <span class="mission-reward">${mission.min}-${mission.max} Coins</span>
+            </div>
+            <div class="mission-desc">${mission.desc}</div>
+            <button class="btn-add" style="margin-top: 0.5rem;" onclick="editMission('${id}')">Edit Reward</button>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function editMission(missionId) {
+      currentMissionId = missionId;
+      const mission = missionRewards[missionId];
+      if (mission) {
+        document.getElementById('missionModalTitle').textContent = `Edit ${mission.title}`;
+        document.getElementById('missionMinReward').value = mission.min;
+        document.getElementById('missionMaxReward').value = mission.max;
+        document.getElementById('missionModal').classList.add('active');
+      }
+    }
+
+    function closeMissionModal() {
+      document.getElementById('missionModal').classList.remove('active');
+      currentMissionId = null;
+    }
+
+    function saveMissionReward() {
+      const minReward = parseInt(document.getElementById('missionMinReward').value);
+      const maxReward = parseInt(document.getElementById('missionMaxReward').value);
+
+      if (minReward >= maxReward) {
+        alert('Min reward must be less than max reward');
+        return;
+      }
+
+      if (currentMissionId && missionRewards[currentMissionId]) {
+        missionRewards[currentMissionId].min = minReward;
+        missionRewards[currentMissionId].max = maxReward;
+        
+        db.ref('settings/missions/' + currentMissionId).set({
+          min: minReward,
+          max: maxReward
+        });
+
+        alert(`Mission reward updated! ${minReward}-${maxReward} coins`);
+        loadMissionsList();
+        closeMissionModal();
+      }
+    }
+
     function sendNotificationToPlayer(userId, title, message, icon) {
       const notifRef = db.ref('notifications/' + userId).push();
       notifRef.set({
@@ -1653,7 +1401,7 @@
       const icon = document.getElementById('notifyIcon').value;
 
       if (!title || !message) {
-        showToast('Please enter both title and message', true);
+        alert('Please enter both title and message');
         return;
       }
 
@@ -1663,12 +1411,11 @@
         count++;
       });
 
-      showToast(`Notification sent to ${count} players`);
+      alert(`Notification sent to ${count} players`);
       document.getElementById('notifyTitle').value = '';
       document.getElementById('notifyMessage').value = '';
     }
 
-    // ===== COIN MANAGEMENT =====
     function openCoinModal(action, userId) {
       currentCoinAction = action;
       currentUserId = userId;
@@ -1686,7 +1433,7 @@
     async function processCoinAction() {
       const amount = parseInt(document.getElementById('coinAmount').value);
       if (!amount || amount < 1) {
-        showToast('Please enter a valid amount', true);
+        alert('Please enter a valid amount');
         return;
       }
 
@@ -1696,60 +1443,29 @@
 
       if (currentCoinAction === 'add') {
         await userRef.update({ coins: (userData.coins || 0) + amount });
-        showToast(`Added ${amount} coins to ${userData.username}`);
-        
-        db.ref('transactions').push().set({
-          userId: currentUserId,
-          username: userData.username,
-          amount: amount,
-          coins: amount,
-          type: 'admin_add',
-          timestamp: new Date().toISOString()
-        });
+        alert(`Added ${amount} coins to ${userData.username}`);
       } else {
         const newBalance = (userData.coins || 0) - amount;
         if (newBalance < 0) {
-          showToast('Insufficient coins', true);
+          alert('Insufficient coins');
           return;
         }
         await userRef.update({ coins: newBalance });
-        showToast(`Removed ${amount} coins from ${userData.username}`);
-        
-        db.ref('transactions').push().set({
-          userId: currentUserId,
-          username: userData.username,
-          amount: amount,
-          coins: -amount,
-          type: 'admin_remove',
-          timestamp: new Date().toISOString()
-        });
+        alert(`Removed ${amount} coins from ${userData.username}`);
       }
 
       closeCoinModal();
     }
 
-    // ===== GENERAL SETTINGS =====
-    function loadGeneralSettings() {
-      db.ref('settings/general').once('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          document.getElementById('commissionRate').value = data.commissionRate || 10;
-          document.getElementById('depositBonusRate').value = data.depositBonusRate || 2.5;
-          document.getElementById('signupBonus').value = data.signupBonus || 50;
-          document.getElementById('minDepositCommission').value = data.minDepositCommission || 3000;
-        }
-      });
-    }
-
-    function saveGeneralSettings() {
+    function saveCommissionSettings() {
       const settings = {
-        commissionRate: parseFloat(document.getElementById('commissionRate').value),
-        depositBonusRate: parseFloat(document.getElementById('depositBonusRate').value),
-        signupBonus: parseInt(document.getElementById('signupBonus').value),
-        minDepositCommission: parseInt(document.getElementById('minDepositCommission').value)
+        level1: parseFloat(document.getElementById('commission1').value),
+        level2: parseFloat(document.getElementById('commission2').value),
+        level3: parseFloat(document.getElementById('commission3').value),
+        signupBonus: parseInt(document.getElementById('signupBonus').value)
       };
-      db.ref('settings/general').set(settings);
-      showToast('General settings saved');
+      db.ref('settings/commission').set(settings);
+      alert('Commission settings saved');
     }
 
     function saveMilestoneSettings() {
@@ -1760,39 +1476,36 @@
         50: parseInt(document.getElementById('milestone50').value)
       };
       db.ref('settings/milestones').set(milestones);
-      showToast('Milestone rewards saved');
+      alert('Milestone rewards saved');
     }
 
-    function loadMilestoneSettings() {
-      db.ref('settings/milestones').once('value', snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          document.getElementById('milestone5').value = data[5] || 500;
-          document.getElementById('milestone10').value = data[10] || 1500;
-          document.getElementById('milestone25').value = data[25] || 5000;
-          document.getElementById('milestone50').value = data[50] || 15000;
-        }
-      });
-    }
-
-    // ===== TAB NAVIGATION =====
     function setupTabs() {
       document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.addEventListener('click', () => {
           const sectionId = tab.getAttribute('data-section');
-          
           document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
           tab.classList.add('active');
-          
           document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
           document.getElementById(sectionId + 'Section').classList.add('active');
         });
       });
     }
 
-    // ===== MAKE FUNCTIONS GLOBAL =====
-    window.verifyAdmin = verifyAdmin;
-    window.refreshAllData = refreshAllData;
+    let autoRefreshInterval;
+    function startAutoRefresh() {
+      if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+      autoRefreshInterval = setInterval(() => {
+        updateWithdrawalsTables();
+        updateTicketsTable();
+        updateRecentActivity();
+      }, 5000);
+    }
+
+    // Make functions global
+    window.adminLogin = adminLogin;
+    window.adminLogout = adminLogout;
+    window.searchPlayers = searchPlayers;
+    window.searchReferrals = searchReferrals;
     window.openCoinModal = openCoinModal;
     window.closeCoinModal = closeCoinModal;
     window.processCoinAction = processCoinAction;
@@ -1804,22 +1517,28 @@
     window.closeReplyModal = closeReplyModal;
     window.sendTicketReply = sendTicketReply;
     window.sendBroadcastNotification = sendBroadcastNotification;
-    window.searchPlayers = searchPlayers;
-    window.saveVIPConfig = saveVIPConfig;
-    window.saveRewardsConfig = saveRewardsConfig;
-    window.grantManualReward = grantManualReward;
-    window.resetPlayerRewards = resetPlayerRewards;
-    window.saveGeneralSettings = saveGeneralSettings;
+    window.saveCommissionSettings = saveCommissionSettings;
     window.saveMilestoneSettings = saveMilestoneSettings;
-    window.loadVIPConfig = loadVIPConfig;
-    window.loadRewardsConfig = loadRewardsConfig;
+    window.editMission = editMission;
+    window.saveMissionReward = saveMissionReward;
+    window.closeMissionModal = closeMissionModal;
 
-    // ===== INITIALIZATION =====
-    document.addEventListener('DOMContentLoaded', () => {
-      setupTabs();
-      loadGeneralSettings();
-      loadMilestoneSettings();
-      console.log("✅ Admin Dashboard Ready");
+    // Check if already logged in
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const adminRef = db.ref('admins/' + user.uid);
+        const snapshot = await adminRef.once('value');
+        if (snapshot.val() === true) {
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboardContent').style.display = 'block';
+          document.getElementById('adminEmailDisplay').textContent = user.email;
+          loadAllData();
+          setupTabs();
+          startAutoRefresh();
+        } else {
+          await auth.signOut();
+        }
+      }
     });
   </script>
 </body>
