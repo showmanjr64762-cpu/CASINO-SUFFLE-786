@@ -105,6 +105,9 @@
     .refresh-btn:hover { background: rgba(212, 175, 55, 0.3); }
     .wager-info { font-size: 0.65rem; color: #ffaa44; }
     .wager-met { font-size: 0.65rem; color: #00ff88; }
+    .progress-bar-wager { height: 4px; background: #1a1f2e; border-radius: 2px; overflow: hidden; margin-top: 0.3rem; }
+    .progress-fill-wager { height: 100%; background: linear-gradient(90deg, #ffd700, #10b981); width: 0%; transition: width 0.3s; border-radius: 2px; }
+    .payment-request-card { background: rgba(212,175,55,0.1); border-left: 3px solid #ffd700; margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
@@ -139,6 +142,7 @@
 
     <div class="nav-tabs">
       <button class="nav-tab active" data-section="dashboard">📊 Dashboard</button>
+      <button class="nav-tab" data-section="paymentRequests">💳 Payment Requests</button>
       <button class="nav-tab" data-section="players">👥 Players</button>
       <button class="nav-tab" data-section="loginRecords">🔐 Login Records</button>
       <button class="nav-tab" data-section="withdrawals">💰 Withdrawals</button>
@@ -157,22 +161,41 @@
           <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Players</span><div class="stat-icon"><i class="fas fa-users"></i></div></div><div class="stat-value" id="totalPlayers">0</div></div>
           <div class="stat-card"><div class="stat-header"><span class="stat-title">Online Now</span><div class="stat-icon"><i class="fas fa-circle"></i></div></div><div class="stat-value" id="onlinePlayers">0</div></div>
           <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Coins</span><div class="stat-icon"><i class="fas fa-coins"></i></div></div><div class="stat-value" id="totalCoins">0</div></div>
-          <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Deposits</span><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div><div class="stat-value" id="totalDeposits">0</div></div>
+          <div class="stat-card"><div class="stat-header"><span class="stat-title">Pending Payments</span><div class="stat-icon"><i class="fas fa-clock"></i></div></div><div class="stat-value" id="pendingPayments">0</div></div>
         </div>
         <div class="stats-grid">
+          <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Deposits</span><div class="stat-icon"><i class="fas fa-arrow-down"></i></div></div><div class="stat-value" id="totalDeposits">0</div></div>
           <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Spent</span><div class="stat-icon"><i class="fas fa-chart-line"></i></div></div><div class="stat-value" id="totalSpent">0</div></div>
           <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Wagered</span><div class="stat-icon"><i class="fas fa-dice"></i></div></div><div class="stat-value" id="totalWagered">0</div></div>
           <div class="stat-card"><div class="stat-header"><span class="stat-title">Pending Withdrawals</span><div class="stat-icon"><i class="fas fa-clock"></i></div></div><div class="stat-value" id="pendingWithdrawals">0</div></div>
-          <div class="stat-card"><div class="stat-header"><span class="stat-title">Total Referrals</span><div class="stat-icon"><i class="fas fa-link"></i></div></div><div class="stat-value" id="totalReferrals">0</div></div>
         </div>
-        <div class="card"><div class="card-header"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2></div><div class="table-wrapper">  <table><thead> <tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th> </tr></thead><tbody id="recentActivityBody"> <tr><td colspan="4" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2></div><div class="table-wrapper"><table><thead><tr><th>Player</th><th>Action</th><th>Amount</th><th>Time</th></tr></thead><tbody id="recentActivityBody"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody></table></div></div>
+      </div>
+
+      <!-- Payment Requests Section -->
+      <div id="paymentRequestsSection" class="section">
+        <div class="card">
+          <div class="card-header"><h2><i class="fas fa-credit-card"></i> Pending Payment Requests</h2><span class="status pending" id="paymentPendingCount">0</span></div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Player</th><th>Amount (PKR)</th><th>Coins</th><th>Bonus</th><th>Total Coins</th><th>Player Number</th><th>Requested</th><th>Actions</th></tr></thead>
+              <tbody id="paymentRequestsBody"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-history"></i> Payment History</h2></div><div class="table-wrapper"><table><thead><tr><th>Player</th><th>Amount</th><th>Coins</th><th>Status</th><th>Processed By</th><th>Date</th></tr></thead><tbody id="paymentHistoryBody"><tr><td colspan="6" class="loading">No history</td></tr></tbody></table></div></div>
       </div>
 
       <!-- Players Section -->
       <div id="playersSection" class="section">
         <div class="card">
           <div class="card-header"><h2><i class="fas fa-users"></i> All Players</h2><div class="search-container"><input type="text" id="playerSearch" class="search-input" placeholder="Search by username or email..."><button class="search-btn" onclick="searchPlayers()"><i class="fas fa-search"></i> Search</button><button class="search-btn" onclick="resetPlayerSearch()"><i class="fas fa-sync-alt"></i> Reset</button></div></div>
-          <div class="table-wrapper"> <table><thead> <tr><th>Status</th><th>Player</th><th>Email</th><th>Password</th><th>Coins</th><th>Deposits</th><th>Spent</th><th>Wagered</th><th>VIP</th><th>Games</th><th>Last Active</th><th>Actions</th> </tr></thead><tbody id="playersTableBody"> <tr><td colspan="12" class="loading">Loading...</td></tr></tbody></table></div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Status</th><th>Player</th><th>Email</th><th>Password</th><th>Coins</th><th>Deposits</th><th>Spent</th><th>Wagered</th><th>Wager %</th><th>VIP</th><th>Games</th><th>Last Active</th><th>Actions</th></tr></thead>
+              <tbody id="playersTableBody"><tr><td colspan="13" class="loading">Loading...</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -180,21 +203,21 @@
       <div id="loginRecordsSection" class="section">
         <div class="card">
           <div class="card-header"><h2><i class="fas fa-history"></i> Player Login Records</h2><div class="search-container"><input type="text" id="loginRecordSearch" class="search-input" placeholder="Search by username or email..."><button class="search-btn" onclick="searchLoginRecords()"><i class="fas fa-search"></i> Search</button><button class="search-btn" onclick="resetLoginRecordSearch()"><i class="fas fa-sync-alt"></i> Reset</button></div></div>
-          <div class="table-wrapper"> <table><thead> <tr><th>Player</th><th>Email</th><th>Password</th><th>Last Login</th><th>Login Count</th><th>First Login</th><th>Status</th><th>Time Info</th> </tr></thead><tbody id="loginRecordsBody"> <tr><td colspan="8" class="loading">Loading...</td></tr></tbody></table></div>
+          <div class="table-wrapper"><table><thead><tr><th>Player</th><th>Email</th><th>Password</th><th>Last Login</th><th>Login Count</th><th>First Login</th><th>Status</th><th>Time Info</th></tr></thead><tbody id="loginRecordsBody"><tr><td colspan="8" class="loading">Loading...</td></tr></tbody></table></div>
         </div>
         <div class="card"><div class="card-header"><h2><i class="fas fa-calendar-alt"></i> Recent Login Activity</h2></div><div class="login-records" id="recentLoginRecords"></div></div>
       </div>
 
       <!-- Withdrawals Section -->
       <div id="withdrawalsSection" class="section">
-        <div class="card"><div class="card-header"><h2><i class="fas fa-clock"></i> Pending Withdrawals</h2><span class="status pending" id="pendingCount">0</span></div><div class="table-wrapper"> <table><thead> <tr><th>Player</th><th>Amount</th><th>Method</th><th>Account</th><th>Wager Status</th><th>Requested</th><th>Actions</th> </tr></thead><tbody id="pendingWithdrawalsTableBody"> <tr><td colspan="7" class="loading">Loading...</td></tr></tbody></table></div></div>
-        <div class="card"><div class="card-header"><h2><i class="fas fa-history"></i> Withdrawal History</h2></div><div class="table-wrapper"> <table><thead> <tr><th>Player</th><th>Amount</th><th>Method</th><th>Status</th><th>Processed By</th><th>Date</th> </tr></thead><tbody id="historyTableBody"> <tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-clock"></i> Pending Withdrawals</h2><span class="status pending" id="pendingCount">0</span></div><div class="table-wrapper"><table><thead><tr><th>Player</th><th>Amount</th><th>Method</th><th>Account</th><th>Wager Status</th><th>Requested</th><th>Actions</th></tr></thead><tbody id="pendingWithdrawalsTableBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-history"></i> Withdrawal History</h2></div><div class="table-wrapper"><table><thead><tr><th>Player</th><th>Amount</th><th>Method</th><th>Status</th><th>Processed By</th><th>Date</th></tr></thead><tbody id="historyTableBody"><tr><td colspan="6" class="loading">Loading...</td></tr></tbody></table></div></div>
       </div>
 
       <!-- VIP Management Section -->
       <div id="vipSection" class="section">
         <div class="card"><div class="card-header"><h2><i class="fas fa-crown"></i> VIP Level Configuration</h2><button class="refresh-btn" onclick="loadVIPConfig()">Load Config</button></div><div id="vipConfigList"></div><button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveVIPConfig()">Save VIP Configuration</button></div>
-        <div class="card"><div class="card-header"><h2><i class="fas fa-chart-simple"></i> Player VIP Distribution</h2></div><div class="table-wrapper"> <table><thead> <tr><th>VIP Level</th><th>Count</th><th>Total Spent</th><th>Average Spent</th> </tr></thead><tbody id="vipDistributionBody"> <tr><td colspan="4" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-chart-simple"></i> Player VIP Distribution</h2></div><div class="table-wrapper"><table><thead><tr><th>VIP Level</th><th>Count</th><th>Total Spent</th><th>Average Spent</th></tr></thead><tbody id="vipDistributionBody"><tr><td colspan="4" class="loading">Loading...</td></tr></tbody></table></div></div>
       </div>
 
       <!-- Rewards Control Section -->
@@ -205,8 +228,8 @@
 
       <!-- Referrals Section -->
       <div id="referralsSection" class="section">
-        <div class="card"><div class="card-header"><h2><i class="fas fa-trophy"></i> Top Referrers</h2></div><div class="table-wrapper"> <table><thead> <tr><th>Rank</th><th>Player</th><th>Referrals</th><th>Active</th><th>Earnings</th> </tr></thead><tbody id="topReferrersTableBody"> <tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table></div></div>
-        <div class="card"><div class="card-header"><h2><i class="fas fa-list"></i> All Referrals</h2></div><div class="table-wrapper"> <table><thead> <tr><th>Referrer</th><th>Referred User</th><th>Level</th><th>Commission</th><th>Date</th> </tr></thead><tbody id="allReferralsTableBody"> <tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-trophy"></i> Top Referrers</h2></div><div class="table-wrapper"><table><thead><tr><th>Rank</th><th>Player</th><th>Referrals</th><th>Active</th><th>Earnings</th></tr></thead><tbody id="topReferrersTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-list"></i> All Referrals</h2></div><div class="table-wrapper"><table><thead><tr><th>Referrer</th><th>Referred User</th><th>Level</th><th>Commission</th><th>Date</th></tr></thead><tbody id="allReferralsTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table></div></div>
       </div>
 
       <!-- Notifications Section -->
@@ -246,7 +269,7 @@
 
       <!-- Support Section -->
       <div id="supportSection" class="section">
-        <div class="card"><div class="card-header"><h2><i class="fas fa-headset"></i> Support Tickets</h2></div><div class="table-wrapper"> <table><thead> <tr><th>Player</th><th>Message</th><th>Sent</th><th>Status</th><th>Actions</th> </tr></thead><tbody id="ticketsTableBody"> <tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table></div></div>
+        <div class="card"><div class="card-header"><h2><i class="fas fa-headset"></i> Support Tickets</h2></div><div class="table-wrapper"><table><thead><tr><th>Player</th><th>Message</th><th>Sent</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ticketsTableBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody></table></div></div>
       </div>
 
       <!-- Settings Section -->
@@ -261,7 +284,7 @@
         </div>
         <div class="card">
           <div class="card-header"><h2><i class="fas fa-dice"></i> Wager System Settings</h2></div>
-          <div class="commission-row"><span>Wager Requirement Rate</span><div><input type="number" id="wagerRate" class="commission-input" value="60" step="5"> <span>%</span></div></div>
+          <div class="commission-row"><span>Wager Requirement Rate</span><div><input type="number" id="wagerRate" class="commission-input" value="70" step="5"> <span>%</span></div></div>
           <div class="commission-row"><span>First Withdrawal Wager Requirement</span><div><input type="number" id="firstWithdrawalWager" class="commission-input" value="5000"> <span>Coins</span></div></div>
           <button class="btn-add" style="width:100%; margin-top:1rem;" onclick="saveWagerSettings()">Save Wager Settings</button>
         </div>
@@ -272,9 +295,11 @@
             <div class="player-detail-card">
               <h4 id="wagerPlayerName">Player Name</h4>
               <div class="commission-row"><span>Current Coins:</span><span id="playerCoins" class="positive">0</span></div>
+              <div class="commission-row"><span>Total Deposits:</span><span id="playerDeposits">0</span></div>
               <div class="commission-row"><span>Total Wagered:</span><span id="playerWagered">0</span></div>
-              <div class="commission-row"><span>Required to Withdraw:</span><span id="playerRequiredWagered">0</span></div>
+              <div class="commission-row"><span>Required to Withdraw (70%):</span><span id="playerRequiredWagered">0</span></div>
               <div class="commission-row"><span>Wager Progress:</span><span id="playerWagerProgress">0%</span></div>
+              <div class="progress-bar-wager"><div class="progress-fill-wager" id="wagerProgressFill" style="width: 0%;"></div></div>
               <input type="range" id="wagerAdjustSlider" class="wager-slider" min="0" max="100000" step="1000" value="0" onchange="updateWagerPreview()">
               <div class="commission-row"><span>Adjust Wagered Amount:</span><div><input type="number" id="wagerAdjustAmount" class="commission-input" style="width: 120px;" value="0" step="1000" onchange="updateWagerSlider()"><span> Coins</span></div></div>
               <div class="action-buttons" style="margin-top: 1rem;"><button class="btn-add" onclick="adjustPlayerWager('add')">+ Add Wagered</button><button class="btn-remove" onclick="adjustPlayerWager('remove')">- Remove Wagered</button><button class="btn-wager" onclick="resetPlayerWagered()">Reset to 0</button></div>
@@ -323,12 +348,16 @@
     let allGameHistory = {};
     let allLoginRecords = {};
     let allTransactions = {};
+    let allPaymentRequests = {};
     let currentUserId = null;
     let currentWithdrawId = null;
     let currentTicketId = null;
     let currentCoinAction = null;
     let currentWagerPlayerId = null;
     let selectedPlayerForNotification = null;
+
+    // Wager Configuration (70%)
+    let wagerSettings = { rate: 0.70, firstWithdrawalRequirement: 5000 };
 
     // VIP Configuration
     let vipConfig = [
@@ -344,9 +373,6 @@
       { level: 9, requiredSpend: 10240000, dailyReward: 2560, weeklyReward: 17920, monthlyReward: 30720 },
       { level: 10, requiredSpend: 20480000, dailyReward: 5120, weeklyReward: 35840, monthlyReward: 61440 }
     ];
-
-    // Wager Settings
-    let wagerSettings = { rate: 0.6, firstWithdrawalRequirement: 5000 };
 
     // ===== HELPER FUNCTIONS =====
     function showToast(message, isError = false) {
@@ -371,29 +397,30 @@
       return div.innerHTML;
     }
 
-    function formatTimeAgo(dateString) {
-      if (!dateString) return 'Never';
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMins = Math.floor((now - date) / 60000);
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins} minutes ago`;
-      if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
-      return `${Math.floor(diffMins / 1440)} days ago`;
-    }
-
     function isUserOnline(user) {
       if (!user.lastActive) return false;
       return (new Date() - new Date(user.lastActive)) < 5 * 60 * 1000;
     }
 
-    function getTimeStatus(user) {
-      if (!user.lastActive) return { status: 'offline', text: 'Never logged in' };
-      const diffMins = Math.floor((new Date() - new Date(user.lastActive)) / 60000);
-      if (diffMins < 5) return { status: 'online', text: `Online now (${diffMins} min active)` };
-      if (diffMins < 60) return { status: 'offline', text: `Offline for ${diffMins} minutes` };
-      if (diffMins < 1440) return { status: 'offline', text: `Offline for ${Math.floor(diffMins / 60)} hours ${diffMins % 60} minutes` };
-      return { status: 'offline', text: `Offline for ${Math.floor(diffMins / 1440)} days` };
+    function getRequiredWagerForWithdrawal(user) {
+      const totalDeposits = user.totalDeposits || 0;
+      const requiredWager = totalDeposits * wagerSettings.rate;
+      const remainingWager = requiredWager - (user.totalWagered || 0);
+      return Math.max(0, remainingWager);
+    }
+
+    function getWagerProgress(user) {
+      const totalDeposits = user.totalDeposits || 0;
+      const requiredWager = totalDeposits * wagerSettings.rate;
+      const wagered = user.totalWagered || 0;
+      const progress = requiredWager > 0 ? (wagered / requiredWager) * 100 : 100;
+      return Math.min(100, Math.max(0, progress));
+    }
+
+    function sendNotificationToPlayer(userId, title, message, icon) {
+      db.ref('notifications/' + userId).push().set({
+        title, message, icon, read: false, timestamp: new Date().toISOString()
+      });
     }
 
     // ===== ADMIN AUTHENTICATION =====
@@ -406,7 +433,6 @@
         loadVIPConfig();
         loadRewardsConfig();
         loadWagerSettings();
-        loadTransactions();
         showToast('Admin access granted - Connected to Royal Match Database');
       } else {
         showToast('Invalid password', true);
@@ -422,46 +448,24 @@
       db.ref('referrals').on('value', (snapshot) => { allReferrals = snapshot.val() || {}; updateAllReferralsTable(); updateTopReferrers(); });
       db.ref('game-history').limitToLast(50).on('value', (snapshot) => { allGameHistory = snapshot.val() || {}; updateRecentActivity(); });
       db.ref('login-records').on('value', (snapshot) => { allLoginRecords = snapshot.val() || {}; updateLoginRecords(); updateRecentLoginRecords(); });
+      db.ref('payment-requests').on('value', (snapshot) => { allPaymentRequests = snapshot.val() || {}; updatePaymentRequests(); });
+      db.ref('transactions').on('value', (snapshot) => { allTransactions = snapshot.val() || {}; updateStats(); });
     }
 
-    function loadTransactions() { db.ref('transactions').on('value', (snapshot) => { allTransactions = snapshot.val() || {}; updateDepositHistory(); }); }
-    function refreshAllData() { showToast("Refreshing data..."); loadAllData(); loadTransactions(); }
-
-    // ===== DEPOSIT HISTORY =====
-    function updateDepositHistory() {
-      const container = document.getElementById('depositHistoryBody');
-      if (!container) return;
-      let deposits = [];
-      if (allTransactions) {
-        Object.entries(allTransactions).forEach(([id, tx]) => {
-          if (tx.type === 'purchase') deposits.push(tx);
-        });
-      }
-      deposits.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      deposits = deposits.slice(0, 50);
-      container.innerHTML = deposits.length === 0 ? '<div class="login-record-item">No deposit history</div>' : deposits.map(tx => `
-        <div class="login-record-item">
-          <span><span class="user-avatar" style="display:inline-block; width:20px; height:20px; font-size:0.6rem;">👤</span> ${escapeHtml(tx.username || 'Unknown')}</span>
-          <span>₨${formatNumber(tx.amount || 0)}</span>
-          <span>+${formatNumber(tx.totalCoins || tx.coins || 0)} coins</span>
-          <span class="time-badge">${tx.timestamp ? new Date(tx.timestamp).toLocaleString() : 'Unknown'}</span>
-        </div>
-      `).join('');
-    }
+    function refreshAllData() { showToast("Refreshing data..."); loadAllData(); }
 
     // ===== UPDATE STATS =====
     function updateStats() {
-      let onlineCount = 0, totalCoins = 0, totalSpent = 0, totalWagered = 0, totalDeposits = 0, totalReferrals = 0, pendingWithdrawals = 0, vip5Count = 0;
+      let onlineCount = 0, totalCoins = 0, totalSpent = 0, totalWagered = 0, totalDeposits = 0, pendingWithdrawals = 0, pendingPayments = 0;
       Object.values(allUsers).forEach(user => { 
         totalCoins += user.coins || 0; 
         totalSpent += user.totalSpent || 0; 
         totalWagered += user.totalWagered || 0; 
-        totalDeposits += user.totalDeposits || 0;
-        totalReferrals += user.referralCount || 0; 
+        totalDeposits += user.totalDeposits || 0; 
         if (isUserOnline(user)) onlineCount++; 
-        if ((user.vipLevel || 0) >= 5) vip5Count++; 
       });
       Object.values(allWithdrawals).forEach(w => { if (w.status === 'pending') pendingWithdrawals++; });
+      Object.values(allPaymentRequests).forEach(p => { if (p.status === 'pending') pendingPayments++; });
       document.getElementById('totalPlayers').textContent = Object.keys(allUsers).length;
       document.getElementById('onlinePlayers').textContent = onlineCount;
       document.getElementById('totalCoins').textContent = formatNumber(totalCoins);
@@ -469,54 +473,91 @@
       document.getElementById('totalWagered').textContent = formatNumber(totalWagered);
       document.getElementById('totalDeposits').textContent = formatNumber(totalDeposits);
       document.getElementById('pendingWithdrawals').textContent = pendingWithdrawals;
-      document.getElementById('totalReferrals').textContent = totalReferrals;
-      document.getElementById('vip5Count').textContent = vip5Count;
+      document.getElementById('pendingPayments').textContent = pendingPayments;
     }
 
     function updateRecentActivity() {
       const tbody = document.getElementById('recentActivityBody');
       let activities = [];
-      if (allGameHistory) Object.values(allGameHistory).forEach(game => { 
-        if (game.username) activities.push({ 
-          player: game.username, 
-          action: game.result === 'win' ? '🎮 Won Game' : (game.result === 'maxwin' ? '🏆 Max Win!' : '💣 Lost Game'), 
-          amount: game.winAmount || game.bet || 0, 
-          time: game.timestamp 
-        }); 
-      });
-      if (allTransactions) Object.values(allTransactions).forEach(tx => {
-        if (tx.type === 'purchase' && tx.username) activities.push({
-          player: tx.username,
-          action: '💰 Purchased Coins',
-          amount: tx.amount || 0,
-          time: tx.timestamp
-        });
-      });
-      if (allWithdrawals) Object.values(allWithdrawals).forEach(w => {
-        if (w.username && w.status === 'approved') activities.push({
-          player: w.username,
-          action: '💸 Withdrawal Approved',
-          amount: w.amount || 0,
-          time: w.processedAt || w.timestamp
-        });
-      });
+      if (allGameHistory) Object.values(allGameHistory).forEach(game => { if (game.username) activities.push({ player: game.username, action: game.result === 'win' ? '🎮 Won Game' : (game.result === 'maxwin' ? '🏆 Max Win!' : '💣 Lost Game'), amount: game.winAmount || game.bet || 0, time: game.timestamp }); });
+      if (allTransactions) Object.values(allTransactions).forEach(tx => { if (tx.type === 'purchase' && tx.username) activities.push({ player: tx.username, action: '💰 Purchased Coins', amount: tx.amount || 0, time: tx.timestamp }); });
+      if (allPaymentRequests) Object.values(allPaymentRequests).forEach(p => { if (p.username && p.status === 'approved') activities.push({ player: p.username, action: '✅ Payment Approved', amount: p.amount || 0, time: p.processedAt || p.timestamp }); });
       activities.sort((a, b) => new Date(b.time) - new Date(a.time));
       activities = activities.slice(0, 15);
-      tbody.innerHTML = activities.length === 0 ? ' <td colspan="4" class="loading">No recent activity<\/td><\/tr>' : activities.map(a => `   <tr><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(a.player)}</div><\/td><td>${a.action}<\/td><td class="positive">${formatNumber(a.amount)}<\/td><td>${a.time ? new Date(a.time).toLocaleString() : 'Just now'}<\/td><\/tr>`).join('');
+      tbody.innerHTML = activities.length === 0 ? '<tr><td colspan="4" class="loading">No recent activity</td></tr>' : activities.map(a => `<tr><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(a.player)}</div></td><td>${a.action}</td><td class="positive">${formatNumber(a.amount)}</td><td>${a.time ? new Date(a.time).toLocaleString() : 'Just now'}</td></tr>`).join('');
+    }
+
+    // ===== PAYMENT REQUESTS =====
+    function updatePaymentRequests() {
+      const pendingBody = document.getElementById('paymentRequestsBody');
+      const historyBody = document.getElementById('paymentHistoryBody');
+      let pendingHtml = '', historyHtml = '', pendingCount = 0;
+      if (allPaymentRequests) Object.entries(allPaymentRequests).forEach(([id, p]) => {
+        const user = allUsers[p.userId] || { username: p.username || 'Unknown' };
+        if (p.status === 'pending') {
+          pendingCount++;
+          pendingHtml += `<tr class="payment-request-card"><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(user.username)}</div></td><td class="positive">₨${formatNumber(p.amount)}</td><td class="positive">${formatNumber(p.coins)}</td><td class="positive">+${formatNumber(p.bonusCoins)}</td><td class="positive">${formatNumber(p.totalCoins)}</td><td><small>${escapeHtml(p.playerNumber)}</small></td><td>${new Date(p.timestamp).toLocaleString()}</td><td><div class="action-buttons"><button class="btn-approve" onclick="approvePayment('${id}', ${p.amount}, ${p.coins}, ${p.bonusCoins}, ${p.totalCoins}, '${p.userId}')">Approve</button><button class="btn-reject" onclick="rejectPayment('${id}', '${p.userId}')">Reject</button></div></td></tr>`;
+        } else {
+          historyHtml += `<tr><td>${escapeHtml(user.username)}</td><td class="positive">₨${formatNumber(p.amount)}</td><td class="positive">${formatNumber(p.coins)}</td><td><span class="status ${p.status}">${p.status}</span></td><td>${p.processedBy || 'System'}</td><td>${new Date(p.timestamp).toLocaleString()}</td></tr>`;
+        }
+      });
+      document.getElementById('paymentPendingCount').textContent = pendingCount;
+      pendingBody.innerHTML = pendingHtml || '<tr><td colspan="8" class="loading">No pending payment requests</td></tr>';
+      historyBody.innerHTML = historyHtml || '<tr><td colspan="6" class="loading">No payment history</td></tr>';
+    }
+
+    async function approvePayment(requestId, amount, coins, bonusCoins, totalCoins, userId) {
+      if (confirm(`Approve payment of ₨${amount} for ${formatNumber(totalCoins)} coins?`)) {
+        const requestRef = db.ref('payment-requests/' + requestId);
+        const snapshot = await requestRef.once('value');
+        if (snapshot.val() && snapshot.val().status === 'pending') {
+          await requestRef.update({ status: 'approved', processedBy: 'Admin', processedAt: new Date().toISOString() });
+          const userRef = db.ref('users/' + userId);
+          const userData = (await userRef.once('value')).val();
+          await userRef.update({ 
+            coins: (userData.coins || 0) + totalCoins,
+            totalDeposits: (userData.totalDeposits || 0) + amount,
+            totalSpent: (userData.totalSpent || 0) + amount
+          });
+          sendNotificationToPlayer(userId, '✅ Payment Approved', `Your payment of ₨${amount} has been approved! +${formatNumber(totalCoins)} coins added.`, '✅');
+          showToast('Payment approved and coins added');
+        }
+      }
+    }
+
+    async function rejectPayment(requestId, userId) {
+      if (confirm('Reject this payment request?')) {
+        const requestRef = db.ref('payment-requests/' + requestId);
+        await requestRef.update({ status: 'rejected', processedBy: 'Admin', processedAt: new Date().toISOString() });
+        sendNotificationToPlayer(userId, '❌ Payment Rejected', 'Your payment request was rejected. Please contact support.', '❌');
+        showToast('Payment rejected');
+      }
     }
 
     // ===== PLAYERS TABLE =====
     function updatePlayersTable() {
       const tbody = document.getElementById('playersTableBody');
-      if (Object.keys(allUsers).length === 0) { tbody.innerHTML = '  <td colspan="12" class="loading">No players found<\/td><\/tr>'; return; }
+      if (Object.keys(allUsers).length === 0) { tbody.innerHTML = '<tr><td colspan="13" class="loading">No players found</td></tr>'; return; }
       let html = '';
       Object.entries(allUsers).forEach(([id, user]) => {
-        const timeStatus = getTimeStatus(user);
-        const online = timeStatus.status === 'online';
+        const online = isUserOnline(user);
+        const wagerProgress = getWagerProgress(user);
         const userPassword = user.password || (user.email ? user.email.split('@')[0] + '123' : 'No password');
-        const userDeposits = user.totalDeposits || 0;
-        const userSpent = user.totalSpent || 0;
-        html += `<tr><td><span class="online-indicator"><span class="${online ? 'online-dot' : 'offline-dot'}"></span></span><\/td><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div><\/td><td><small>${escapeHtml(user.email || 'N/A')}</small><\/td><td><span class="password-cell">${userPassword}</span><\/td><td class="positive">${formatNumber(user.coins || 0)}<\/td><td class="positive">${formatNumber(userDeposits)}<\/td><td class="${userSpent > userDeposits ? 'negative' : 'positive'}">${formatNumber(userSpent)}<\/td><td>${formatNumber(user.totalWagered || 0)}<\/td><td><span class="status approved">VIP ${user.vipLevel || 0}<\/span><\/td><td>${user.totalBets || 0}<\/td><td><span class="time-badge">${timeStatus.text}<\/span><\/td><td><div class="action-buttons"><button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button><button class="btn-remove" onclick="openCoinModal('remove', '${id}')">- Coins</button><button class="btn-wager" onclick="openPlayerWagerModal('${id}', '${escapeHtml(user.username)}', ${user.totalWagered || 0})">Wager</button><button class="btn-reply" onclick="sendIndividualNotification('${id}', '${escapeHtml(user.username)}')">Notify</button></div><\/td><\/tr>`;
+        html += `<tr>
+          <td><span class="online-indicator"><span class="${online ? 'online-dot' : 'offline-dot'}"></span></span></td>
+          <td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div></td>
+          <td><small>${escapeHtml(user.email || 'N/A')}</small></td>
+          <td><span class="password-cell">${userPassword}</span></td>
+          <td class="positive">${formatNumber(user.coins || 0)}</td>
+          <td class="positive">${formatNumber(user.totalDeposits || 0)}</td>
+          <td class="positive">${formatNumber(user.totalSpent || 0)}</td>
+          <td>${formatNumber(user.totalWagered || 0)}</td>
+          <td><div class="progress-bar-wager" style="width: 80px;"><div class="progress-fill-wager" style="width: ${wagerProgress}%;"></div></div><span style="font-size:0.7rem;">${Math.floor(wagerProgress)}%</span></td>
+          <td><span class="status approved">VIP ${user.vipLevel || 0}</span></td>
+          <td>${user.totalBets || 0}</td>
+          <td><span class="time-badge">${user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never'}</span></td>
+          <td><div class="action-buttons"><button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button><button class="btn-remove" onclick="openCoinModal('remove', '${id}')">- Coins</button><button class="btn-wager" onclick="openPlayerWagerModal('${id}', '${escapeHtml(user.username)}', ${user.totalWagered || 0})">Wager</button><button class="btn-reply" onclick="sendIndividualNotification('${id}', '${escapeHtml(user.username)}')">Notify</button></div></td>
+        </tr>`;
       });
       tbody.innerHTML = html;
     }
@@ -527,30 +568,27 @@
       let html = '';
       Object.entries(allUsers).forEach(([id, user]) => {
         if ((user.username && user.username.toLowerCase().includes(term)) || (user.email && user.email.toLowerCase().includes(term))) {
-          const timeStatus = getTimeStatus(user);
-          const online = timeStatus.status === 'online';
+          const online = isUserOnline(user);
+          const wagerProgress = getWagerProgress(user);
           const userPassword = user.password || (user.email ? user.email.split('@')[0] + '123' : 'No password');
-          const userDeposits = user.totalDeposits || 0;
-          const userSpent = user.totalSpent || 0;
-          html += `<tr><td><span class="online-indicator"><span class="${online ? 'online-dot' : 'offline-dot'}"></span></span><\/td><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div><\/td><td><small>${escapeHtml(user.email || 'N/A')}</small><\/td><td><span class="password-cell">${userPassword}</span><\/td><td class="positive">${formatNumber(user.coins || 0)}<\/td><td class="positive">${formatNumber(userDeposits)}<\/td><td class="${userSpent > userDeposits ? 'negative' : 'positive'}">${formatNumber(userSpent)}<\/td><td>${formatNumber(user.totalWagered || 0)}<\/td><td><span class="status approved">VIP ${user.vipLevel || 0}<\/span><\/td><td>${user.totalBets || 0}<\/td><td><span class="time-badge">${timeStatus.text}<\/span><\/td><td><div class="action-buttons"><button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button><button class="btn-remove" onclick="openCoinModal('remove', '${id}')">- Coins</button><button class="btn-wager" onclick="openPlayerWagerModal('${id}', '${escapeHtml(user.username)}', ${user.totalWagered || 0})">Wager</button><button class="btn-reply" onclick="sendIndividualNotification('${id}', '${escapeHtml(user.username)}')">Notify</button></div><\/td><\/tr>`;
+          html += `<tr><td><span class="online-indicator"><span class="${online ? 'online-dot' : 'offline-dot'}"></span></span></td><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div></td><td><small>${escapeHtml(user.email || 'N/A')}</small></td><td><span class="password-cell">${userPassword}</span></td><td class="positive">${formatNumber(user.coins || 0)}</td><td class="positive">${formatNumber(user.totalDeposits || 0)}</td><td class="positive">${formatNumber(user.totalSpent || 0)}</td><td>${formatNumber(user.totalWagered || 0)}</td><td><div class="progress-bar-wager" style="width: 80px;"><div class="progress-fill-wager" style="width: ${wagerProgress}%;"></div></div><span style="font-size:0.7rem;">${Math.floor(wagerProgress)}%</span></td><td><span class="status approved">VIP ${user.vipLevel || 0}</span></td><td>${user.totalBets || 0}</td><td><span class="time-badge">${user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never'}</span></td><td><div class="action-buttons"><button class="btn-add" onclick="openCoinModal('add', '${id}')">+ Coins</button><button class="btn-remove" onclick="openCoinModal('remove', '${id}')">- Coins</button><button class="btn-wager" onclick="openPlayerWagerModal('${id}', '${escapeHtml(user.username)}', ${user.totalWagered || 0})">Wager</button><button class="btn-reply" onclick="sendIndividualNotification('${id}', '${escapeHtml(user.username)}')">Notify</button></div></td></tr>`;
         }
       });
-      tbody.innerHTML = html || '  <td colspan="12" class="loading">No players found<\/td><\/tr>';
+      tbody.innerHTML = html || '<tr><td colspan="13" class="loading">No players found</td></tr>';
     }
     function resetPlayerSearch() { document.getElementById('playerSearch').value = ''; updatePlayersTable(); }
 
     // ===== LOGIN RECORDS =====
     function updateLoginRecords() {
       const tbody = document.getElementById('loginRecordsBody');
-      if (!tbody) return;
       let html = '';
       Object.entries(allUsers).forEach(([id, user]) => {
         const loginRecord = allLoginRecords[id] || {};
-        const timeStatus = getTimeStatus(user);
+        const online = isUserOnline(user);
         const userPassword = user.password || (user.email ? user.email.split('@')[0] + '123' : 'No password');
-        html += `<tr><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div><\/td><td><small>${escapeHtml(user.email || 'N/A')}</small><\/td><td><span class="password-cell">${userPassword}</span><\/td><td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}<\/td><td>${loginRecord.loginCount || 0}<\/td><td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}<\/td><td><span class="status ${timeStatus.status === 'online' ? 'online' : 'offline'}">${timeStatus.status === 'online' ? '🟢 Online' : '🔴 Offline'}<\/span><\/td><td><span class="time-badge">${timeStatus.text}<\/span><\/td><\/tr>`;
+        html += `<tr><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username || 'Unknown')}</div></td><td><small>${escapeHtml(user.email || 'N/A')}</small></td><td><span class="password-cell">${userPassword}</span></td><td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</td><td>${loginRecord.loginCount || 0}</td><td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td><td><span class="status ${online ? 'online' : 'offline'}">${online ? '🟢 Online' : '🔴 Offline'}</span></td><td><span class="time-badge">${user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never'}</span></td></tr>`;
       });
-      tbody.innerHTML = html || '  <td colspan="8" class="loading">No login records<\/td><\/tr>';
+      tbody.innerHTML = html || '<tr><td colspan="8" class="loading">No login records</td></tr>';
     }
 
     function searchLoginRecords() {
@@ -560,23 +598,22 @@
       Object.entries(allUsers).forEach(([id, user]) => {
         if ((user.username && user.username.toLowerCase().includes(term)) || (user.email && user.email.toLowerCase().includes(term))) {
           const loginRecord = allLoginRecords[id] || {};
-          const timeStatus = getTimeStatus(user);
+          const online = isUserOnline(user);
           const userPassword = user.password || (user.email ? user.email.split('@')[0] + '123' : 'No password');
-          html += `<tr><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div><\/td><td><small>${escapeHtml(user.email || 'N/A')}</small><\/td><td><span class="password-cell">${userPassword}</span><\/td><td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}<\/td><td>${loginRecord.loginCount || 0}<\/td><td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}<\/td><td><span class="status ${timeStatus.status === 'online' ? 'online' : 'offline'}">${timeStatus.status === 'online' ? '🟢 Online' : '🔴 Offline'}<\/span><\/td><td><span class="time-badge">${timeStatus.text}<\/span><\/td><\/tr>`;
+          html += `<tr><td><div class="user-cell"><div class="user-avatar">${user.avatar || '👤'}</div> ${escapeHtml(user.username)}</div></td><td><small>${escapeHtml(user.email || 'N/A')}</small></td><td><span class="password-cell">${userPassword}</span></td><td>${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</td><td>${loginRecord.loginCount || 0}</td><td>${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</td><td><span class="status ${online ? 'online' : 'offline'}">${online ? '🟢 Online' : '🔴 Offline'}</span></td><td><span class="time-badge">${user.lastActive ? new Date(user.lastActive).toLocaleString() : 'Never'}</span></td></tr>`;
         }
       });
-      tbody.innerHTML = html || '  <td colspan="8" class="loading">No players found<\/td><\/tr>';
+      tbody.innerHTML = html || '<tr><td colspan="8" class="loading">No players found</td></tr>';
     }
     function resetLoginRecordSearch() { document.getElementById('loginRecordSearch').value = ''; updateLoginRecords(); }
 
     function updateRecentLoginRecords() {
       const container = document.getElementById('recentLoginRecords');
-      if (!container) return;
       let records = [];
-      Object.entries(allUsers).forEach(([id, user]) => { if (user.lastLogin) records.push({ username: user.username, lastLogin: user.lastLogin, avatar: user.avatar, timeStatus: getTimeStatus(user) }); });
+      Object.entries(allUsers).forEach(([id, user]) => { if (user.lastLogin) records.push({ username: user.username, lastLogin: user.lastLogin, avatar: user.avatar }); });
       records.sort((a, b) => new Date(b.lastLogin) - new Date(a.lastLogin));
       records = records.slice(0, 20);
-      container.innerHTML = records.length === 0 ? '<div class="login-record-item">No login records yet</div>' : records.map(r => `<div class="login-record-item"><span><span class="user-avatar" style="display:inline-block; width:20px; height:20px; font-size:0.6rem;">${r.avatar || '👤'}</span> ${escapeHtml(r.username)}</span><span>${new Date(r.lastLogin).toLocaleString()}</span><span class="time-badge">${r.timeStatus.text}</span></div>`).join('');
+      container.innerHTML = records.length === 0 ? '<div class="login-record-item">No login records yet</div>' : records.map(r => `<div class="login-record-item"><span><span class="user-avatar" style="display:inline-block; width:20px; height:20px; font-size:0.6rem;">${r.avatar || '👤'}</span> ${escapeHtml(r.username)}</span><span>${new Date(r.lastLogin).toLocaleString()}</span></div>`).join('');
     }
 
     // ===== WITHDRAWALS =====
@@ -584,25 +621,30 @@
       const pendingBody = document.getElementById('pendingWithdrawalsTableBody');
       const historyBody = document.getElementById('historyTableBody');
       let pendingHtml = '', historyHtml = '', pendingCount = 0;
-      if (allWithdrawals) Object.entries(allWithdrawals).forEach(([id, w]) => {
-        const user = allUsers[w.userId] || { username: 'Unknown', totalWagered: 0, coins: 0 };
+      Object.entries(allWithdrawals).forEach(([id, w]) => {
+        const user = allUsers[w.userId] || { username: 'Unknown', totalWagered: 0, totalDeposits: 0 };
         if (w.status === 'pending') {
           pendingCount++;
-          const requiredWagered = Math.floor((user.coins || 0) * wagerSettings.rate);
-          const firstRequirementMet = (user.totalWagered || 0) >= wagerSettings.firstWithdrawalRequirement;
-          let wagerStatusHtml = !firstRequirementMet ? `<div class="wager-info">⚠️ First withdrawal needs ${formatNumber(wagerSettings.firstWithdrawalRequirement)} wagered</div>` : ((user.totalWagered || 0) >= requiredWagered ? `<div class="wager-met">✅ Wager requirement met</div>` : `<div class="wager-info">⏳ Needs ${formatNumber(requiredWagered - (user.totalWagered || 0))} more wagered</div>`);
-          pendingHtml += `<tr><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(user.username)}</div><\/td><td class="positive">${formatNumber(w.amount)}<\/td><td>${w.method || 'N/A'}<\/td><td><small>${escapeHtml(w.accountNumber || '-')}</small><\/td><td>${wagerStatusHtml}<\/td><td>${new Date(w.timestamp).toLocaleString()}<\/td><td><div class="action-buttons"><button class="btn-approve" onclick="approveWithdrawal('${id}', ${w.amount}, '${w.userId}')">Approve</button><button class="btn-reject" onclick="openRejectModal('${id}')">Reject</button></div><\/td><\/tr>`;
+          const requiredWager = getRequiredWagerForWithdrawal(user);
+          let wagerStatusHtml = requiredWager > 0 ? `<div class="wager-info">⚠️ Needs ${formatNumber(requiredWager)} more wagered (${Math.floor(getWagerProgress(user))}%)</div>` : `<div class="wager-met">✅ Wager requirement met</div>`;
+          pendingHtml += `<tr><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(user.username)}</div></td><td class="positive">${formatNumber(w.amount)}</td><td>${w.method || 'N/A'}</td><td><small>${escapeHtml(w.accountNumber || '-')}</small></td><td>${wagerStatusHtml}</td><td>${new Date(w.timestamp).toLocaleString()}</td><td><div class="action-buttons"><button class="btn-approve" onclick="approveWithdrawal('${id}', ${w.amount}, '${w.userId}')">Approve</button><button class="btn-reject" onclick="openRejectModal('${id}')">Reject</button></div></td></tr>`;
         } else {
-          historyHtml += `<tr><td>${escapeHtml(user.username)}<\/td><td class="${w.status === 'approved' ? 'positive' : ''}">${formatNumber(w.amount)}<\/td><td>${w.method || 'N/A'}<\/td><td><span class="status ${w.status}">${w.status}<\/span><\/td><td>${w.processedBy || 'System'}<\/td><td>${new Date(w.timestamp).toLocaleString()}<\/td><\/tr>`;
+          historyHtml += `<tr><td>${escapeHtml(user.username)}</td><td class="${w.status === 'approved' ? 'positive' : ''}">${formatNumber(w.amount)}</td><td>${w.method || 'N/A'}</td><td><span class="status ${w.status}">${w.status}</span></td><td>${w.processedBy || 'System'}</td><td>${new Date(w.timestamp).toLocaleString()}</td></tr>`;
         }
       });
       document.getElementById('pendingCount').textContent = pendingCount;
-      pendingBody.innerHTML = pendingHtml || '  <td colspan="7" class="loading">No pending withdrawals<\/td><\/tr>';
-      historyBody.innerHTML = historyHtml || '  <td colspan="6" class="loading">No withdrawal history<\/td><\/tr>';
+      pendingBody.innerHTML = pendingHtml || '<tr><td colspan="7" class="loading">No pending withdrawals</td></tr>';
+      historyBody.innerHTML = historyHtml || '<tr><td colspan="6" class="loading">No withdrawal history</td></tr>';
     }
 
     async function approveWithdrawal(withdrawId, amount, userId) {
       if (confirm(`Approve withdrawal request for ${formatNumber(amount)} coins?`)) {
+        const user = allUsers[userId];
+        const requiredWager = getRequiredWagerForWithdrawal(user);
+        if (requiredWager > 0) {
+          showToast(`Player needs to wager ${formatNumber(requiredWager)} more coins first`, true);
+          return;
+        }
         const withdrawRef = db.ref('withdrawals/' + withdrawId);
         const snapshot = await withdrawRef.once('value');
         if (snapshot.val() && snapshot.val().status === 'pending') {
@@ -610,7 +652,7 @@
           const userRef = db.ref('users/' + userId);
           const userSnapshot = await userRef.once('value');
           if (userSnapshot.val() && (userSnapshot.val().coins || 0) >= amount) {
-            await userRef.update({ coins: (userSnapshot.val().coins || 0) - amount, firstWithdrawalCompleted: true });
+            await userRef.update({ coins: (userSnapshot.val().coins || 0) - amount });
           }
           sendNotificationToPlayer(userId, '✅ Withdrawal Approved', `Your withdrawal of ${formatNumber(amount)} coins has been approved!`, '✅');
           showToast('Withdrawal approved');
@@ -637,7 +679,7 @@
     function loadVIPConfig() { db.ref('settings/vip').once('value', (s) => { if (s.val()) vipConfig = s.val(); renderVIPConfig(); }); }
     function renderVIPConfig() { const container = document.getElementById('vipConfigList'); let html = '<div class="vip-row header"><span>VIP Level</span><span>Required Spend</span><span>Daily</span><span>Weekly</span><span>Monthly</span></div>'; vipConfig.forEach((vip, i) => { html += `<div class="vip-row"><span>VIP ${vip.level}</span><div><input type="number" id="req_${i}" class="commission-input" value="${vip.requiredSpend}"></div><div><input type="number" id="daily_${i}" class="commission-input" value="${vip.dailyReward}"></div><div><input type="number" id="weekly_${i}" class="commission-input" value="${vip.weeklyReward}"></div><div><input type="number" id="monthly_${i}" class="commission-input" value="${vip.monthlyReward}"></div></div>`; }); container.innerHTML = html; }
     function saveVIPConfig() { const newConfig = []; for (let i = 0; i < vipConfig.length; i++) newConfig.push({ level: vipConfig[i].level, requiredSpend: parseInt(document.getElementById(`req_${i}`).value), dailyReward: parseInt(document.getElementById(`daily_${i}`).value), weeklyReward: parseInt(document.getElementById(`weekly_${i}`).value), monthlyReward: parseInt(document.getElementById(`monthly_${i}`).value) }); db.ref('settings/vip').set(newConfig); showToast('VIP configuration saved'); }
-    function updateVIPDistribution() { const dist = {}; Object.values(allUsers).forEach(u => { const v = u.vipLevel || 0; dist[v] = (dist[v] || 0) + 1; }); const tbody = document.getElementById('vipDistributionBody'); let html = ''; for (let i = 0; i <= 10; i++) { const count = dist[i] || 0; const totalSpent = Object.values(allUsers).filter(u => (u.vipLevel || 0) === i).reduce((s, u) => s + (u.totalSpent || 0), 0); html += `<tr><td>VIP ${i}<\/td><td>${count}<\/td><td>${formatNumber(totalSpent)}<\/td><td>${count > 0 ? formatNumber(Math.floor(totalSpent / count)) : '0'}<\/td><\/tr>`; } tbody.innerHTML = html; }
+    function updateVIPDistribution() { const dist = {}; Object.values(allUsers).forEach(u => { const v = u.vipLevel || 0; dist[v] = (dist[v] || 0) + 1; }); const tbody = document.getElementById('vipDistributionBody'); let html = ''; for (let i = 0; i <= 10; i++) { const count = dist[i] || 0; const totalSpent = Object.values(allUsers).filter(u => (u.vipLevel || 0) === i).reduce((s, u) => s + (u.totalSpent || 0), 0); html += `<tr><td>VIP ${i}</td><td>${count}</td><td>${formatNumber(totalSpent)}</td><td>${count > 0 ? formatNumber(Math.floor(totalSpent / count)) : '0'}</td></tr>`; } tbody.innerHTML = html; }
 
     // ===== REWARDS CONTROL =====
     function loadRewardsConfig() { db.ref('settings/rewards').once('value', (s) => { renderRewardsConfig(s.val() || vipConfig); }); }
@@ -647,17 +689,16 @@
     async function grantManualReward() { const userId = document.getElementById('manualRewardPlayer').value; const rewardType = document.getElementById('manualRewardType').value; if (!userId) { showToast('Select a player', true); return; } const user = allUsers[userId]; const vipRewards = vipConfig.find(v => v.level === (user.vipLevel || 0)); let amount = rewardType === 'daily' ? vipRewards.dailyReward : (rewardType === 'weekly' ? vipRewards.weeklyReward : vipRewards.monthlyReward); await db.ref('users/' + userId).update({ coins: (user.coins || 0) + amount }); await db.ref('reward-claims').push().set({ userId, username: user.username, rewardType, amount, adminGranted: true, timestamp: new Date().toISOString() }); sendNotificationToPlayer(userId, '🎁 Manual Reward', `Admin granted you ${amount} coins!`, '🎁'); showToast(`Granted ${amount} coins to ${user.username}`); refreshAllData(); }
 
     // ===== TOP REFERRERS & ALL REFERRALS =====
-    function updateTopReferrers() { const tbody = document.getElementById('topReferrersTableBody'); let referrers = []; Object.entries(allUsers).forEach(([id, u]) => { if (u.referralCount > 0) referrers.push({ username: u.username, referralCount: u.referralCount, activeReferrals: u.activeReferrals || 0, earnings: u.referralEarnings || 0 }); }); referrers.sort((a, b) => b.referralCount - a.referralCount); referrers = referrers.slice(0, 10); tbody.innerHTML = referrers.length === 0 ? '   <td colspan="5" class="loading">No referrals yet<\/td><\/tr>' : referrers.map((r, i) => `    <tr><td>${i + 1}<\/td><td><div class="user-cell"><div class="user-avatar">👤<\/div> ${escapeHtml(r.username)}<\/div><\/td><td>${r.referralCount}<\/td><td>${r.activeReferrals}<\/td><td class="positive">${formatNumber(r.earnings)}<\/td><\/tr>`).join(''); }
-    function updateAllReferralsTable() { const tbody = document.getElementById('allReferralsTableBody'); let html = ''; if (allReferrals) Object.entries(allReferrals).forEach(([id, ref]) => { const referrer = allUsers[ref.referrerId] || { username: 'Unknown' }; const referred = allUsers[ref.referredUserId] || { username: 'Unknown' }; html += `    <tr><td>${escapeHtml(referrer.username)}<\/td><td>${escapeHtml(referred.username)}<\/td><td>Level ${ref.level || 1}<\/td><td class="positive">${formatNumber(Math.floor((ref.depositAmount || 0) * 0.1))}<\/td><td>${ref.timestamp ? new Date(ref.timestamp).toLocaleDateString() : '-'}<\/td><\/tr>`; }); tbody.innerHTML = html || '   <td colspan="5" class="loading">No referrals found<\/td><\/tr>'; }
+    function updateTopReferrers() { const tbody = document.getElementById('topReferrersTableBody'); let referrers = []; Object.entries(allUsers).forEach(([id, u]) => { if (u.referralCount > 0) referrers.push({ username: u.username, referralCount: u.referralCount, activeReferrals: u.activeReferrals || 0, earnings: u.referralEarnings || 0 }); }); referrers.sort((a, b) => b.referralCount - a.referralCount); referrers = referrers.slice(0, 10); tbody.innerHTML = referrers.length === 0 ? '<tr><td colspan="5" class="loading">No referrals yet</td></tr>' : referrers.map((r, i) => `<tr><td>${i + 1}</td><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(r.username)}</div></td><td>${r.referralCount}</td><td>${r.activeReferrals}</td><td class="positive">${formatNumber(r.earnings)}</td></tr>`).join(''); }
+    function updateAllReferralsTable() { const tbody = document.getElementById('allReferralsTableBody'); let html = ''; if (allReferrals) Object.entries(allReferrals).forEach(([id, ref]) => { const referrer = allUsers[ref.referrerId] || { username: 'Unknown' }; const referred = allUsers[ref.referredUserId] || { username: 'Unknown' }; html += `<tr><td>${escapeHtml(referrer.username)}</td><td>${escapeHtml(referred.username)}</td><td>Level ${ref.level || 1}</td><td class="positive">${formatNumber(Math.floor((ref.depositAmount || 0) * 0.1))}</td><td>${ref.timestamp ? new Date(ref.timestamp).toLocaleDateString() : '-'}</td></tr>`; }); tbody.innerHTML = html || '<tr><td colspan="5" class="loading">No referrals found</td></tr>'; }
 
     // ===== SUPPORT TICKETS =====
-    function updateTicketsTable() { const tbody = document.getElementById('ticketsTableBody'); let html = ''; if (allTickets) Object.entries(allTickets).reverse().forEach(([id, ticket]) => { const user = allUsers[ticket.userId] || { username: 'Unknown' }; html += `    <tr><td><div class="user-cell"><div class="user-avatar">👤<\/div> ${escapeHtml(user.username)}<\/div><\/td><td style="max-width:300px;">${escapeHtml(ticket.message.substring(0, 100))}${ticket.message.length > 100 ? '...' : ''}<\/td><td>${new Date(ticket.timestamp).toLocaleString()}<\/td><td><span class="status ${ticket.status === 'pending' ? 'pending' : 'approved'}">${ticket.status}<\/span><\/td><td><button class="btn-reply" onclick="openReplyModal('${id}')">Reply<\/button><\/td><\/tr>`; }); tbody.innerHTML = html || '   <td colspan="5" class="loading">No support tickets<\/td><\/tr>'; }
+    function updateTicketsTable() { const tbody = document.getElementById('ticketsTableBody'); let html = ''; if (allTickets) Object.entries(allTickets).reverse().forEach(([id, ticket]) => { const user = allUsers[ticket.userId] || { username: 'Unknown' }; html += `<tr><td><div class="user-cell"><div class="user-avatar">👤</div> ${escapeHtml(user.username)}</div></td><td style="max-width:300px;">${escapeHtml(ticket.message.substring(0, 100))}${ticket.message.length > 100 ? '...' : ''}</td><td>${new Date(ticket.timestamp).toLocaleString()}</td><td><span class="status ${ticket.status === 'pending' ? 'pending' : 'approved'}">${ticket.status}</span></td><td><button class="btn-reply" onclick="openReplyModal('${id}')">Reply</button></td></tr>`; }); tbody.innerHTML = html || '<tr><td colspan="5" class="loading">No support tickets</td></tr>'; }
     function openReplyModal(ticketId) { currentTicketId = ticketId; document.getElementById('replyModal').classList.add('active'); }
     function closeReplyModal() { document.getElementById('replyModal').classList.remove('active'); document.getElementById('replyMessageText').value = ''; currentTicketId = null; }
     async function sendTicketReply() { const reply = document.getElementById('replyMessageText').value.trim(); if (!reply) { showToast('Enter a reply', true); return; } const ticketRef = db.ref('support-tickets/' + currentTicketId); const ticket = (await ticketRef.once('value')).val(); if (ticket) { const replies = ticket.replies || []; replies.push({ message: reply, timestamp: new Date().toISOString(), from: 'admin' }); await ticketRef.update({ replies, status: 'answered' }); sendNotificationToPlayer(ticket.userId, 'Support Reply', `Admin replied: "${reply.substring(0, 50)}..."`, '💬'); showToast('Reply sent'); } closeReplyModal(); }
 
     // ===== NOTIFICATIONS =====
-    function sendNotificationToPlayer(userId, title, message, icon) { db.ref('notifications/' + userId).push().set({ title, message, icon, read: false, timestamp: new Date().toISOString() }); }
     function searchPlayersForNotification() { const term = document.getElementById('playerSearchInput').value.toLowerCase(); const resultsDiv = document.getElementById('playerSearchResults'); if (!term) { resultsDiv.innerHTML = ''; return; } let results = ''; Object.entries(allUsers).forEach(([id, user]) => { if (user.username && user.username.toLowerCase().includes(term)) results += `<div class="player-search-result" onclick="selectPlayerForNotification('${id}', '${escapeHtml(user.username)}')"><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email || 'No email')}</small></div>`; }); resultsDiv.innerHTML = results || '<div class="player-search-result">No players found</div>'; }
     function selectPlayerForNotification(playerId, playerName) { selectedPlayerForNotification = { id: playerId, name: playerName }; document.getElementById('selectedPlayerDisplay').innerHTML = `<strong>Selected:</strong> ${playerName} <button class="btn-remove" style="margin-left:0.5rem; padding:0.2rem 0.5rem;" onclick="clearSelectedPlayer()">Clear</button>`; document.getElementById('selectedPlayerDisplay').style.display = 'block'; document.getElementById('playerSearchResults').innerHTML = ''; document.getElementById('playerSearchInput').value = ''; document.getElementById('specificPlayerId').innerHTML = `<option value="${playerId}">${playerName}</option>`; document.getElementById('specificPlayerId').style.display = 'block'; }
     function clearSelectedPlayer() { selectedPlayerForNotification = null; document.getElementById('selectedPlayerDisplay').style.display = 'none'; document.getElementById('specificPlayerId').style.display = 'none'; document.getElementById('playerSearchInput').value = ''; }
@@ -665,10 +706,10 @@
     function sendBroadcastNotification() { const target = document.getElementById('notifyTarget').value; const title = document.getElementById('notifyTitle').value.trim(); const message = document.getElementById('notifyMessage').value.trim(); const icon = document.getElementById('notifyIcon').value; let specificUserId = null; if (target === 'specific') specificUserId = document.getElementById('specificPlayerId').value; if (!title || !message) { showToast('Enter title and message', true); return; } let count = 0; if (target === 'specific' && specificUserId) { sendNotificationToPlayer(specificUserId, title, message, icon); count = 1; } else { Object.entries(allUsers).forEach(([id, user]) => { let send = false; const online = isUserOnline(user); if (target === 'online') send = online; else if (target === 'offline') send = !online; else if (target === 'vip') send = (user.vipLevel || 0) >= 1; else send = true; if (send) { sendNotificationToPlayer(id, title, message, icon); count++; } }); } showToast(`Notification sent to ${count} players`); document.getElementById('notifyTitle').value = ''; document.getElementById('notifyMessage').value = ''; }
 
     // ===== WAGER CONTROL =====
-    function loadWagerSettings() { db.ref('settings/wager').once('value', (s) => { const d = s.val(); if (d) { wagerSettings.rate = d.rate || 0.6; wagerSettings.firstWithdrawalRequirement = d.firstWithdrawalRequirement || 5000; document.getElementById('wagerRate').value = wagerSettings.rate * 100; document.getElementById('firstWithdrawalWager').value = wagerSettings.firstWithdrawalRequirement; } }); }
+    function loadWagerSettings() { db.ref('settings/wager').once('value', (s) => { const d = s.val(); if (d) { wagerSettings.rate = d.rate || 0.70; wagerSettings.firstWithdrawalRequirement = d.firstWithdrawalRequirement || 5000; document.getElementById('wagerRate').value = wagerSettings.rate * 100; document.getElementById('firstWithdrawalWager').value = wagerSettings.firstWithdrawalRequirement; } }); }
     function saveWagerSettings() { wagerSettings.rate = parseInt(document.getElementById('wagerRate').value) / 100; wagerSettings.firstWithdrawalRequirement = parseInt(document.getElementById('firstWithdrawalWager').value); db.ref('settings/wager').set(wagerSettings); showToast('Wager settings saved'); }
-    function populateWagerPlayerSelect() { const select = document.getElementById('wagerPlayerSelect'); if(select) { select.innerHTML = '<option value="">Select Player</option>'; Object.entries(allUsers).forEach(([id, u]) => { select.innerHTML += `<option value="${id}">${escapeHtml(u.username)} (${formatNumber(u.coins || 0)} coins)</option>`; }); } }
-    function loadPlayerWagerData() { const playerId = document.getElementById('wagerPlayerSelect').value; if (!playerId) { document.getElementById('playerWagerPanel').style.display = 'none'; return; } const user = allUsers[playerId]; if (!user) return; const required = Math.floor((user.coins || 0) * wagerSettings.rate); const progress = required > 0 ? ((user.totalWagered || 0) / required * 100) : 100; document.getElementById('wagerPlayerName').textContent = user.username; document.getElementById('playerCoins').textContent = formatNumber(user.coins || 0); document.getElementById('playerWagered').textContent = formatNumber(user.totalWagered || 0); document.getElementById('playerRequiredWagered').textContent = formatNumber(required); document.getElementById('playerWagerProgress').textContent = Math.min(100, Math.floor(progress)) + '%'; document.getElementById('wagerAdjustSlider').max = Math.max(100000, (user.totalWagered || 0) + 50000); document.getElementById('wagerAdjustSlider').value = user.totalWagered || 0; document.getElementById('wagerAdjustAmount').value = user.totalWagered || 0; currentWagerPlayerId = playerId; document.getElementById('playerWagerPanel').style.display = 'block'; }
+    function populateWagerPlayerSelect() { const select = document.getElementById('wagerPlayerSelect'); if(select) { select.innerHTML = '<option value="">Select Player</option>'; Object.entries(allUsers).forEach(([id, u]) => { select.innerHTML += `<option value="${id}">${escapeHtml(u.username)} (${formatNumber(u.coins || 0)} coins, ${formatNumber(u.totalWagered || 0)} wagered)</option>`; }); } }
+    function loadPlayerWagerData() { const playerId = document.getElementById('wagerPlayerSelect').value; if (!playerId) { document.getElementById('playerWagerPanel').style.display = 'none'; return; } const user = allUsers[playerId]; if (!user) return; const required = Math.floor((user.totalDeposits || 0) * wagerSettings.rate); const progress = required > 0 ? ((user.totalWagered || 0) / required * 100) : 100; document.getElementById('wagerPlayerName').textContent = user.username; document.getElementById('playerCoins').textContent = formatNumber(user.coins || 0); document.getElementById('playerDeposits').textContent = formatNumber(user.totalDeposits || 0); document.getElementById('playerWagered').textContent = formatNumber(user.totalWagered || 0); document.getElementById('playerRequiredWagered').textContent = formatNumber(required); document.getElementById('playerWagerProgress').textContent = Math.min(100, Math.floor(progress)) + '%'; document.getElementById('wagerProgressFill').style.width = Math.min(100, progress) + '%'; document.getElementById('wagerAdjustSlider').max = Math.max(100000, (user.totalWagered || 0) + 50000); document.getElementById('wagerAdjustSlider').value = user.totalWagered || 0; document.getElementById('wagerAdjustAmount').value = user.totalWagered || 0; currentWagerPlayerId = playerId; document.getElementById('playerWagerPanel').style.display = 'block'; }
     function updateWagerPreview() { const slider = document.getElementById('wagerAdjustSlider'); const amount = document.getElementById('wagerAdjustAmount'); amount.value = slider.value; }
     function updateWagerSlider() { const amount = document.getElementById('wagerAdjustAmount'); const slider = document.getElementById('wagerAdjustSlider'); const val = parseInt(amount.value); if (!isNaN(val)) slider.value = Math.min(slider.max, Math.max(0, val)); }
     function openPlayerWagerModal(playerId, playerName, currentWagered) { currentWagerPlayerId = playerId; const modal = document.getElementById('wagerModal'); document.getElementById('wagerModalTitle').textContent = 'Adjust Wager Amount'; document.getElementById('wagerModalMessage').innerHTML = `Player: <strong>${playerName}</strong><br>Current wagered: <strong>${formatNumber(currentWagered)}</strong> coins<br>Enter new wagered total:<br><input type="number" id="wagerInputAmount" class="input" value="${currentWagered}" style="margin-top:0.5rem;">`; modal.classList.add('active'); }
@@ -695,6 +736,7 @@
     // ===== MAKE FUNCTIONS GLOBAL =====
     window.verifyAdmin = verifyAdmin; window.refreshAllData = refreshAllData; window.openCoinModal = openCoinModal; window.closeCoinModal = closeCoinModal; window.processCoinAction = processCoinAction;
     window.approveWithdrawal = approveWithdrawal; window.openRejectModal = openRejectModal; window.closeRejectModal = closeRejectModal; window.confirmRejectWithdrawal = confirmRejectWithdrawal;
+    window.approvePayment = approvePayment; window.rejectPayment = rejectPayment;
     window.openReplyModal = openReplyModal; window.closeReplyModal = closeReplyModal; window.sendTicketReply = sendTicketReply;
     window.sendBroadcastNotification = sendBroadcastNotification; window.sendIndividualNotification = sendIndividualNotification;
     window.searchPlayers = searchPlayers; window.resetPlayerSearch = resetPlayerSearch;
@@ -707,7 +749,7 @@
     window.closeWagerModal = closeWagerModal; window.confirmWagerAdjustment = confirmWagerAdjustment;
 
     // ===== INITIALIZATION =====
-    document.addEventListener('DOMContentLoaded', () => { setupTabs(); loadGeneralSettings(); console.log("✅ Admin Dashboard Ready!"); setInterval(() => { updateStats(); updateLoginRecords(); updateRecentLoginRecords(); }, 30000); });
+    document.addEventListener('DOMContentLoaded', () => { setupTabs(); loadGeneralSettings(); loadWagerSettings(); console.log("✅ Admin Dashboard Ready!"); setInterval(() => { updateStats(); updateLoginRecords(); updateRecentLoginRecords(); }, 30000); });
   </script>
 </body>
 </html>

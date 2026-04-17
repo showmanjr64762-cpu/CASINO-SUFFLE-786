@@ -52,7 +52,7 @@
           <button type="button" class="guest-btn" onclick="guestLogin()"><span>👤</span><span>Continue as Guest</span></button>
           <div class="auth-link">Not yet a member? <a onclick="switchAuthTab('register')">Sign up</a></div>
         </form>
-        <form id="registerForm" class="auth-form" onsubmit="event.preventDefault(); handleRegisterSubmit(this)">
+        <form id="registerForm" class="auth-form" style="display:none;" onsubmit="event.preventDefault(); handleRegisterSubmit(this)">
           <div id="registerErrors" class="error-message"></div>
           <div class="form-group">
             <label class="form-label">Username</label>
@@ -107,7 +107,6 @@
           <div class="withdrawal-account-fields">
             <div class="form-group"><label class="form-label">JazzCash Number</label><input type="tel" id="jazzcashNumber" class="form-input" placeholder="03xxxxxxxxx" maxlength="11"></div>
             <div class="form-group"><label class="form-label">Easypaisa Number</label><input type="tel" id="easypaisaNumber" class="form-input" placeholder="03xxxxxxxxx" maxlength="11"></div>
-            <div class="form-group"><label class="form-label">Bank Account (IBAN)</label><input type="text" id="bankAccount" class="form-input" placeholder="PK36SCBL0000001234567890"></div>
             <button class="auth-btn" onclick="saveWithdrawalAccounts()">Save Account Details</button>
           </div>
         </div>
@@ -147,7 +146,7 @@
       <div class="popup-icon">💸</div>
       <div class="popup-title">Withdraw Funds</div>
       <div class="popup-text">Available Balance: <strong id="withdrawBalance">0</strong> coins<br>Minimum withdrawal: 1000 coins</div>
-      <select id="withdrawMethod" class="form-input" style="margin-bottom: 1rem;"><option value="jazzcash">JazzCash</option><option value="easypaisa">Easypaisa</option><option value="bank">Bank Transfer</option></select>
+      <select id="withdrawMethod" class="form-input" style="margin-bottom: 1rem;"><option value="jazzcash">JazzCash</option><option value="easypaisa">Easypaisa</option></select>
       <div id="accountDisplay" class="account-display" style="margin-bottom: 1rem;"></div>
       <input type="number" id="withdrawAmount" class="form-input" placeholder="Amount" min="1000">
       <div class="popup-btn-group"><button class="popup-btn popup-btn-confirm" onclick="processWithdraw()">Request Withdrawal</button><button class="popup-btn popup-btn-cancel" onclick="closeWithdrawPopup()">Cancel</button></div>
@@ -161,7 +160,7 @@
   <div class="notification-panel" id="notificationPanel"><div class="notification-header"><h3><i class="fas fa-bell"></i> Notifications</h3><div class="notification-actions"><button class="notification-action-btn" onclick="deleteAllNotifications()" title="Delete all"><i class="fas fa-trash-alt"></i></button><button class="close-notification" onclick="closeNotificationPanel()">×</button></div></div><div class="notification-list" id="notificationList"></div></div>
 
   <!-- Referral Section -->
-  <div class="fullscreen-section" id="referralSection"><div class="fullscreen-header"><button class="back-btn" onclick="closeReferral()">← Back</button><span class="fullscreen-title">🤝 Refer & Earn</span></div><div class="fullscreen-content"><div class="referral-container"><div class="referral-stats-card"><div class="referral-stats-header"><i class="fas fa-chart-line"></i><h3>Your Referral Earnings</h3></div><div class="referral-stats-grid"><div class="stat-item"><div class="stat-label">Total Referrals</div><div class="stat-value" id="totalReferrals">0</div></div><div class="stat-item"><div class="stat-label">Total Earnings</div><div class="stat-value amount-positive" id="totalEarnings">0</div></div><div class="stat-item"><div class="stat-label">Active Referrals</div><div class="stat-value" id="activeReferrals">0</div></div></div></div><div class="referral-code-card"><h3><i class="fas fa-link"></i> Your Referral Link</h3><div class="referral-code-display"><span id="referralCodeDisplay">LOADING...</span><button class="copy-btn" onclick="copyReferralCode()"><i class="fas fa-copy"></i> Copy</button></div><div class="referral-link-display"><input type="text" id="referralLinkInput" readonly><button class="copy-btn" onclick="copyReferralLink()"><i class="fas fa-copy"></i></button></div><div class="referral-info"><p><i class="fas fa-info-circle"></i> Share your referral link. When they deposit 3000+ coins, you earn 10% commission!</p></div></div><div class="commission-rates-card"><h3><i class="fas fa-percent"></i> Commission Structure</h3><div class="commission-table"><div class="commission-row"><span>Referral Commission</span><span class="amount-positive">10% of deposit (min 3000 coins)</span></div><div class="commission-row bonus"><span>🎁 Sign-up Bonus</span><span class="amount-positive">50 coins for referrer</span></div></div></div><div class="referral-list-card"><h3><i class="fas fa-users"></i> Your Referrals</h3><div class="referral-filters"><button class="filter-btn active" onclick="filterReferrals('all')">All</button><button class="filter-btn" onclick="filterReferrals('active')">Active</button><button class="filter-btn" onclick="filterReferrals('pending')">Pending</button></div><div class="table-container"><table><thead><tr><th>Username</th><th>Status</th><th>Deposit</th><th>Commission</th><th>Joined</th></tr></thead><tbody id="referralsBody"></tbody></table></div></div><div class="milestones-card"><h3><i class="fas fa-trophy"></i> Referral Milestones</h3><div class="milestones-list"><div class="milestone-item" data-milestone="5"><div class="milestone-info"><span>🎯 5 Referrals</span><span>+500 Coins</span></div><button class="milestone-btn" onclick="claimMilestone(5)">Claim</button></div><div class="milestone-item" data-milestone="10"><div class="milestone-info"><span>🏆 10 Referrals</span><span>+1500 Coins</span></div><button class="milestone-btn" onclick="claimMilestone(10)">Claim</button></div><div class="milestone-item" data-milestone="25"><div class="milestone-info"><span>👑 25 Referrals</span><span>+5000 Coins</span></div><button class="milestone-btn" onclick="claimMilestone(25)">Claim</button></div><div class="milestone-item" data-milestone="50"><div class="milestone-info"><span>💎 50 Referrals</span><span>+15000 Coins</span></div><button class="milestone-btn" onclick="claimMilestone(50)">Claim</button></div></div></div></div></div></div>
+  <div class="fullscreen-section" id="referralSection"><div class="fullscreen-header"><button class="back-btn" onclick="closeReferral()">← Back</button><span class="fullscreen-title">🤝 Refer & Earn</span></div><div class="fullscreen-content"><div class="referral-container"><div class="referral-stats-card"><div class="referral-stats-header"><i class="fas fa-chart-line"></i><h3>Your Referral Earnings</h3></div><div class="referral-stats-grid"><div class="stat-item"><div class="stat-label">Total Referrals</div><div class="stat-value" id="totalReferrals">0</div></div><div class="stat-item"><div class="stat-label">Total Earnings</div><div class="stat-value amount-positive" id="totalEarnings">0</div></div><div class="stat-item"><div class="stat-label">Active Referrals</div><div class="stat-value" id="activeReferrals">0</div></div></div></div><div class="referral-code-card"><h3><i class="fas fa-link"></i> Your Referral Link</h3><div class="referral-code-display"><span id="referralCodeDisplay">LOADING...</span><button class="copy-btn" onclick="copyReferralCode()"><i class="fas fa-copy"></i> Copy</button></div><div class="referral-link-display"><input type="text" id="referralLinkInput" readonly><button class="copy-btn" onclick="copyReferralLink()"><i class="fas fa-copy"></i></button></div><div class="referral-info"><p><i class="fas fa-info-circle"></i> Share your referral link. When they deposit 3000+ coins, you earn 10% commission!</p></div></div><div class="commission-rates-card"><h3><i class="fas fa-percent"></i> Commission Structure</h3><div class="commission-table"><div class="commission-row"><span>Referral Commission</span><span class="amount-positive">10% of deposit (min 3000 coins)</span></div><div class="commission-row bonus"><span>🎁 Sign-up Bonus</span><span class="amount-positive">50 coins for referrer</span></div></div></div><div class="referral-list-card"><h3><i class="fas fa-users"></i> Your Referrals</h3><div class="referral-filters"><button class="filter-btn active" onclick="filterReferrals('all')">All</button><button class="filter-btn" onclick="filterReferrals('active')">Active</button><button class="filter-btn" onclick="filterReferrals('pending')">Pending</button></div><div class="table-container">\n<table>\n<thead>\n<tr>\n<th>Username</th>\n<th>Status</th>\n<th>Deposit</th>\n<th>Commission</th>\n<th>Joined</th>\n</tr>\n</thead>\n<tbody id="referralsBody"></tbody>\n</table>\n</div></div></div></div></div>
 
   <!-- Offers Section with Daily Rewards -->
   <div class="fullscreen-section" id="offersSection">
@@ -187,12 +186,6 @@
           <div class="offer-icon">👑</div>
           <div class="offer-title">VIP Club</div>
           <div class="offer-desc">Check VIP benefits and upgrade</div>
-        </div>
-        <div class="offer-card" onclick="openEvents()">
-          <div class="offer-badge">HOT</div>
-          <div class="offer-icon">🎉</div>
-          <div class="offer-title">Events</div>
-          <div class="offer-desc">Special events and tournaments</div>
         </div>
         <div class="offer-card" onclick="openSupport()">
           <div class="offer-icon">🎧</div>
@@ -381,8 +374,51 @@
     </div>
     <div class="fullscreen-content">
       <div class="shop-grid" id="shopGrid"></div>
-      <h2 class="section-title" style="margin-top: 2rem;">💳 Payment Method</h2>
-      <div class="payment-methods-grid" id="paymentMethodsGrid"></div>
+    </div>
+  </div>
+
+  <!-- Payment Number Page -->
+  <div class="fullscreen-section" id="paymentNumberPage">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closePaymentNumberPage()">← Back</button>
+      <span class="fullscreen-title">💰 Enter Your Number</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="payment-container">
+        <div class="payment-amount-card" id="paymentAmountDisplay"></div>
+        <div class="form-group">
+          <label class="form-label">Your JazzCash/Easypaisa Number</label>
+          <input type="tel" id="playerNumberInput" class="form-input" placeholder="03xxxxxxxxx" maxlength="11">
+        </div>
+        <button class="auth-btn" onclick="submitPaymentRequest()">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Info Page -->
+  <div class="fullscreen-section" id="paymentInfoPage">
+    <div class="fullscreen-header">
+      <button class="back-btn" onclick="closePaymentInfoPage()">← Back</button>
+      <span class="fullscreen-title">💰 Payment Instructions</span>
+    </div>
+    <div class="fullscreen-content">
+      <div class="payment-info-container">
+        <div class="qr-placeholder">
+          <div class="qr-image-placeholder">
+            <i class="fas fa-qrcode" style="font-size: 5rem; color: #ffd700;"></i>
+          </div>
+        </div>
+        <div class="payment-details-card">
+          <h3>📞 Send Payment to:</h3>
+          <div class="jazzcash-number-large">
+            <span>03149595863</span>
+            <button class="copy-number-btn" onclick="copyJazzCashNumber()"><i class="fas fa-copy"></i> Copy</button>
+          </div>
+          <p class="payment-note">Send your payment to this JazzCash number and your coins will be added after admin confirmation.</p>
+          <div class="payment-amount-info" id="paymentInfoAmount"></div>
+          <button class="auth-btn" onclick="goBackToShop()">Back to Shop</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -510,6 +546,15 @@
   <script src="script.js"></script>
 
   <script>
+    // Disable right click and inspect
+    document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'u') || (e.ctrlKey && e.key === 's') || (e.ctrlKey && e.shiftKey && e.key === 'C') || (e.ctrlKey && e.shiftKey && e.key === 'J')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
     setTimeout(() => {
       const splash = document.getElementById('splashScreen');
       const app = document.getElementById('appContainer');
