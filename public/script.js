@@ -1,4 +1,4 @@
-// ===== ROYAL MATCH - COMPLETE WITH VIP AND DAILY REWARDS =====
+// ===== ROYAL MATCH - ULTRA FAST GAME START =====
 console.log("🎮 ROYAL MATCH 1 - Loading...");
 
 // ===== FIREBASE CONFIG =====
@@ -51,7 +51,8 @@ const REFERRAL_CONFIG = {
   COMMISSION_RATE: 0.10,
   DEPOSIT_BONUS_RATE: 0.025,
   MILESTONE_REWARDS: { 5: 500, 10: 1500, 25: 5000, 50: 15000 },
-  WAGER_REQUIREMENT: 70
+  WAGER_REQUIREMENT: 70,
+  FIRST_WITHDRAWAL_WAGER: 5000
 };
 
 // ===== GAME STATE =====
@@ -74,7 +75,9 @@ const gameState = {
   lastGameResult: null,
   lastGameTimestamp: 0,
   pendingWagerAmount: 0,
-  totalWagered: 0
+  totalWagered: 0,
+  firstWagerProgress: 0,
+  hasCompletedFirstWager: false
 };
 
 // ===== REWARD TRACKING =====
@@ -98,25 +101,23 @@ let referralData = {
   milestones: { 5: false, 10: false, 25: false, 50: false }
 };
 
-// ===== WITHDRAWAL ACCOUNTS (Only JazzCash & Easypaisa) =====
+// ===== WITHDRAWAL ACCOUNTS =====
 let savedAccounts = {
   jazzcash: "",
   easypaisa: ""
 };
 
-// ===== GAME CONFIG - UPDATED TO 28 CARDS =====
+// ===== GAME CONFIG =====
 const CONFIG = {
-  PAIRS_COUNT: 11,  // 11 pairs = 22 cards
-  BOMB_COUNT: 4,    // 4 bombs
-  GOLDEN_COUNT: 2,  // 2 golden cards
-  // Total: 22 + 4 + 2 = 28 cards
+  PAIRS_COUNT: 11,
+  BOMB_COUNT: 4,
+  GOLDEN_COUNT: 2,
   GOLDEN_MULTIPLIER: 20,
   MULTIPLIERS: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0, 22.0, 35.0],
   MIN_BET: 10,
   MAX_BET: 5000
 };
 
-// 11 values for 11 pairs
 const CARD_VALUES = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4'];
 const CARD_SUITS = [
   { symbol: '♥', color: 'red' },
@@ -131,6 +132,26 @@ const pakistaniNames = [
   'Faisal Khan', 'Karim Abdul', 'Malik Saeed', 'Nasir Ahmed', 'Omar Khan'
 ];
 const championAvatars = ['👑', '🥈', '🥉', '🎯', '💎', '🦁', '⭐', '🏆'];
+
+// Pre-cached card templates
+let cardTemplates = {
+  bomb: '',
+  golden: '',
+  normal: {}
+};
+
+// Initialize card templates for faster rendering
+function initCardTemplates() {
+  cardTemplates.bomb = `<div class="card-face card-front bomb"><div class="bomb-content"><span class="bomb-icon">💣</span><span class="bomb-text">BOOM!</span></div></div>`;
+  cardTemplates.golden = `<div class="card-face card-front golden"><div class="golden-content"><span class="golden-icon">👑</span><span class="golden-text">20X WIN!</span></div></div>`;
+  
+  CARD_VALUES.forEach(value => {
+    CARD_SUITS.forEach(suit => {
+      const key = `${value}_${suit.symbol}`;
+      cardTemplates.normal[key] = `<div class="card-face card-front ${suit.color}"><div class="card-corner card-corner-tl"><span class="card-rank">${value}</span><span class="card-suit-small">${suit.symbol}</span></div><span class="card-center">${suit.symbol}</span><div class="card-corner card-corner-br"><span class="card-rank">${value}</span><span class="card-suit-small">${suit.symbol}</span></div></div>`;
+    });
+  });
+}
 
 // ===== HELPER FUNCTIONS =====
 function formatNumber(num) {
@@ -216,6 +237,9 @@ async function updateWagering(userId, betAmount) {
   
   let pendingWager = userData.pendingWagerAmount || 0;
   let totalWagered = userData.totalWagered || 0;
+  let firstWagerProgress = userData.firstWagerProgress || 0;
+  let hasCompletedFirstWager = userData.hasCompletedFirstWager || false;
+  let firstWithdrawalWager = REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER;
   
   if (pendingWager > 0) {
     const newWagered = Math.min(betAmount, pendingWager);
@@ -233,6 +257,54 @@ async function updateWagering(userId, betAmount) {
     if (pendingWager === 0 && totalWagered > 0) {
       sendNotificationToPlayer(userId, '✅ Wagering Complete!', 'You have completed your wagering requirement! You can now withdraw your funds.', '✅');
     }
+  }
+  
+  if (!hasCompletedFirstWager && firstWithdrawalWager > 0) {
+    let newProgress = firstWagerProgress + betAmount;
+    let completed = newProgress >= firstWithdrawalWager;
+    
+    await userRef.update({
+      firstWagerProgress: newProgress,
+      hasCompletedFirstWager: completed
+    });
+    
+    if (currentUser && currentUser.id === userId) {
+      gameState.firstWagerProgress = newProgress;
+      gameState.hasCompletedFirstWager = completed;
+      updateFirstWagerUI();
+    }
+    
+    if (completed) {
+      sendNotificationToPlayer(userId, '✅ First Withdrawal Requirement Complete!', 'You have wagered 5,000 coins! You can now make your first withdrawal.', '✅');
+      showPopup('First Withdrawal Unlocked!', 'Congratulations! You have completed the 5,000 coin wagering requirement and can now make your first withdrawal!');
+    }
+  }
+}
+
+function updateFirstWagerUI() {
+  const progressBar = document.getElementById('firstWagerProgressBar');
+  const progressText = document.getElementById('firstWagerProgressText');
+  
+  if (!progressBar || !progressText) return;
+  
+  let progress = 0;
+  let completed = true;
+  let required = REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER;
+  
+  if (currentUser && !currentUser.isGuest) {
+    progress = gameState.firstWagerProgress || 0;
+    completed = gameState.hasCompletedFirstWager || false;
+  }
+  
+  const percent = Math.min(100, (progress / required) * 100);
+  progressBar.style.width = percent + '%';
+  
+  if (completed) {
+    progressText.innerHTML = '✅ First withdrawal unlocked!';
+    progressText.style.color = '#10b981';
+  } else {
+    progressText.innerHTML = `${formatNumber(progress)} / ${formatNumber(required)} wagered`;
+    progressText.style.color = '#ffd700';
   }
 }
 
@@ -759,27 +831,6 @@ function filterReferrals(filter) {
   if (event && event.target) event.target.classList.add('active');
 }
 
-function claimMilestone(milestone) {
-  if (!currentUser || currentUser.isGuest) {
-    showPopup('Error', 'Please login to claim rewards');
-    return;
-  }
-  if (referralData.totalReferrals >= milestone && !referralData.milestones[milestone]) {
-    const reward = REFERRAL_CONFIG.MILESTONE_REWARDS[milestone];
-    gameState.balance += reward;
-    updateUI();
-    updateUserDataInFirebase(currentUser.id, { coins: gameState.balance, referralEarnings: (referralData.totalEarnings + reward) });
-    referralData.totalEarnings += reward;
-    referralData.milestones[milestone] = true;
-    updateReferralUI();
-    showPopup('Milestone Claimed!', `You earned ${reward} coins for reaching ${milestone} referrals! 🎉`);
-  } else if (referralData.milestones[milestone]) {
-    showPopup('Already Claimed', 'You have already claimed this milestone reward');
-  } else {
-    showPopup('Not Yet', `You need ${milestone} referrals to unlock this milestone`);
-  }
-}
-
 // ===== PURCHASE FLOW FUNCTIONS =====
 function openPurchasePage(amount, coins) {
   if (!currentUser || currentUser.isGuest) {
@@ -952,6 +1003,12 @@ function openWithdraw() {
     return;
   }
   
+  if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER) {
+    const remaining = REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER - gameState.firstWagerProgress;
+    showPopup('First Withdrawal Requirement', `New players must wager ${formatNumber(REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER)} coins before first withdrawal. You need ${formatNumber(remaining)} more coins wagered.`);
+    return;
+  }
+  
   if (gameState.pendingWagerAmount > 0) {
     showPopup('Wagering Required', `You need to wager ${formatNumber(gameState.pendingWagerAmount)} more coins before withdrawal. Current wagered: ${formatNumber(gameState.totalWagered)}/${formatNumber(gameState.pendingWagerAmount + gameState.totalWagered)}`);
     return;
@@ -987,6 +1044,12 @@ function processWithdraw() {
   if (!savedAccounts[method]) {
     showPopup('Error', 'Please save your account number in profile first');
     openProfile();
+    return;
+  }
+  
+  if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER) {
+    const remaining = REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER - gameState.firstWagerProgress;
+    showPopup('First Withdrawal Requirement', `You need to wager ${formatNumber(remaining)} more coins before your first withdrawal.`);
     return;
   }
   
@@ -1283,6 +1346,7 @@ function openProfile() {
   if (editUsernameBtn) editUsernameBtn.style.display = currentUser.isGuest ? 'none' : 'block';
   
   updateVIPUI();
+  updateFirstWagerUI();
   loadWithdrawalAccounts();
   if (audio) audio.playClick();
 }
@@ -1364,6 +1428,8 @@ async function logout() {
   gameState.vipLevel = 0;
   gameState.pendingWagerAmount = 0;
   gameState.totalWagered = 0;
+  gameState.firstWagerProgress = 0;
+  gameState.hasCompletedFirstWager = false;
   updateUI();
   showAuthButtons();
   openAuthModal('login');
@@ -1399,8 +1465,11 @@ async function refreshUserData(silent = false) {
       gameState.vipLevel = userData.vipLevel || 0;
       gameState.pendingWagerAmount = userData.pendingWagerAmount || 0;
       gameState.totalWagered = userData.totalWagered || 0;
+      gameState.firstWagerProgress = userData.firstWagerProgress || 0;
+      gameState.hasCompletedFirstWager = userData.hasCompletedFirstWager || false;
       updateUI();
       updateVIPUI();
+      updateFirstWagerUI();
     }
   } catch (error) {
     if (!silent) console.error("Refresh error:", error);
@@ -1450,6 +1519,8 @@ async function handleLoginSubmit(form) {
       gameState.vipLevel = userData.vipLevel || 0;
       gameState.pendingWagerAmount = userData.pendingWagerAmount || 0;
       gameState.totalWagered = userData.totalWagered || 0;
+      gameState.firstWagerProgress = userData.firstWagerProgress || 0;
+      gameState.hasCompletedFirstWager = userData.hasCompletedFirstWager || false;
       
       const rewardSnap = await database.ref('users/' + currentUser.id + '/rewards').once('value');
       if (rewardSnap.val()) {
@@ -1459,6 +1530,7 @@ async function handleLoginSubmit(form) {
       updateHeaderForUser();
       updateUI();
       updateVIPUI();
+      updateFirstWagerUI();
       hideAuthButtons();
       closeAuth();
       startAutoRefresh();
@@ -1540,6 +1612,9 @@ async function handleRegisterSubmit(form) {
       activeReferrals: 0,
       pendingWagerAmount: 0,
       totalWagered: 0,
+      firstWithdrawalWager: REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER,
+      firstWagerProgress: 0,
+      hasCompletedFirstWager: false,
       referralMilestones: { 5: false, 10: false, 25: false, 50: false },
       rewards: {
         lastDailyClaim: null,
@@ -1571,9 +1646,12 @@ async function handleRegisterSubmit(form) {
     gameState.vipLevel = 0;
     gameState.pendingWagerAmount = 0;
     gameState.totalWagered = 0;
+    gameState.firstWagerProgress = 0;
+    gameState.hasCompletedFirstWager = false;
     
     updateHeaderForUser();
     updateUI();
+    updateFirstWagerUI();
     hideAuthButtons();
     closeAuth();
     startAutoRefresh();
@@ -1585,7 +1663,7 @@ async function handleRegisterSubmit(form) {
     if (referralCode) {
       showPopup('Welcome!', `Account created with referral! Deposit ${REFERRAL_CONFIG.MIN_DEPOSIT_FOR_COMMISSION}+ coins to earn commission for your referrer!`);
     } else {
-      showPopup('Welcome!', `Account created, ${username}! Get 2.5% bonus on every deposit!`);
+      showPopup('Welcome!', `Account created, ${username}! You need to wager ${REFERRAL_CONFIG.FIRST_WITHDRAWAL_WAGER} coins before your first withdrawal!`);
     }
   } catch (error) {
     if (errorContainer) {
@@ -1598,13 +1676,14 @@ async function handleRegisterSubmit(form) {
   }
 }
 
-// ===== GAME FUNCTIONS =====
+// ===== ULTRA FAST GAME FUNCTIONS =====
 function enterGame() {
   const loader = document.getElementById('gameEntryLoader');
   const gameView = document.getElementById('gameView');
   if (loader) loader.classList.add('active');
   if (audio) audio.playClick();
   
+  // Ultra fast: only 100ms loader
   setTimeout(() => {
     if (loader) loader.classList.remove('active');
     if (gameView) gameView.classList.add('active');
@@ -1615,7 +1694,7 @@ function enterGame() {
     if (betPanel) betPanel.style.display = 'block';
     if (startBtn) startBtn.classList.remove('hidden');
     if (messageText) messageText.textContent = currentUser ? 'Select your bet' : 'Login to play';
-  }, 2000);
+  }, 100);
 }
 
 function exitGame() {
@@ -1657,7 +1736,7 @@ function startLeaderboardRotation() {
   leaderboardInterval = setInterval(renderLeaderboard, 5000);
 }
 
-// ===== GAME CORE FUNCTIONS =====
+// ===== ULTRA FAST GAME CORE FUNCTIONS =====
 function shuffleArray(array) {
   const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -1669,64 +1748,63 @@ function shuffleArray(array) {
 
 function generateCards() {
   const cards = [];
-  // Create 11 pairs (22 cards)
   for (let i = 0; i < CONFIG.PAIRS_COUNT; i++) {
     const value = CARD_VALUES[i % CARD_VALUES.length];
     const suit = CARD_SUITS[i % 4];
     cards.push({ value, suit, id: `c${i}a` });
     cards.push({ value, suit, id: `c${i}b` });
   }
-  // Add 4 bombs
   for (let i = 0; i < CONFIG.BOMB_COUNT; i++) cards.push({ isBomb: true, id: `b${i}` });
-  // Add 2 golden cards
   for (let i = 0; i < CONFIG.GOLDEN_COUNT; i++) cards.push({ isGolden: true, id: `g${i}` });
   return shuffleArray(cards);
 }
 
-function createCardElement(card, index) {
-  const cardEl = document.createElement('div');
-  cardEl.className = 'card';
-  cardEl.dataset.index = index;
-  cardEl.dataset.id = card.id;
-  cardEl.dataset.value = card.value;
-  cardEl.dataset.isBomb = card.isBomb;
-  cardEl.dataset.isGolden = card.isGolden;
-  
+// Ultra fast card rendering using pre-built templates
+function getFastCardHTML(card, index) {
   const backHTML = `<div class="card-face card-back"><div class="card-back-pattern"></div><span class="card-back-logo">RM</span></div>`;
   
   let frontHTML = '';
   if (card.isBomb) {
-    frontHTML = `<div class="card-face card-front bomb"><div class="bomb-content"><span class="bomb-icon">💣</span><span class="bomb-text">BOOM!</span></div></div>`;
+    frontHTML = cardTemplates.bomb;
   } else if (card.isGolden) {
-    frontHTML = `<div class="card-face card-front golden"><div class="golden-content"><span class="golden-icon">👑</span><span class="golden-text">20X WIN!</span></div></div>`;
+    frontHTML = cardTemplates.golden;
   } else {
-    frontHTML = `<div class="card-face card-front ${card.suit.color}"><div class="card-corner card-corner-tl"><span class="card-rank">${card.value}</span><span class="card-suit-small">${card.suit.symbol}</span></div><span class="card-center">${card.suit.symbol}</span><div class="card-corner card-corner-br"><span class="card-rank">${card.value}</span><span class="card-suit-small">${card.suit.symbol}</span></div></div>`;
+    const key = `${card.value}_${card.suit.symbol}`;
+    frontHTML = cardTemplates.normal[key] || cardTemplates.normal[Object.keys(cardTemplates.normal)[0]];
   }
   
-  cardEl.innerHTML = backHTML + frontHTML;
-  cardEl.addEventListener('click', () => handleCardClick(cardEl));
-  return cardEl;
+  return `<div class="card" data-index="${index}" data-id="${card.id}" data-value="${card.value || ''}" data-is-bomb="${card.isBomb || false}" data-is-golden="${card.isGolden || false}">${backHTML}${frontHTML}</div>`;
 }
 
-function renderCards() {
+function renderCardsUltraFast() {
   const cardGrid = document.getElementById('cardGrid');
   if (!cardGrid) return;
-  cardGrid.innerHTML = '';
-  gameState.cards.forEach((card, i) => cardGrid.appendChild(createCardElement(card, i)));
+  
+  let cardsHTML = '';
+  for (let i = 0; i < gameState.cards.length; i++) {
+    cardsHTML += getFastCardHTML(gameState.cards[i], i);
+  }
+  cardGrid.innerHTML = cardsHTML;
+  
+  // Attach event listeners
+  const cardElements = cardGrid.querySelectorAll('.card');
+  for (let i = 0; i < cardElements.length; i++) {
+    cardElements[i].addEventListener('click', () => handleCardClick(cardElements[i]));
+  }
 }
 
-async function animateShuffle() {
+// Ultra fast shuffle - no animation delay
+function shuffleFast() {
   const cardGrid = document.getElementById('cardGrid');
-  const cards = cardGrid?.querySelectorAll('.card');
-  if (!cards) return;
-  for (let round = 0; round < 5; round++) {
-    cardGrid.classList.add('shuffling');
-    if (audio) audio.playShuffle();
-    await new Promise(r => setTimeout(r, 100));
-    cards.forEach(c => c.style.order = Math.floor(Math.random() * cards.length));
-  }
-  cardGrid.classList.remove('shuffling');
-  cards.forEach((c, i) => c.style.order = i);
+  if (!cardGrid) return;
+  
+  // Just add a quick visual effect without delay
+  cardGrid.classList.add('shuffling');
+  if (audio) audio.playShuffle();
+  
+  setTimeout(() => {
+    cardGrid.classList.remove('shuffling');
+  }, 80);
 }
 
 function selectBet(amount) {
@@ -1768,6 +1846,7 @@ async function startGame() {
     return;
   }
   
+  // Deduct bet amount
   gameState.balance -= gameState.currentBet;
   gameState.totalSpent += gameState.currentBet;
   await updateUserDataInFirebase(currentUser.id, { 
@@ -1780,6 +1859,7 @@ async function startGame() {
   updateUI();
   updateVIPUI();
   
+  // Reset game state
   gameState.currentWin = 0;
   gameState.multiplier = 1;
   gameState.pairsMatched = 0;
@@ -1788,9 +1868,12 @@ async function startGame() {
   gameState.firstCard = null;
   gameState.secondCard = null;
   gameState.matchedCards.clear();
-  gameState.cards = generateCards();
-  renderCards();
   
+  // Generate and render cards instantly
+  gameState.cards = generateCards();
+  renderCardsUltraFast();
+  
+  // UI updates
   const betPanel = document.getElementById('betPanel');
   const startBtn = document.getElementById('startBtn');
   const progressSection = document.getElementById('progressSection');
@@ -1806,10 +1889,13 @@ async function startGame() {
   }
   
   updateProgress();
-  if (messageText) messageText.textContent = 'Shuffling...';
-  await animateShuffle();
+  if (messageText) messageText.textContent = 'Ready! Find matching pairs!';
+  
+  // Quick shuffle effect (80ms)
+  shuffleFast();
+  
+  // Game is ready to play
   gameState.canFlip = true;
-  if (messageText) messageText.textContent = 'Find matching pairs! Avoid bombs!';
   if (audio) audio.playClick();
 }
 
@@ -1823,7 +1909,7 @@ function handleCardClick(el) {
   if (audio) audio.playCardFlip();
   
   if (isBomb) {
-    setTimeout(handleBomb, 400);
+    setTimeout(handleBomb, 200);
     return;
   }
   
@@ -1833,7 +1919,7 @@ function handleCardClick(el) {
   } else if (!gameState.secondCard) {
     gameState.secondCard = el;
     gameState.canFlip = false;
-    setTimeout(isGolden ? checkGoldenMatch : checkMatch, 500);
+    setTimeout(isGolden ? checkGoldenMatch : checkMatch, 200);
   }
 }
 
@@ -1886,7 +1972,7 @@ function checkMatch() {
     
     if (gameState.pairsMatched >= CONFIG.PAIRS_COUNT) {
       gameState.currentWin = gameState.currentBet * CONFIG.MULTIPLIERS[CONFIG.MULTIPLIERS.length - 1];
-      setTimeout(handleMaxWin, 400);
+      setTimeout(handleMaxWin, 200);
     } else {
       const messageText = document.getElementById('messageText');
       if (messageText) messageText.textContent = `MATCH! +${formatNumber(gameState.currentWin)} (${gameState.multiplier}x)`;
@@ -1904,7 +1990,7 @@ function checkMatch() {
       gameState.canFlip = true;
       const messageText = document.getElementById('messageText');
       if (messageText) messageText.textContent = 'Try again';
-    }, 400);
+    }, 200);
   }
 }
 
@@ -2101,19 +2187,6 @@ function renderMissions() {
   `).join('');
 }
 
-function openEvents() { 
-  const eventsSection = document.getElementById('eventsSection');
-  if (eventsSection) eventsSection.classList.add('active');
-  closeOffers(); 
-  if (audio) audio.playClick(); 
-}
-
-function closeEvents() { 
-  const eventsSection = document.getElementById('eventsSection');
-  if (eventsSection) eventsSection.classList.remove('active');
-  openOffers(); 
-}
-
 function openSupport() { 
   const supportSection = document.getElementById('supportSection');
   if (supportSection) supportSection.classList.add('active');
@@ -2235,28 +2308,28 @@ class AudioSystem {
   }
   
   playCardFlip() { 
-    this.playTone(800, 0.08, 'sine', 0.2); 
-    setTimeout(() => this.playTone(600, 0.08, 'sine', 0.15), 40); 
+    this.playTone(800, 0.04, 'sine', 0.2); 
+    setTimeout(() => this.playTone(600, 0.04, 'sine', 0.15), 20); 
   }
   playMatch() { 
-    [523, 659, 784, 1047].forEach((n, i) => setTimeout(() => this.playTone(n, 0.15), i * 80)); 
+    [523, 659, 784, 1047].forEach((n, i) => setTimeout(() => this.playTone(n, 0.08), i * 40)); 
   }
   playWin() { 
-    [523, 659, 784, 1047, 1319, 1568].forEach((n, i) => setTimeout(() => this.playTone(n, 0.25), i * 100)); 
+    [523, 659, 784, 1047, 1319, 1568].forEach((n, i) => setTimeout(() => this.playTone(n, 0.12), i * 50)); 
   }
   playBomb() { 
-    this.playTone(150, 0.4); 
-    setTimeout(() => this.playTone(100, 0.3), 80); 
-    setTimeout(() => this.playTone(80, 0.2), 160); 
+    this.playTone(150, 0.2); 
+    setTimeout(() => this.playTone(100, 0.15), 40); 
+    setTimeout(() => this.playTone(80, 0.1), 80); 
   }
   playClick() { 
-    this.playTone(1000, 0.04); 
+    this.playTone(1000, 0.02); 
   }
   playCashout() { 
-    [784, 988, 1175, 1568].forEach((n, i) => setTimeout(() => this.playTone(n, 0.2), i * 60)); 
+    [784, 988, 1175, 1568].forEach((n, i) => setTimeout(() => this.playTone(n, 0.1), i * 30)); 
   }
   playShuffle() { 
-    for (let i = 0; i < 5; i++) setTimeout(() => this.playTone(200 + Math.random() * 400, 0.05), i * 50); 
+    for (let i = 0; i < 3; i++) setTimeout(() => this.playTone(200 + Math.random() * 400, 0.03), i * 20); 
   }
   toggle() { 
     this.muted = !this.muted; 
@@ -2283,6 +2356,9 @@ function createParticles() {
 }
 
 function initApp() {
+  // Initialize card templates for faster rendering
+  initCardTemplates();
+  
   createParticles();
   startLeaderboardRotation();
   
@@ -2319,7 +2395,9 @@ function initApp() {
     }, 1000);
   }
   
-  console.log("✅ ROYAL MATCH 1 ready with 28 cards (11 pairs, 4 bombs, 2 golden)!");
+  console.log("✅ ROYAL MATCH 1 - ULTRA FAST START READY!");
+  console.log("✅ Game starts in under 3 seconds!");
+  console.log("✅ New players require 5,000 wagered before first withdrawal!");
 }
 
 // Make all functions globally available
@@ -2352,7 +2430,6 @@ window.closeReferral = closeReferral;
 window.copyReferralCode = copyReferralCode;
 window.copyReferralLink = copyReferralLink;
 window.filterReferrals = filterReferrals;
-window.claimMilestone = claimMilestone;
 window.openShop = openShop;
 window.closeShop = closeShop;
 window.openPurchasePage = openPurchasePage;
@@ -2375,8 +2452,6 @@ window.openOffers = openOffers;
 window.closeOffers = closeOffers;
 window.openMissions = openMissions;
 window.closeMissions = closeMissions;
-window.openEvents = openEvents;
-window.closeEvents = closeEvents;
 window.openSupport = openSupport;
 window.closeSupport = closeSupport;
 window.openSupportBot = openSupportBot;
