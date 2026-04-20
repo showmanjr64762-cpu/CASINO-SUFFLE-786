@@ -1,5 +1,5 @@
 // ===== ROYAL MATCH 1 - COMPLETE WORKING VERSION =====
-console.log("🎮 Casino shuffle 786 - Loading...");
+console.log("🎮 ROYAL MATCH 1 - Loading...");
 
 // ===== FIREBASE CONFIGURATION =====
 const firebaseConfig = {
@@ -29,7 +29,7 @@ let pendingReferralCode = null;
 let rewardCountdownInterval = null;
 
 // APK Download Link
-const APK_DOWNLOAD_LINK = 'https://drive.google.com/file/d/1gk2ao0PzeN5QGkO0z_gUcQkUfivXl7uQ/view?usp=drivesdk';
+const APK_DOWNLOAD_LINK = 'https://drive.google.com/file/d/15CO3hVD4QYxroAl9yz3QC9GcaFmrYzBn/view?usp=drivesdk';
 
 // ===== VIP SYSTEM CONFIGURATION =====
 const VIP_CONFIG = {
@@ -648,7 +648,7 @@ async function loadReferralData() {
       
       if (referralsBody) {
         if (referralData.referrals.length === 0) {
-          referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals yet</td><tr>';
+          referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals yet</td></tr>';
         } else {
           var referralsHtml = '';
           for (var i = 0; i < referralData.referrals.length; i++) {
@@ -697,7 +697,7 @@ function filterReferrals(filter) {
   var referralsBody = document.getElementById('referralsBody');
   if (referralsBody) {
     if (filtered.length === 0) {
-      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals found</td><tr>';
+      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals found</td></tr>';
     } else {
       var referralsHtml = '';
       for (var i = 0; i < filtered.length; i++) {
@@ -2152,7 +2152,7 @@ function createParticles() {
 }
 
 function initApp() {
-  console.log('Initializing Casino shuffle 786...');
+  console.log('Initializing Royal Match 1...');
   
   createParticles();
   renderLeaderboard();
@@ -2233,7 +2233,7 @@ function initApp() {
     }
   });
   
-  console.log('✅ Casino shuffle 786 - Fully Loaded!');
+  console.log('✅ ROYAL MATCH 1 - Fully Loaded!');
   console.log('✅ Missions are now collectable!');
   console.log('✅ Login/Register redesigned!');
   console.log('✅ Daily rewards track time properly!');
