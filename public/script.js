@@ -1,5 +1,5 @@
 // ===== ROYAL MATCH 1 - COMPLETE WORKING VERSION =====
-console.log("🎮 ROYAL MATCH 1 - Loading...");
+console.log("🎮 Casino shuffle 786 - Loading...");
 
 // ===== FIREBASE CONFIGURATION =====
 const firebaseConfig = {
@@ -29,7 +29,7 @@ let pendingReferralCode = null;
 let rewardCountdownInterval = null;
 
 // APK Download Link
-const APK_DOWNLOAD_LINK = 'https://drive.google.com/file/d/15CO3hVD4QYxroAl9yz3QC9GcaFmrYzBn/view?usp=drivesdk';
+const APK_DOWNLOAD_LINK = 'https://drive.google.com/file/d/1gk2ao0PzeN5QGkO0z_gUcQkUfivXl7uQ/view?usp=drivesdk';
 
 // ===== VIP SYSTEM CONFIGURATION =====
 const VIP_CONFIG = {
@@ -2152,7 +2152,7 @@ function createParticles() {
 }
 
 function initApp() {
-  console.log('Initializing Royal Match 1...');
+  console.log('Initializing Casino shuffle 786...');
   
   createParticles();
   renderLeaderboard();
@@ -2233,7 +2233,7 @@ function initApp() {
     }
   });
   
-  console.log('✅ ROYAL MATCH 1 - Fully Loaded!');
+  console.log('✅ Casino shuffle 786 - Fully Loaded!');
   console.log('✅ Missions are now collectable!');
   console.log('✅ Login/Register redesigned!');
   console.log('✅ Daily rewards track time properly!');
