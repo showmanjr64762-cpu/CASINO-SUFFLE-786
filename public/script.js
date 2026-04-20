@@ -25,6 +25,7 @@ let autoRefreshInterval = null;
 let notifications = [];
 let currentPurchaseAmount = 0;
 let currentPurchaseCoins = 0;
+let pendingReferralCode = null;
 
 // APK Download Link
 const APK_DOWNLOAD_LINK = 'https://drive.google.com/file/d/1gk2ao0PzeN5QGkO0z_gUcQkUfivXl7uQ/view?usp=drivesdk';
@@ -65,17 +66,22 @@ let gameState = {
   totalWagered: 0
 };
 
-// ===== REWARD STATE =====
+// ===== REWARD STATE (TRACKED IN FIREBASE) =====
 let rewardState = {
   lastDailyClaim: null,
   lastWeeklyClaim: null,
-  lastMonthlyClaim: null
+  lastMonthlyClaim: null,
+  dailyStreak: 0,
+  weeklyStreak: 0,
+  lastDailyClaimDate: null,
+  lastWeeklyClaimDate: null,
+  lastMonthlyClaimDate: null
 };
 
 // ===== REFERRAL DATA =====
 let referralData = {
-  code: 'ROYAL777',
-  link: window.location.origin + '/?ref=ROYAL777',
+  code: null,
+  link: null,
   totalReferrals: 0,
   activeReferrals: 0,
   totalEarnings: 0,
@@ -138,6 +144,14 @@ function showPopup(title, text) {
 function closePopup() {
   var successPopup = document.getElementById('successPopup');
   if (successPopup) successPopup.classList.remove('active');
+}
+
+// ===== REFERRAL CODE FROM URL =====
+function getReferralCodeFromURL() {
+  var urlParams = new URLSearchParams(window.location.search);
+  var refCode = urlParams.get('ref');
+  console.log("Referral code from URL:", refCode);
+  return refCode;
 }
 
 // ===== DOWNLOAD APK FUNCTIONS =====
@@ -219,6 +233,7 @@ async function handleLoginSubmit(form) {
       
       updateHeaderForUser();
       updateUI();
+      updateRewardUI();
       hideAuthButtons();
       closeAuth();
       startAutoRefresh();
@@ -250,7 +265,9 @@ async function handleRegisterSubmit(form) {
   var email = form.email.value.trim();
   var password = form.password.value.trim();
   var confirmPassword = form.confirmPassword.value.trim();
-  var referralCode = form.referralCode ? form.referralCode.value.trim() : '';
+  var manualCode = form.referralCode ? form.referralCode.value.trim() : '';
+  var urlCode = getReferralCodeFromURL();
+  var referralCode = urlCode || manualCode;
   var errorContainer = document.getElementById('registerErrors');
   
   if (errorContainer) {
@@ -311,7 +328,12 @@ async function handleRegisterSubmit(form) {
       rewards: {
         lastDailyClaim: null,
         lastWeeklyClaim: null,
-        lastMonthlyClaim: null
+        lastMonthlyClaim: null,
+        dailyStreak: 0,
+        weeklyStreak: 0,
+        lastDailyClaimDate: null,
+        lastWeeklyClaimDate: null,
+        lastMonthlyClaimDate: null
       }
     };
     
@@ -346,7 +368,11 @@ async function handleRegisterSubmit(form) {
     loadReferralData();
     loadWithdrawalAccounts();
     
-    showPopup('Welcome!', 'Account created successfully! You start with 0 coins. Purchase coins to start playing!');
+    if (referralCode) {
+      showPopup('Welcome!', 'Account created with referral code ' + referralCode + '! You start with 0 coins. Purchase coins to start playing!');
+    } else {
+      showPopup('Welcome!', 'Account created successfully! You start with 0 coins. Purchase coins to start playing!');
+    }
   } catch (error) {
     if (errorContainer) {
       if (error.code === 'auth/email-already-in-use') {
@@ -480,7 +506,11 @@ async function refreshUserData() {
       gameState.vipLevel = userData.vipLevel || 0;
       gameState.firstWagerProgress = userData.firstWagerProgress || 0;
       gameState.hasCompletedFirstWager = userData.hasCompletedFirstWager || false;
+      if (userData.rewards) {
+        rewardState = { ...rewardState, ...userData.rewards };
+      }
       updateUI();
+      updateRewardUI();
     }
   } catch (error) {
     console.error("Refresh error:", error);
@@ -498,27 +528,42 @@ async function createReferralCode(userId, username) {
 
 async function applyReferral(referralCode, newUserId, newUsername) {
   if (!referralCode) return;
+  console.log("Applying referral code:", referralCode);
   try {
     var usersSnap = await database.ref('users').once('value');
     var users = usersSnap.val();
     var referrerId = null;
+    var referrerData = null;
     
     for (var id in users) {
       if (users[id].referralCode === referralCode && id !== newUserId) {
         referrerId = id;
+        referrerData = users[id];
         break;
       }
     }
     
-    if (referrerId) {
-      await updateUserDataInFirebase(newUserId, { referredBy: referrerId });
-      var referrerData = users[referrerId];
+    if (referrerId && referrerData) {
+      await updateUserDataInFirebase(newUserId, { referredBy: referrerId, referredAt: new Date().toISOString() });
       await updateUserDataInFirebase(referrerId, {
         referralCount: (referrerData.referralCount || 0) + 1,
-        referralEarnings: (referrerData.referralEarnings || 0) + 50
+        referralEarnings: (referrerData.referralEarnings || 0) + 50,
+        coins: (referrerData.coins || 0) + 50
       });
       
-      showPopup('Referral Applied!', 'You were referred by ' + referrerData.username);
+      await database.ref('referrals').push({
+        referrerId: referrerId,
+        referrerUsername: referrerData.username,
+        referredUserId: newUserId,
+        referredUsername: newUsername,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+      });
+      
+      showPopup('Referral Applied!', 'You were referred by ' + referrerData.username + '! They earned 50 coins!');
+      console.log("Referral applied successfully from:", referrerData.username);
+    } else {
+      console.log("No referrer found for code:", referralCode);
     }
   } catch (error) {
     console.error("Error applying referral:", error);
@@ -535,15 +580,54 @@ async function loadReferralData() {
       referralData.totalReferrals = userData.referralCount || 0;
       referralData.totalEarnings = userData.referralEarnings || 0;
       
+      // Load referrals list
+      var referralsSnap = await database.ref('referrals').orderByChild('referrerId').equalTo(currentUser.id).once('value');
+      var referrals = referralsSnap.val();
+      if (referrals) {
+        referralData.referrals = Object.values(referrals).map(function(r) {
+          return {
+            username: r.referredUsername,
+            status: r.status,
+            deposit: r.depositAmount || 0,
+            commission: r.commissionEarned || 0,
+            date: new Date(r.timestamp).toLocaleDateString()
+          };
+        });
+      } else {
+        referralData.referrals = [];
+      }
+      
       var codeDisplay = document.getElementById('referralCodeDisplay');
       var linkInput = document.getElementById('referralLinkInput');
       var totalReferralsEl = document.getElementById('totalReferrals');
       var totalEarningsEl = document.getElementById('totalEarnings');
+      var activeReferralsEl = document.getElementById('activeReferrals');
+      var referralsBody = document.getElementById('referralsBody');
       
       if (codeDisplay) codeDisplay.textContent = referralData.code;
       if (linkInput) linkInput.value = referralData.link;
       if (totalReferralsEl) totalReferralsEl.textContent = referralData.totalReferrals;
       if (totalEarningsEl) totalEarningsEl.textContent = formatNumber(referralData.totalEarnings);
+      if (activeReferralsEl) activeReferralsEl.textContent = referralData.referrals.filter(function(r) { return r.status === 'active'; }).length;
+      
+      if (referralsBody) {
+        if (referralData.referrals.length === 0) {
+          referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals yet</td><tr>';
+        } else {
+          var referralsHtml = '';
+          for (var i = 0; i < referralData.referrals.length; i++) {
+            var r = referralData.referrals[i];
+            referralsHtml += '<tr>' +
+              '<td>' + escapeHtml(r.username) + '</td>' +
+              '<td><span class="status-badge ' + (r.status === 'active' ? 'approved' : 'pending') + '">' + (r.status === 'active' ? 'Active' : 'Pending') + '</span></td>' +
+              '<td class="amount-positive">' + formatNumber(r.deposit) + '</td>' +
+              '<td class="amount-positive">' + formatNumber(r.commission) + '</td>' +
+              '<td>' + r.date + '</td>' +
+            '</tr>';
+          }
+          referralsBody.innerHTML = referralsHtml;
+        }
+      }
     }
   } catch (error) {
     console.error("Error loading referral data:", error);
@@ -564,6 +648,42 @@ function filterReferrals(filter) {
   var btns = document.querySelectorAll('.filter-btn');
   btns.forEach(function(btn) { btn.classList.remove('active'); });
   if (event && event.target) event.target.classList.add('active');
+  
+  var filtered = [];
+  if (filter === 'active') {
+    filtered = referralData.referrals.filter(function(r) { return r.status === 'active'; });
+  } else if (filter === 'pending') {
+    filtered = referralData.referrals.filter(function(r) { return r.status !== 'active'; });
+  } else {
+    filtered = referralData.referrals;
+  }
+  
+  var referralsBody = document.getElementById('referralsBody');
+  if (referralsBody) {
+    if (filtered.length === 0) {
+      referralsBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No referrals found</td></tr>';
+    } else {
+      var referralsHtml = '';
+      for (var i = 0; i < filtered.length; i++) {
+        var r = filtered[i];
+        referralsHtml += '<tr>' +
+          '<td>' + escapeHtml(r.username) + '</td>' +
+          '<td><span class="status-badge ' + (r.status === 'active' ? 'approved' : 'pending') + '">' + (r.status === 'active' ? 'Active' : 'Pending') + '</span></td>' +
+          '<td class="amount-positive">' + formatNumber(r.deposit) + '</td>' +
+          '<td class="amount-positive">' + formatNumber(r.commission) + '</td>' +
+          '<td>' + r.date + '</td>' +
+        '</tr>';
+      }
+      referralsBody.innerHTML = referralsHtml;
+    }
+  }
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  var div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // ===== WITHDRAWAL FUNCTIONS =====
@@ -787,20 +907,27 @@ function submitPurchaseRequest() {
   closePurchasePage();
 }
 
-// ===== DAILY REWARDS FUNCTIONS =====
+// ===== DAILY REWARDS FUNCTIONS (WITH TIME TRACKING) =====
 function canClaimDaily() {
   if (!currentUser) return false;
   if (!rewardState.lastDailyClaim) return true;
+  
   var lastClaim = new Date(rewardState.lastDailyClaim);
   var today = new Date();
-  return lastClaim.getDate() !== today.getDate() || 
-         lastClaim.getMonth() !== today.getMonth() || 
-         lastClaim.getFullYear() !== today.getFullYear();
+  
+  // Check if it's a new day
+  if (lastClaim.getDate() !== today.getDate() || 
+      lastClaim.getMonth() !== today.getMonth() || 
+      lastClaim.getFullYear() !== today.getFullYear()) {
+    return true;
+  }
+  return false;
 }
 
 function canClaimWeekly() {
   if (!currentUser) return false;
   if (!rewardState.lastWeeklyClaim) return true;
+  
   var lastClaim = new Date(rewardState.lastWeeklyClaim);
   var today = new Date();
   var daysDiff = Math.floor((today - lastClaim) / (1000 * 60 * 60 * 24));
@@ -810,10 +937,131 @@ function canClaimWeekly() {
 function canClaimMonthly() {
   if (!currentUser) return false;
   if (!rewardState.lastMonthlyClaim) return true;
+  
   var lastClaim = new Date(rewardState.lastMonthlyClaim);
   var today = new Date();
   return lastClaim.getMonth() !== today.getMonth() || 
          lastClaim.getFullYear() !== today.getFullYear();
+}
+
+function getTimeUntilNextDaily() {
+  if (!rewardState.lastDailyClaim) return "Available now!";
+  
+  var lastClaim = new Date(rewardState.lastDailyClaim);
+  var nextClaim = new Date(lastClaim);
+  nextClaim.setDate(nextClaim.getDate() + 1);
+  nextClaim.setHours(0, 0, 0, 0);
+  
+  var now = new Date();
+  if (now >= nextClaim) return "Available now!";
+  
+  var diff = nextClaim - now;
+  var hours = Math.floor(diff / (1000 * 60 * 60));
+  var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  return hours + "h " + minutes + "m remaining";
+}
+
+function getTimeUntilNextWeekly() {
+  if (!rewardState.lastWeeklyClaim) return "Available now!";
+  
+  var lastClaim = new Date(rewardState.lastWeeklyClaim);
+  var nextClaim = new Date(lastClaim);
+  nextClaim.setDate(nextClaim.getDate() + 7);
+  
+  var now = new Date();
+  if (now >= nextClaim) return "Available now!";
+  
+  var diff = nextClaim - now;
+  var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  return days + "d " + hours + "h remaining";
+}
+
+function getTimeUntilNextMonthly() {
+  if (!rewardState.lastMonthlyClaim) return "Available now!";
+  
+  var lastClaim = new Date(rewardState.lastMonthlyClaim);
+  var nextClaim = new Date(lastClaim);
+  nextClaim.setMonth(nextClaim.getMonth() + 1);
+  
+  var now = new Date();
+  if (now >= nextClaim) return "Available now!";
+  
+  var diff = nextClaim - now;
+  var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return days + " days remaining";
+}
+
+function updateRewardUI() {
+  var dailyBtn = document.getElementById('claimDailyBtn');
+  var weeklyBtn = document.getElementById('claimWeeklyBtn');
+  var monthlyBtn = document.getElementById('claimMonthlyBtn');
+  var dailyCooldown = document.getElementById('dailyCooldown');
+  var weeklyCooldown = document.getElementById('weeklyCooldown');
+  var monthlyCooldown = document.getElementById('monthlyCooldown');
+  
+  var vipRewards = VIP_CONFIG.levels[gameState.vipLevel];
+  var dailyRewardAmount = document.getElementById('dailyRewardAmount');
+  var weeklyRewardAmount = document.getElementById('weeklyRewardAmount');
+  var monthlyRewardAmount = document.getElementById('monthlyRewardAmount');
+  
+  if (dailyRewardAmount) dailyRewardAmount.textContent = vipRewards.dailyReward;
+  if (weeklyRewardAmount) weeklyRewardAmount.textContent = vipRewards.weeklyReward;
+  if (monthlyRewardAmount) monthlyRewardAmount.textContent = vipRewards.monthlyReward;
+  
+  if (dailyBtn) {
+    if (canClaimDaily()) {
+      dailyBtn.disabled = false;
+      dailyBtn.style.opacity = '1';
+      if (dailyCooldown) {
+        dailyCooldown.textContent = 'Ready to claim!';
+        dailyCooldown.style.color = '#10b981';
+      }
+    } else {
+      dailyBtn.disabled = true;
+      dailyBtn.style.opacity = '0.5';
+      if (dailyCooldown) {
+        dailyCooldown.textContent = getTimeUntilNextDaily();
+        dailyCooldown.style.color = '#ff6b6b';
+      }
+    }
+  }
+  
+  if (weeklyBtn) {
+    if (canClaimWeekly()) {
+      weeklyBtn.disabled = false;
+      weeklyBtn.style.opacity = '1';
+      if (weeklyCooldown) {
+        weeklyCooldown.textContent = 'Ready to claim!';
+        weeklyCooldown.style.color = '#10b981';
+      }
+    } else {
+      weeklyBtn.disabled = true;
+      weeklyBtn.style.opacity = '0.5';
+      if (weeklyCooldown) {
+        weeklyCooldown.textContent = getTimeUntilNextWeekly();
+        weeklyCooldown.style.color = '#ff6b6b';
+      }
+    }
+  }
+  
+  if (monthlyBtn) {
+    if (canClaimMonthly()) {
+      monthlyBtn.disabled = false;
+      monthlyBtn.style.opacity = '1';
+      if (monthlyCooldown) {
+        monthlyCooldown.textContent = 'Ready to claim!';
+        monthlyCooldown.style.color = '#10b981';
+      }
+    } else {
+      monthlyBtn.disabled = true;
+      monthlyBtn.style.opacity = '0.5';
+      if (monthlyCooldown) {
+        monthlyCooldown.textContent = getTimeUntilNextMonthly();
+        monthlyCooldown.style.color = '#ff6b6b';
+      }
+    }
+  }
 }
 
 async function claimDailyReward() {
@@ -824,18 +1072,30 @@ async function claimDailyReward() {
   }
   
   if (!canClaimDaily()) {
-    showPopup('Already Claimed', 'Daily reward already claimed today!');
+    showPopup('Already Claimed', 'Daily reward already claimed today! Come back tomorrow for more!');
     return;
   }
   
   var vipRewards = VIP_CONFIG.levels[gameState.vipLevel];
   var reward = vipRewards.dailyReward;
+  
   gameState.balance += reward;
   rewardState.lastDailyClaim = new Date().toISOString();
+  rewardState.lastDailyClaimDate = new Date().toDateString();
+  
+  // Update streak
+  var today = new Date().toDateString();
+  if (rewardState.lastDailyClaimDate === today) {
+    rewardState.dailyStreak = (rewardState.dailyStreak || 0) + 1;
+  } else {
+    rewardState.dailyStreak = 1;
+  }
+  
   updateUI();
   await saveUserDataToFirebase();
+  updateRewardUI();
   
-  showPopup('Daily Reward Claimed!', 'You received ' + reward + ' coins!');
+  showPopup('Daily Reward Claimed!', 'You received ' + reward + ' coins! Streak: ' + rewardState.dailyStreak + ' days');
 }
 
 async function claimWeeklyReward() {
@@ -846,18 +1106,24 @@ async function claimWeeklyReward() {
   }
   
   if (!canClaimWeekly()) {
-    showPopup('Already Claimed', 'Weekly reward already claimed this week!');
+    var timeLeft = getTimeUntilNextWeekly();
+    showPopup('Already Claimed', 'Weekly reward already claimed! ' + timeLeft);
     return;
   }
   
   var vipRewards = VIP_CONFIG.levels[gameState.vipLevel];
   var reward = vipRewards.weeklyReward;
+  
   gameState.balance += reward;
   rewardState.lastWeeklyClaim = new Date().toISOString();
+  rewardState.lastWeeklyClaimDate = new Date().toDateString();
+  rewardState.weeklyStreak = (rewardState.weeklyStreak || 0) + 1;
+  
   updateUI();
   await saveUserDataToFirebase();
+  updateRewardUI();
   
-  showPopup('Weekly Reward Claimed!', 'You received ' + reward + ' coins!');
+  showPopup('Weekly Reward Claimed!', 'You received ' + reward + ' coins! Week streak: ' + rewardState.weeklyStreak);
 }
 
 async function claimMonthlyReward() {
@@ -868,16 +1134,21 @@ async function claimMonthlyReward() {
   }
   
   if (!canClaimMonthly()) {
-    showPopup('Already Claimed', 'Monthly reward already claimed this month!');
+    var timeLeft = getTimeUntilNextMonthly();
+    showPopup('Already Claimed', 'Monthly reward already claimed! ' + timeLeft);
     return;
   }
   
   var vipRewards = VIP_CONFIG.levels[gameState.vipLevel];
   var reward = vipRewards.monthlyReward;
+  
   gameState.balance += reward;
   rewardState.lastMonthlyClaim = new Date().toISOString();
+  rewardState.lastMonthlyClaimDate = new Date().toDateString();
+  
   updateUI();
   await saveUserDataToFirebase();
+  updateRewardUI();
   
   showPopup('Monthly Reward Claimed!', 'You received ' + reward + ' coins!');
 }
@@ -899,9 +1170,6 @@ function updateUI() {
   var totalSpentDisplay = document.getElementById('totalSpentDisplay');
   var nextVipAmount = document.getElementById('nextVipAmount');
   var vipProgressBar = document.getElementById('vipProgressBar');
-  var dailyRewardAmount = document.getElementById('dailyRewardAmount');
-  var weeklyRewardAmount = document.getElementById('weeklyRewardAmount');
-  var monthlyRewardAmount = document.getElementById('monthlyRewardAmount');
   
   if (balanceDisplay) balanceDisplay.textContent = formatNumber(gameState.balance);
   if (lobbyBalance) lobbyBalance.textContent = formatNumber(gameState.balance);
@@ -918,9 +1186,6 @@ function updateUI() {
   
   var currentVip = VIP_CONFIG.levels[gameState.vipLevel];
   var nextVip = VIP_CONFIG.levels[gameState.vipLevel + 1];
-  if (dailyRewardAmount) dailyRewardAmount.textContent = currentVip.dailyReward;
-  if (weeklyRewardAmount) weeklyRewardAmount.textContent = currentVip.weeklyReward;
-  if (monthlyRewardAmount) monthlyRewardAmount.textContent = currentVip.monthlyReward;
   
   if (nextVip) {
     if (profileNextVip) profileNextVip.textContent = formatNumber(nextVip.requiredSpend - gameState.totalSpent);
@@ -997,6 +1262,16 @@ function switchAuthTab(tab) {
   if (authTitle) authTitle.textContent = tab === 'login' ? 'Login' : 'Register';
   if (loginForm) loginForm.classList.toggle('active', tab === 'login');
   if (registerForm) registerForm.classList.toggle('active', tab === 'register');
+  
+  if (tab === 'register') {
+    var refCode = getReferralCodeFromURL();
+    if (refCode) {
+      var referralInput = document.querySelector('#registerForm input[name="referralCode"]');
+      if (referralInput) {
+        referralInput.value = refCode;
+      }
+    }
+  }
 }
 
 function closeAuth() {
@@ -1221,6 +1496,7 @@ function closeVIPPopup() {
 function openDailyRewards() {
   var section = document.getElementById('dailyRewardsSection');
   if (section) section.classList.add('active');
+  updateRewardUI();
   closeOffers();
 }
 
@@ -1530,7 +1806,6 @@ function handleCardClick(cardDiv) {
   
   cardDiv.classList.add('flipped');
   
-  // BOMB CARD - End game immediately with loss
   if (cardType === 'bomb') {
     gameState.isPlaying = false;
     gameState.canFlip = false;
@@ -1540,7 +1815,6 @@ function handleCardClick(cardDiv) {
     return;
   }
   
-  // GOLDEN CARD - Need to match both golden cards
   if (cardType === 'golden') {
     if (!gameState.firstCard) {
       gameState.firstCard = cardDiv;
@@ -1552,7 +1826,6 @@ function handleCardClick(cardDiv) {
     return;
   }
   
-  // Normal card matching
   if (!gameState.firstCard) {
     gameState.firstCard = cardDiv;
   } else if (!gameState.secondCard && gameState.firstCard !== cardDiv) {
@@ -1569,7 +1842,6 @@ function checkGoldenMatch() {
   var card1Type = card1.getAttribute('data-type');
   var card2Type = card2.getAttribute('data-type');
   
-  // Both cards are golden - WIN!
   if (card1Type === 'golden' && card2Type === 'golden') {
     card1.classList.add('matched');
     card2.classList.add('matched');
@@ -1587,7 +1859,6 @@ function checkGoldenMatch() {
     if (winOverlay) winOverlay.classList.add('active');
     gameState.isPlaying = false;
   } else {
-    // No match - flip back
     setTimeout(function() {
       if (card1) card1.classList.remove('flipped');
       if (card2) card2.classList.remove('flipped');
@@ -1622,7 +1893,6 @@ function checkMatch() {
     if (messageText) messageText.textContent = 'MATCH! +' + formatNumber(gameState.currentWin) + ' (' + gameState.multiplier + 'x)';
     
     if (gameState.pairsMatched >= CONFIG.PAIRS_COUNT) {
-      // All pairs matched - WIN!
       gameState.balance += gameState.currentWin;
       gameState.totalWins++;
       updateUI();
@@ -1636,14 +1906,12 @@ function checkMatch() {
       gameState.isPlaying = false;
     } else {
       gameState.canFlip = true;
-      // Show cashout and continue buttons after a match
       var cashoutBtn = document.getElementById('cashoutBtn');
       var continueBtn = document.getElementById('continueBtn');
       if (cashoutBtn) cashoutBtn.classList.remove('hidden');
       if (continueBtn) continueBtn.classList.remove('hidden');
     }
   } else {
-    // No match - flip back
     setTimeout(function() {
       if (card1) card1.classList.remove('flipped');
       if (card2) card2.classList.remove('flipped');
@@ -1790,6 +2058,19 @@ function initApp() {
   updateUI();
   updateBalanceDisplay();
   
+  // Check for referral code in URL and set it in the register form
+  var urlRefCode = getReferralCodeFromURL();
+  if (urlRefCode) {
+    console.log("Referral code found in URL:", urlRefCode);
+    setTimeout(function() {
+      var referralInput = document.querySelector('#registerForm input[name="referralCode"]');
+      if (referralInput) {
+        referralInput.value = urlRefCode;
+        console.log("Referral code set in form field");
+      }
+    }, 1000);
+  }
+  
   // Force login on every page load
   if (!currentUser) {
     setTimeout(function() {
@@ -1816,8 +2097,12 @@ function initApp() {
           gameState.vipLevel = userData.vipLevel || 0;
           gameState.firstWagerProgress = userData.firstWagerProgress || 0;
           gameState.hasCompletedFirstWager = userData.hasCompletedFirstWager || false;
+          if (userData.rewards) {
+            rewardState = { ...rewardState, ...userData.rewards };
+          }
           updateHeaderForUser();
           updateUI();
+          updateRewardUI();
           hideAuthButtons();
           startAutoRefresh();
         }
@@ -1826,9 +2111,10 @@ function initApp() {
   });
   
   console.log('✅ ROYAL MATCH 1 - Fully Loaded!');
+  console.log('✅ Referral link system fixed!');
   console.log('✅ Login required every time you open the game!');
+  console.log('✅ Daily rewards track time - can only claim once per day!');
   console.log('✅ Golden cards need to be matched together to win!');
-  console.log('✅ Cashout/Continue buttons appear after each match!');
 }
 
 // Make all functions global
