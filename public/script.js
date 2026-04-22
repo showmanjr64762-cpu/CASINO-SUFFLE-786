@@ -29,7 +29,7 @@ let pendingReferralCode = null;
 let rewardCountdownInterval = null;
 
 // APK Download Link
-const APK_DOWNLOAD_LINK = 'https://drive.google.com/file/d/1gk2ao0PzeN5QGkO0z_gUcQkUfivXl7uQ/view?usp=drivesdk';
+const APK_DOWNLOAD_LINK = 'https://www.mediafire.com/file/cop5u59io09ekkl/Casino+shuffle+786.apk/file';
 
 // ===== VIP SYSTEM CONFIGURATION =====
 const VIP_CONFIG = {
