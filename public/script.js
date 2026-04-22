@@ -105,8 +105,8 @@ let savedAccounts = {
 
 // ===== GAME CONFIG =====
 const CONFIG = {
-  PAIRS_COUNT: 11,
-  BOMB_COUNT: 4,
+  PAIRS_COUNT: 10,
+  BOMB_COUNT: 6,
   GOLDEN_COUNT: 2,
   GOLDEN_MULTIPLIER: 20,
   MULTIPLIERS: [1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 7.0, 10.0, 15.0, 22.0, 35.0],
@@ -766,7 +766,7 @@ function openWithdraw() {
     return;
   }
   
-  if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < 5000) {
+  if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < 10000) {
     var remaining = 5000 - gameState.firstWagerProgress;
     showPopup('First Withdrawal Requirement', 'You need to wager ' + formatNumber(remaining) + ' more coins before your first withdrawal.');
     return;
@@ -816,7 +816,7 @@ function processWithdraw() {
     return;
   }
   
-  if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < 5000) {
+  if (!gameState.hasCompletedFirstWager && gameState.firstWagerProgress < 10000) {
     showPopup('Error', 'Complete wagering requirement first!');
     return;
   }
@@ -1359,13 +1359,13 @@ function updateUI() {
   var progressBar = document.getElementById('firstWagerProgressBar');
   var progressText = document.getElementById('firstWagerProgressText');
   if (progressBar && progressText) {
-    var percent = (gameState.firstWagerProgress / 5000) * 100;
+    var percent = (gameState.firstWagerProgress / 10000) * 100;
     progressBar.style.width = Math.min(100, percent) + '%';
     if (gameState.hasCompletedFirstWager) {
       progressText.innerHTML = '✅ First withdrawal unlocked!';
       progressText.style.color = '#2ecc71';
     } else {
-      progressText.innerHTML = formatNumber(gameState.firstWagerProgress) + ' / 5,000 wagered';
+      progressText.innerHTML = formatNumber(gameState.firstWagerProgress) + ' / 10000 wagered';
     }
   }
 }
@@ -1876,9 +1876,9 @@ async function startGame() {
     showPopup('VIP Level Up!', 'Congratulations! You reached VIP Level ' + newVipLevel + '!');
   }
   
-  if (gameState.firstWagerProgress >= 5000 && !gameState.hasCompletedFirstWager) {
+  if (gameState.firstWagerProgress >= 10000 && !gameState.hasCompletedFirstWager) {
     gameState.hasCompletedFirstWager = true;
-    showPopup('First Withdrawal Unlocked!', 'You have completed the 5,000 coin wagering requirement!');
+    showPopup('First Withdrawal Unlocked!', 'You have completed the 10000 coin wagering requirement!');
   }
   
   await saveUserDataToFirebase();
